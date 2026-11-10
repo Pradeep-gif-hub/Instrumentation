@@ -26,31 +26,77 @@ interface AppContextValue {
   apiConnected: boolean;
 }
 
+const STORAGE_KEYS = {
+  theme: 'instrumenta:theme',
+  bookmarks: 'instrumenta:bookmarks',
+  subjects: 'instrumenta:subjects',
+  attempts: 'instrumenta:attempts',
+} as const;
+
+function readStorage<T>(key: string, fallback: T): T {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    return JSON.parse(raw) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeStorage<T>(key: string, value: T): void {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // ignore storage quota/privacy mode errors
+  }
+}
+
 const AppContext = createContext<AppContextValue | null>(null);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<ThemeMode>(() => {
     try {
-      return localStorage.getItem('instrumenta:theme') === 'light' ? 'light' : 'dark';
+      return localStorage.getItem(STORAGE_KEYS.theme) === 'light' ? 'light' : 'dark';
     } catch {
       return 'dark';
     }
   });
 
-  const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
-  const [subjects, setSubjects] = useState<AcademicSubject[]>(DEFAULT_ACADEMIC_SUBJECTS);
-  const [attempts, setAttempts] = useState<QuestionAttempt[]>([]);
+  const [bookmarks, setBookmarks] = useState<BookmarkItem[]>(() => {
+    const saved = readStorage<BookmarkItem[]>(STORAGE_KEYS.bookmarks, []);
+    return Array.isArray(saved) ? saved : [];
+  });
+  const [subjects, setSubjects] = useState<AcademicSubject[]>(() => {
+    const saved = readStorage<AcademicSubject[]>(STORAGE_KEYS.subjects, DEFAULT_ACADEMIC_SUBJECTS);
+    return Array.isArray(saved) && saved.length > 0 ? saved : DEFAULT_ACADEMIC_SUBJECTS;
+  });
+  const [attempts, setAttempts] = useState<QuestionAttempt[]>(() => {
+    const saved = readStorage<QuestionAttempt[]>(STORAGE_KEYS.attempts, []);
+    return Array.isArray(saved) ? saved : [];
+  });
   const [searchOpen, setSearchOpen] = useState(false);
   const [bookmarksOpen, setBookmarksOpen] = useState(false);
   const [apiConnected, setApiConnected] = useState(false);
 
   useEffect(() => {
     try {
-      localStorage.setItem('instrumenta:theme', theme);
+      localStorage.setItem(STORAGE_KEYS.theme, theme);
     } catch {
       // ignore storage errors
     }
   }, [theme]);
+
+  useEffect(() => {
+    writeStorage(STORAGE_KEYS.bookmarks, bookmarks);
+  }, [bookmarks]);
+
+  useEffect(() => {
+    writeStorage(STORAGE_KEYS.subjects, subjects);
+  }, [subjects]);
+
+  useEffect(() => {
+    writeStorage(STORAGE_KEYS.attempts, attempts);
+  }, [attempts]);
 
   // Global keyboard shortcuts (Cmd/Ctrl+K or '/' for Search)
   useEffect(() => {
@@ -72,7 +118,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
 
-  // Load persisted data from SQLite API
+  // Load persisted data from SQLite/Express API if reachable, else remain in browser storage mode
   useEffect(() => {
     let active = true;
     (async () => {
@@ -110,86 +156,123 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const toggleBookmark = useCallback(
     async (item: Omit<BookmarkItem, 'createdAt'>) => {
       const exists = bookmarks.some((b) => b.id === item.id);
-      if (exists) {
+      if (apiConnected) {
         try {
-          const res = await api.deleteBookmark(item.id);
+          const res = exists
+            ? await api.deleteBookmark(item.id)
+            : await api.upsertBookmark(item);
           setBookmarks(res.items);
+          return;
         } catch {
-          setBookmarks((prev) => prev.filter((b) => b.id !== item.id));
-        }
-      } else {
-        try {
-          const res = await api.upsertBookmark(item);
-          setBookmarks(res.items);
-        } catch {
-          setBookmarks((prev) => [{ ...item, createdAt: new Date().toISOString() }, ...prev]);
+          // fall through to browser storage
         }
       }
+      setBookmarks((prev) =>
+        exists
+          ? prev.filter((b) => b.id !== item.id)
+          : [{ ...item, createdAt: new Date().toISOString() }, ...prev],
+      );
     },
-    [bookmarks],
+    [bookmarks, apiConnected],
   );
 
-  const removeBookmark = useCallback(async (id: string) => {
-    try {
-      const res = await api.deleteBookmark(id);
-      setBookmarks(res.items);
-    } catch {
+  const removeBookmark = useCallback(
+    async (id: string) => {
+      if (apiConnected) {
+        try {
+          const res = await api.deleteBookmark(id);
+          setBookmarks(res.items);
+          return;
+        } catch {
+          // fall through to browser storage
+        }
+      }
       setBookmarks((prev) => prev.filter((b) => b.id !== id));
-    }
-  }, []);
+    },
+    [apiConnected],
+  );
 
-  const saveSubject = useCallback(async (subject: AcademicSubject, isNew = false) => {
-    try {
-      const res = isNew
-        ? await api.createSubject(subject)
-        : await api.updateSubject(subject.id, subject);
-      setSubjects(res.subjects);
-    } catch {
+  const saveSubject = useCallback(
+    async (subject: AcademicSubject, isNew = false) => {
+      if (apiConnected) {
+        try {
+          const res = isNew
+            ? await api.createSubject(subject)
+            : await api.updateSubject(subject.id, subject);
+          setSubjects(res.subjects);
+          return;
+        } catch {
+          // fall through to browser storage
+        }
+      }
       setSubjects((prev) => {
         const exists = prev.some((s) => s.id === subject.id);
         return exists ? prev.map((s) => (s.id === subject.id ? subject : s)) : [...prev, subject];
       });
-    }
-  }, []);
+    },
+    [apiConnected],
+  );
 
-  const deleteSubject = useCallback(async (id: string) => {
-    try {
-      const res = await api.deleteSubject(id);
-      setSubjects(res.subjects);
-    } catch {
+  const deleteSubject = useCallback(
+    async (id: string) => {
+      if (apiConnected) {
+        try {
+          const res = await api.deleteSubject(id);
+          setSubjects(res.subjects);
+          return;
+        } catch {
+          // fall through to browser storage
+        }
+      }
       setSubjects((prev) => prev.filter((s) => s.id !== id));
-    }
-  }, []);
+    },
+    [apiConnected],
+  );
 
   const resetSubjects = useCallback(async () => {
-    try {
-      const res = await api.resetRoadmap();
-      setSubjects(res.subjects);
-    } catch {
-      setSubjects(DEFAULT_ACADEMIC_SUBJECTS);
+    if (apiConnected) {
+      try {
+        const res = await api.resetRoadmap();
+        setSubjects(res.subjects);
+        return;
+      } catch {
+        // fall through to browser storage
+      }
     }
-  }, []);
+    setSubjects(DEFAULT_ACADEMIC_SUBJECTS);
+  }, [apiConnected]);
 
-  const submitAttempt = useCallback(async (attempt: Omit<QuestionAttempt, 'answeredAt'>) => {
-    try {
-      const res = await api.recordAttempt(attempt);
-      setAttempts(res.attempts);
-    } catch {
+  const submitAttempt = useCallback(
+    async (attempt: Omit<QuestionAttempt, 'answeredAt'>) => {
+      if (apiConnected) {
+        try {
+          const res = await api.recordAttempt(attempt);
+          setAttempts(res.attempts);
+          return;
+        } catch {
+          // fall through to browser storage
+        }
+      }
       setAttempts((prev) => [
         ...prev.filter((a) => a.questionId !== attempt.questionId),
         { ...attempt, answeredAt: new Date().toISOString() },
       ]);
-    }
-  }, []);
+    },
+    [apiConnected],
+  );
 
   const resetProgress = useCallback(async () => {
-    try {
-      const res = await api.clearProgress();
-      setAttempts(res.attempts);
-    } catch {
-      setAttempts([]);
+    if (apiConnected) {
+      try {
+        const res = await api.clearProgress();
+        setAttempts(res.attempts);
+        return;
+      } catch {
+        // fall through to browser storage
+      }
     }
-  }, []);
+    setAttempts([]);
+  }, [apiConnected]);
 
   return (
     <AppContext.Provider

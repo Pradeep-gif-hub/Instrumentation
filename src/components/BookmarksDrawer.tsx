@@ -35,12 +35,12 @@ export function BookmarksDrawer() {
         </div>
 
         <div className="mt-3 flex items-center justify-between text-[11px] text-[var(--st-on-var)]">
-          <span>SQLite Storage Sync</span>
+          <span>Storage Sync</span>
           <span
             className="status"
-            style={{ '--tone': apiConnected ? 'var(--st-phosphor)' : 'var(--st-amber)' } as React.CSSProperties}
+            style={{ '--tone': apiConnected ? 'var(--st-phosphor)' : 'var(--st-cyan)' } as React.CSSProperties}
           >
-            {apiConnected ? 'DB Connected' : 'Local Fallback'}
+            {apiConnected ? 'SQLite DB Connected' : 'Browser Storage Active'}
           </span>
         </div>
 

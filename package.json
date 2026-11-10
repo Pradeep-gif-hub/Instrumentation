@@ -8,6 +8,7 @@
     "dev:web": "vite",
     "dev:api": "tsx watch server/index.ts",
     "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
     "start": "NODE_ENV=production tsx server/index.ts",
     "models:build": "node scripts/generate_glb_models.mjs",
     "typecheck": "tsc --noEmit"
