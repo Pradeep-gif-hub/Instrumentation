@@ -1,7 +1,7 @@
 import { useFrame } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import { CadPartGroup, useCadSim } from '../CadPart';
+import { CadPartGroup, useCadSim, useInstrumentFinish } from '../CadPart';
 import { HelicalTube, PbrMat } from '../primitives';
 
 export function LvdtAssembly() {
@@ -13,14 +13,14 @@ export function LvdtAssembly() {
       <CadPartGroup partId="lvdt_housing" basePos={[0, 0, 0]} explodeOffset={[0, 0.8, 0]} isCutawayShell>
         <mesh rotation={[0, 0, Math.PI / 2]}>
           <cylinderGeometry args={[0.58, 0.58, 2.3, 36]} />
-          <PbrMat preset="ss316" />
+          <PbrMat preset="blueHousing" />
         </mesh>
       </CadPartGroup>
 
       <CadPartGroup partId="lvdt_former" basePos={[0, 0, 0]} explodeOffset={[0, -0.75, 0]} isCutawayShell>
         <mesh rotation={[0, 0, Math.PI / 2]}>
           <cylinderGeometry args={[0.46, 0.46, 2.1, 32]} />
-          <PbrMat preset="peek" />
+          <PbrMat preset="alumina" />
         </mesh>
       </CadPartGroup>
 
@@ -48,11 +48,11 @@ export function LvdtAssembly() {
       <CadPartGroup partId="lvdt_core_rod" basePos={[coreShift, 0, 0]} explodeOffset={[0, 0, 0.9]}>
         <mesh rotation={[0, 0, Math.PI / 2]}>
           <cylinderGeometry args={[0.17, 0.17, 0.95, 28]} />
-          <PbrMat preset="ssDark" />
+          <PbrMat preset="ss316" />
         </mesh>
         <mesh position={[-0.85, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
           <cylinderGeometry args={[0.055, 0.055, 1.35, 20]} />
-          <PbrMat preset="chrome" />
+          <PbrMat preset="brass" />
         </mesh>
       </CadPartGroup>
     </group>
@@ -75,7 +75,7 @@ export function PotentiometerAssembly() {
       <CadPartGroup partId="pot_track" basePos={[0, 0.14, 0]} explodeOffset={[0, 0.25, -0.4]}>
         <mesh>
           <boxGeometry args={[1.95, 0.08, 0.28]} />
-          <PbrMat preset="alumina" colorOverride="#9a3412" />
+          <PbrMat preset="alnicoRed" />
         </mesh>
         {[-0.95, 0.95].map((x, idx) => (
           <mesh key={idx} position={[x, 0.08, 0]}>
@@ -183,15 +183,16 @@ export function CapacitiveDisplacementAssembly() {
 
 export function OpticalEncoderAssembly() {
   const sim = useCadSim();
+  const finish = useInstrumentFinish();
   const discRef = useRef<THREE.Group>(null);
   const discTex = useMemo(() => {
     const c = document.createElement('canvas');
     c.width = 512;
     c.height = 512;
     const ctx = c.getContext('2d')!;
-    ctx.fillStyle = '#0f172a';
+    ctx.fillStyle = '#18344E';
     ctx.fillRect(0, 0, 512, 512);
-    ctx.fillStyle = '#e2e8f0';
+    ctx.fillStyle = finish.roles.ceramic.color;
     for (let i = 0; i < 36; i++) {
       if (i % 2 === 0) {
         ctx.beginPath();
@@ -201,14 +202,14 @@ export function OpticalEncoderAssembly() {
         ctx.fill();
       }
     }
-    ctx.fillStyle = '#334155';
+    ctx.fillStyle = finish.roles.structural.color;
     ctx.beginPath();
     ctx.arc(256, 256, 85, 0, Math.PI * 2);
     ctx.fill();
     const tex = new THREE.CanvasTexture(c);
     tex.colorSpace = THREE.SRGBColorSpace;
     return tex;
-  }, []);
+  }, [finish.roles.ceramic.color, finish.roles.structural.color]);
   useEffect(() => () => discTex.dispose(), [discTex]);
 
   useFrame((_, delta) => {
@@ -244,9 +245,9 @@ export function OpticalEncoderAssembly() {
           <boxGeometry args={[0.42, 0.16, 0.18]} />
           <PbrMat preset="blueHousing" />
         </mesh>
-        <mesh userData={{ selfEmissive: true }} position={[0, -0.1, 0]}>
+        <mesh position={[0, -0.1, 0]}>
           <sphereGeometry args={[0.055, 16, 16]} />
-          <meshStandardMaterial color="#ef4444" emissive="#ef4444" emissiveIntensity={1.2} />
+          <PbrMat preset="alnicoRed" />
         </mesh>
       </CadPartGroup>
 
@@ -347,7 +348,7 @@ export function AccelerometerAssembly() {
       <CadPartGroup partId="acc_pzt_crystals" basePos={[0, -0.18, 0]} explodeOffset={[-0.7, -0.15, 0]}>
         <mesh>
           <cylinderGeometry args={[0.36, 0.36, 0.22, 28]} />
-          <PbrMat preset="alumina" colorOverride="#facc15" />
+          <PbrMat preset="alnicoRed" />
         </mesh>
       </CadPartGroup>
 

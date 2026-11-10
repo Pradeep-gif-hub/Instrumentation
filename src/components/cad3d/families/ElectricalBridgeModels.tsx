@@ -1,7 +1,7 @@
 import { useFrame } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import { CadPartGroup, useCadSim } from '../CadPart';
+import { CadPartGroup, useCadSim, useInstrumentFinish } from '../CadPart';
 import { buildCroScreenTexture, buildDialFaceTexture, buildLcdDisplayTexture } from '../materials';
 import { DialPointer, HelicalTube, PbrMat } from '../primitives';
 
@@ -44,7 +44,7 @@ export function PmmcAssembly() {
           <boxGeometry args={[0.72, 0.68, 0.48]} />
           <PbrMat preset="copper" />
         </mesh>
-        <HelicalTube position={[0, 0, 0.3]} radius={0.14} height={0.05} turns={3} tubeRadius={0.01} preset="bronze" />
+        <HelicalTube position={[0, 0, 0.3]} radius={0.14} height={0.05} turns={3} tubeRadius={0.01} preset="brass" />
       </CadPartGroup>
 
       <CadPartGroup partId="pm_scale" basePos={[0, 0.68, 0.16]} explodeOffset={[0, 0.75, 0.75]}>
@@ -160,11 +160,12 @@ export function WattmeterAssembly() {
 
 export function EnergyMeterAssembly() {
   const sim = useCadSim();
+  const finish = useInstrumentFinish();
   const discRef = useRef<THREE.Mesh>(null);
   const regTex = useMemo(() => {
     const kwh = (1284 + sim.primaryNorm * 45).toFixed(1);
-    return buildLcdDisplayTexture(`${kwh} kWh`, '3200 imp / kWh', '#1e293b', '#f8fafc');
-  }, [sim.primaryNorm]);
+    return buildLcdDisplayTexture(`${kwh} kWh`, '3200 imp / kWh', '#102436', finish.roles.ceramic.color);
+  }, [sim.primaryNorm, finish.roles.ceramic.color]);
   useEffect(() => () => regTex.dispose(), [regTex]);
 
   useFrame((_, delta) => {
@@ -238,9 +239,10 @@ export function EnergyMeterAssembly() {
 
 export function DmmAssembly() {
   const sim = useCadSim();
+  const finish = useInstrumentFinish();
   const modeIdx = sim.secondaryNorm > 0.66 ? 2 : sim.secondaryNorm > 0.33 ? 1 : 0;
   const valStr = modeIdx === 0 ? `${sim.primaryValue.toFixed(2)} V` : modeIdx === 1 ? `${(sim.primaryNorm * 20).toFixed(2)} mA` : `${(sim.primaryNorm * 1000).toFixed(1)} Ω`;
-  const lcdTex = useMemo(() => buildLcdDisplayTexture(valStr, 'TRUE RMS · AUTO RANGE', '#18241d', '#a3e635'), [valStr]);
+  const lcdTex = useMemo(() => buildLcdDisplayTexture(valStr, 'TRUE RMS · AUTO RANGE', '#102436', finish.roles.ceramic.color), [valStr, finish.roles.ceramic.color]);
   useEffect(() => () => lcdTex.dispose(), [lcdTex]);
 
   return (
@@ -278,7 +280,7 @@ export function DmmAssembly() {
         {[-0.4, -0.13, 0.13, 0.4].map((x, idx) => (
           <mesh key={idx} position={[x, 0, 0]} rotation={[Math.PI / 2, 0, 0]}>
             <cylinderGeometry args={[0.085, 0.085, 0.12, 18]} />
-            <meshStandardMaterial color={idx === 1 ? '#111827' : '#dc2626'} />
+            <PbrMat preset={idx === 1 ? 'anodizedDark' : 'alnicoRed'} />
           </mesh>
         ))}
       </CadPartGroup>
@@ -307,9 +309,9 @@ export function CroCrtAssembly() {
           <cylinderGeometry args={[0.14, 0.14, 0.55, 22]} />
           <PbrMat preset="ss316" />
         </mesh>
-        <mesh userData={{ selfEmissive: true }} position={[0, 0, -0.26]}>
+        <mesh position={[0, 0, -0.26]}>
           <sphereGeometry args={[0.075, 16, 16]} />
-          <meshStandardMaterial color="#f97316" emissive="#ea580c" emissiveIntensity={1.2} />
+          <PbrMat preset="alnicoRed" />
         </mesh>
       </CadPartGroup>
 
@@ -497,9 +499,9 @@ export function CtAssembly() {
         <HelicalTube position={[0.45, 0, 0]} radius={0.21} height={0.5} turns={8} tubeRadius={0.018} preset="copper" />
       </CadPartGroup>
       <CadPartGroup partId="ct_primary_bar" basePos={[0, 0, 0]} explodeOffset={[0, 0, 0.9]}>
-        <mesh userData={{ selfEmissive: true }} rotation={[Math.PI / 2, 0, 0]}>
+        <mesh rotation={[Math.PI / 2, 0, 0]}>
           <cylinderGeometry args={[0.24, 0.24, 1.85, 24]} />
-          <meshStandardMaterial color="#c96b3e" emissive="#c2410c" emissiveIntensity={sim.primaryNorm * 0.45} metalness={0.85} roughness={0.25} />
+          <PbrMat preset="copper" />
         </mesh>
       </CadPartGroup>
     </group>
@@ -532,9 +534,9 @@ export function PtAssembly() {
       <CadPartGroup partId="pt_hv_bushings" basePos={[0, 0.65, 0]} explodeOffset={[0, 0.95, 0]}>
         {[-0.36, 0.36].map((x, idx) => (
           <group key={idx} position={[x, 0, 0]}>
-            <mesh userData={{ selfEmissive: true }}>
+            <mesh>
               <cylinderGeometry args={[0.14, 0.18, 0.95, 20]} />
-              <meshStandardMaterial color="#78350f" emissive="#d97706" emissiveIntensity={sim.primaryNorm * 0.25} roughness={0.25} />
+              <PbrMat preset="alumina" />
             </mesh>
           </group>
         ))}

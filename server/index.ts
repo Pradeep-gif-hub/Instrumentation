@@ -1,11 +1,18 @@
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import cors from 'cors';
 import express from 'express';
 import { InstrumentaDatabase } from './db/database.ts';
+import { handleSuggestionHttp } from './suggestionHandler.ts';
 import type { AcademicSubject } from '../src/types/engineering.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const envPath = path.resolve(__dirname, '../.env');
+if (fs.existsSync(envPath) && typeof process.loadEnvFile === 'function') {
+  process.loadEnvFile(envPath);
+}
+
 const PORT = Number(process.env.PORT ?? 4100);
 
 const app = express();
@@ -112,6 +119,23 @@ app.post('/api/progress', (req, res) => {
 
 app.delete('/api/progress', (_req, res) => {
   res.json({ attempts: db.clearQuestionAttempts() });
+});
+
+// UI Preferences (Navigation Tree state)
+app.get('/api/preferences/:key', (req, res) => {
+  const value = db.getPreference(req.params.key);
+  res.json({ key: req.params.key, value });
+});
+
+app.put('/api/preferences/:key', (req, res) => {
+  const value = req.body?.value ?? null;
+  db.setPreference(req.params.key, value);
+  res.json({ key: req.params.key, value });
+});
+
+// Instrument Suggestions (shared validation, rate limit, honeypot & Resend email sender)
+app.all('/api/suggestions', async (req, res) => {
+  await handleSuggestionHttp(req, res);
 });
 
 if (process.env.NODE_ENV === 'production') {

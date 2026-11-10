@@ -1,4 +1,5 @@
 import type { CurriculumSubjectDetail } from '@/types/curriculum';
+import { NITJ_SIGNAL_PROCESSING } from './signalProcessing';
 
 export const SEM4_SUBJECTS: CurriculumSubjectDetail[] = [
   // =========================================================================
@@ -855,4 +856,5 @@ export const SEM4_SUBJECTS: CurriculumSubjectDetail[] = [
       },
     ],
   },
+  NITJ_SIGNAL_PROCESSING,
 ];

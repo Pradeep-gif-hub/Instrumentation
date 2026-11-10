@@ -20,14 +20,14 @@ export function MermaidDiagram({ title, code }: { title?: string; code: string }
               ? {
                   primaryColor: '#ffffff',
                   primaryTextColor: '#141414',
-                  primaryBorderColor: '#4a7300',
+                  primaryBorderColor: '#2F5F8A',
                   lineColor: '#525252',
                   secondaryColor: '#f2f2f2',
                 }
               : {
                   primaryColor: '#2b2b2b',
                   primaryTextColor: '#f4f4f4',
-                  primaryBorderColor: '#c5f467',
+                  primaryBorderColor: '#7FB3DE',
                   lineColor: '#a6a6a6',
                   secondaryColor: '#333333',
                   tertiaryColor: '#1a1a1a',

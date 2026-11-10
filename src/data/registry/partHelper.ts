@@ -70,9 +70,7 @@ export interface InstrumentEntrySeed {
 
 export function buildProceduralInstrument(seed: InstrumentEntrySeed): CanonicalInstrumentEntry {
   const has3D = Boolean(seed.proceduralKey);
-  const route = seed.existingTopicRef
-    ? `/instrumentation/${seed.existingTopicRef.category}/${seed.existingTopicRef.slug}`
-    : `/lab/${seed.id}`;
+  const route = `/instrument/${seed.id}`;
 
   return {
     id: seed.id,

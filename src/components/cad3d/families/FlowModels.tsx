@@ -27,9 +27,9 @@ export function VenturiAssembly() {
           <cylinderGeometry args={[0.21, 0.21, 0.42, 32]} />
           <PbrMat preset="brass" />
         </mesh>
-        <mesh userData={{ selfEmissive: true }} position={[0, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+        <mesh position={[0, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
           <cylinderGeometry args={[0.16, 0.16, 0.44, 24]} />
-          <meshStandardMaterial color="#38bdf8" emissive="#0284c7" emissiveIntensity={0.2 + sim.primaryNorm * 0.5} />
+          <PbrMat preset="blueHousing" />
         </mesh>
       </CadPartGroup>
 
@@ -111,11 +111,11 @@ export function RotameterAssembly() {
       <CadPartGroup partId="rm_end_blocks" basePos={[0, 0, 0]} explodeOffset={[0, -0.65, 0]}>
         <mesh position={[0, 0.98, 0]}>
           <boxGeometry args={[0.72, 0.28, 0.72]} />
-          <PbrMat preset="anodizedDark" />
+          <PbrMat preset="blueHousing" />
         </mesh>
         <mesh position={[0, -0.98, 0]}>
           <boxGeometry args={[0.72, 0.28, 0.72]} />
-          <PbrMat preset="anodizedDark" />
+          <PbrMat preset="blueHousing" />
         </mesh>
         {[-0.28, 0.28].map((x, idx) => (
           <mesh key={idx} position={[x, 0, -0.26]}>
@@ -142,7 +142,7 @@ export function RotameterAssembly() {
       <CadPartGroup partId="rm_float_bob" basePos={[0, floatY, 0]} explodeOffset={[-0.65, 0.2, 0.4]}>
         <mesh>
           <cylinderGeometry args={[0.15, 0.075, 0.22, 24]} />
-          <PbrMat preset="ss316" colorOverride="#f97316" />
+          <PbrMat preset="ss316" />
         </mesh>
         <mesh position={[0, 0.13, 0]}>
           <cylinderGeometry args={[0.16, 0.16, 0.04, 24]} />
@@ -259,13 +259,13 @@ export function UltrasonicFlowAssembly() {
       </CadPartGroup>
 
       <CadPartGroup partId="uf_beam_ray" basePos={[0, -0.2, 0]} explodeOffset={[0, 0, 0.7]}>
-        <mesh userData={{ selfEmissive: true }} position={[-0.31, 0, 0]} rotation={[0, 0, 0.72]}>
+        <mesh position={[-0.31, 0, 0]} rotation={[0, 0, 0.72]}>
           <cylinderGeometry args={[0.03, 0.03, 0.92, 14]} />
-          <meshStandardMaterial color="#38bdf8" emissive="#0ea5e9" emissiveIntensity={0.4 + sim.primaryNorm * 0.8} />
+          <PbrMat preset="alnicoRed" />
         </mesh>
-        <mesh userData={{ selfEmissive: true }} position={[0.31, 0, 0]} rotation={[0, 0, -0.72]}>
+        <mesh position={[0.31, 0, 0]} rotation={[0, 0, -0.72]}>
           <cylinderGeometry args={[0.03, 0.03, 0.92, 14]} />
-          <meshStandardMaterial color="#38bdf8" emissive="#0ea5e9" emissiveIntensity={0.4 + sim.primaryNorm * 0.8} />
+          <PbrMat preset="alnicoRed" />
         </mesh>
       </CadPartGroup>
 
@@ -372,9 +372,9 @@ export function VortexFlowAssembly() {
       <CadPartGroup partId="vx_vortex_street" basePos={[0.3, -0.25, 0]} explodeOffset={[0.4, 0, 0.6]}>
         <group ref={trailRef}>
           {[0, 0.25, 0.5].map((x, idx) => (
-            <mesh userData={{ selfEmissive: true }} key={idx} position={[x, 0, 0]}>
+            <mesh key={idx} position={[x, 0, 0]}>
               <sphereGeometry args={[0.07, 16, 16]} />
-              <meshStandardMaterial color="#38bdf8" emissive="#0284c7" emissiveIntensity={0.6} />
+              <PbrMat preset="blueHousing" />
             </mesh>
           ))}
         </group>
@@ -490,9 +490,9 @@ export function ThermalFlowAssembly() {
       </CadPartGroup>
 
       <CadPartGroup partId="thf_heated_rtd" basePos={[-0.08, -0.78, 0]} explodeOffset={[-0.45, -0.5, 0.3]}>
-        <mesh userData={{ selfEmissive: true }}>
+        <mesh>
           <cylinderGeometry args={[0.04, 0.04, 0.42, 16]} />
-          <meshStandardMaterial color="#f97316" emissive="#ea580c" emissiveIntensity={0.35 + sim.primaryNorm * 1.1} />
+          <PbrMat preset="alnicoRed" />
         </mesh>
       </CadPartGroup>
 
@@ -527,9 +527,9 @@ export function PitotTubeAssembly() {
           <cylinderGeometry args={[0.095, 0.095, 1.32, 24]} />
           <PbrMat preset="ss316" />
         </mesh>
-        <mesh userData={{ selfEmissive: true }} position={[-0.95, -0.2, 0]} rotation={[0, 0, Math.PI / 2]}>
+        <mesh position={[-0.95, -0.2, 0]} rotation={[0, 0, Math.PI / 2]}>
           <cylinderGeometry args={[0.05, 0.05, 0.08, 16]} />
-          <meshStandardMaterial color="#ef4444" emissive="#dc2626" emissiveIntensity={0.35 + sim.primaryNorm * 0.65} />
+          <PbrMat preset="alnicoRed" />
         </mesh>
       </CadPartGroup>
 

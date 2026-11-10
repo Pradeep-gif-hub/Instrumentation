@@ -103,12 +103,12 @@ export function InterviewPrepPage() {
     <div className="mx-auto flex max-w-[1440px] flex-col gap-5">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="eyebrow text-[var(--st-cyan)]">TECHNICAL INTERVIEW &amp; CORE PLACEMENT ENGINE</p>
-          <h1 className="text-2xl font-semibold tracking-tight text-[var(--st-on)]">
+          <p className="eyebrow">Technical interview practice</p>
+          <h1 className="text-[28px] font-semibold text-[var(--st-on)]">
             Interview Preparation &amp; Core Industry Tracks
           </h1>
-          <p className="muted mt-1 max-w-3xl text-sm">
-            Practice graded MCQ, numerical, scenario, and field troubleshooting questions persisted to SQLite, plus dedicated Oil &amp; Gas and Automation OEM preparation guides.
+          <p className="muted mt-1 prose-measure text-[16px]">
+            Practice graded multiple-choice, numerical, scenario, and field troubleshooting questions, plus Oil &amp; Gas and Automation industry guides.
           </p>
         </div>
 
@@ -158,26 +158,30 @@ export function InterviewPrepPage() {
         <>
           {/* Score & Progress Banner */}
           <div className="grid gap-3 sm:grid-cols-4">
-            <div className="glass p-4 bg-[var(--st-lime)]! text-[#07090e]">
-              <p className="eyebrow text-[#07090e]/75!">Quiz Accuracy</p>
-              <p className="mt-1 text-2xl font-semibold">
+            <div className="glass relative overflow-hidden p-4">
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-[var(--st-accent)]"
+              />
+              <p className="eyebrow">Quiz accuracy</p>
+              <p className="mt-1 text-[28px] font-semibold text-[var(--st-on)]">
                 {attempts.length > 0 ? `${Math.round((correctCount / attempts.length) * 100)}%` : '—'}
               </p>
             </div>
             <div className="glass p-4">
               <p className="eyebrow">Attempted</p>
-              <p className="mt-1 text-2xl font-semibold text-[var(--st-on)]">
+              <p className="mt-1 text-[28px] font-semibold text-[var(--st-on)]">
                 {attempts.length} / {INTERVIEW_QUESTION_BANK.length}
               </p>
             </div>
             <div className="glass p-4">
-              <p className="eyebrow">Correctly Solved</p>
-              <p className="mt-1 text-2xl font-semibold text-[var(--st-phosphor)]">{correctCount}</p>
+              <p className="eyebrow">Correctly solved</p>
+              <p className="mt-1 text-[28px] font-semibold text-[var(--st-on)]">{correctCount}</p>
             </div>
             <div className="glass flex items-center justify-between p-4">
               <div>
-                <p className="eyebrow">Reset Score</p>
-                <p className="muted mt-1 text-xs">Clear SQLite history</p>
+                <p className="eyebrow">Reset score</p>
+                <p className="muted mt-1 text-[14px]">Clear saved answers</p>
               </div>
               <button
                 type="button"
@@ -198,7 +202,7 @@ export function InterviewPrepPage() {
           {/* Multi-Dimensional Filters */}
           <div className="glass flex flex-wrap items-center gap-3 p-4">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="eyebrow">DIFFICULTY:</span>
+              <span className="eyebrow">Difficulty:</span>
               <div className="seg">
                 {(['All', 'Beginner', 'Intermediate', 'Advanced', 'Industry-Oriented'] as const).map((d) => (
                   <button
@@ -214,11 +218,11 @@ export function InterviewPrepPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <span className="eyebrow">TYPE:</span>
+              <span className="eyebrow">Type:</span>
               <select
                 value={kindFilter}
                 onChange={(e) => setKindFilter(e.target.value as QuestionKind | 'All')}
-                className="field-rect w-44!"
+                className="h-[39px] w-44 cursor-pointer rounded-xl border border-[color-mix(in_srgb,var(--st-on)_18%,transparent)] bg-[var(--st-1)] px-3.5 text-[14px] text-[var(--st-on)] outline-none transition hover:border-[color-mix(in_srgb,var(--st-on)_40%,transparent)] focus:border-[var(--st-accent)]"
                 aria-label="Filter by question format"
               >
                 <option value="All">All Formats</option>
@@ -232,11 +236,11 @@ export function InterviewPrepPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <span className="eyebrow">SUBJECT:</span>
+              <span className="eyebrow">Subject:</span>
               <select
                 value={subjectFilter}
                 onChange={(e) => setSubjectFilter(e.target.value)}
-                className="field-rect w-52!"
+                className="h-[39px] w-52 cursor-pointer rounded-xl border border-[color-mix(in_srgb,var(--st-on)_18%,transparent)] bg-[var(--st-1)] px-3.5 text-[14px] text-[var(--st-on)] outline-none transition hover:border-[color-mix(in_srgb,var(--st-on)_40%,transparent)] focus:border-[var(--st-accent)]"
                 aria-label="Filter by engineering subject"
               >
                 <option value="All">All Subjects</option>
@@ -270,20 +274,28 @@ export function InterviewPrepPage() {
                 <article key={q.id} className="glass space-y-3 p-5">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="mono text-xs font-semibold text-[var(--st-cyan)]">Q{idx + 1}</span>
-                      <span className="pill mono text-[10px]">{q.difficulty}</span>
-                      <span className="pill mono text-[10px]">{q.kind}</span>
-                      <span className="pill text-[10px]">{q.subject}</span>
-                      <span className="muted mono text-[10px]">{q.sourceTag}</span>
+                      <span className="text-[14px] font-semibold text-[var(--st-accent-text)]">Q{idx + 1}</span>
+                      <span className="pill text-[14px]">{q.difficulty}</span>
+                      <span className="pill text-[14px]">{q.kind}</span>
+                      <span className="pill text-[14px]">{q.subject}</span>
+                      <span className="muted text-[14px]">{q.sourceTag}</span>
                     </div>
 
                     <div className="flex items-center gap-2">
                       {attempt && (
                         <span
                           className="status"
-                          style={{
-                            '--tone': attempt.isCorrect ? 'var(--st-phosphor)' : 'var(--st-crimson)',
-                          } as React.CSSProperties}
+                          style={
+                            attempt.isCorrect
+                              ? ({
+                                  background: 'color-mix(in srgb, var(--st-accent) 15%, transparent)',
+                                  borderColor: 'color-mix(in srgb, var(--st-accent) 35%, transparent)',
+                                  color: 'var(--st-accent-text)',
+                                } as React.CSSProperties)
+                              : ({
+                                  '--tone': 'var(--st-crimson)',
+                                } as React.CSSProperties)
+                          }
                         >
                           {attempt.isCorrect ? 'Solved' : 'Review Needed'}
                         </span>
@@ -299,7 +311,7 @@ export function InterviewPrepPage() {
                             route: `/interview?tab=bank&q=${q.id}`,
                           })
                         }
-                        className={`icon-btn size-8! ${saved ? 'border-[var(--st-cyan)]! text-[var(--st-cyan)]!' : ''}`}
+                        className={`icon-btn size-8! ${saved ? 'border-[var(--st-accent)]! text-[var(--st-accent-text)]!' : ''}`}
                         aria-label="Bookmark question"
                       >
                         <Bookmark className="size-3.5" />
@@ -307,7 +319,7 @@ export function InterviewPrepPage() {
                     </div>
                   </div>
 
-                  <h2 className="text-sm font-semibold leading-relaxed text-[var(--st-on)] md:text-base">
+                  <h2 className="text-[16px] font-semibold leading-relaxed text-[var(--st-on)]">
                     {q.question}
                   </h2>
 
@@ -320,7 +332,7 @@ export function InterviewPrepPage() {
                         let style = 'border-[var(--st-line)] bg-[var(--st-2)] hover:border-[var(--st-edge)]';
                         if (isRevealed) {
                           if (isRight) {
-                            style = 'border-[var(--st-phosphor)] bg-[color-mix(in_srgb,var(--st-phosphor)_14%,transparent)]';
+                            style = 'border-[var(--st-accent)] bg-[color-mix(in_srgb,var(--st-accent)_15%,transparent)]';
                           } else if (chosen) {
                             style = 'border-[var(--st-crimson)] bg-[color-mix(in_srgb,var(--st-crimson)_14%,transparent)]';
                           }
@@ -330,15 +342,15 @@ export function InterviewPrepPage() {
                             key={opt}
                             type="button"
                             onClick={() => gradeMcq(q, optIdx)}
-                            className={`flex cursor-pointer items-center justify-between gap-2 rounded-2xl border px-4 py-2.5 text-left text-xs transition ${style}`}
+                            className={`flex cursor-pointer items-center justify-between gap-2 rounded-2xl border px-4 py-2.5 text-left text-[14px] transition ${style}`}
                           >
                             <span>
-                              <span className="mono mr-2 font-semibold text-[var(--st-outline)]">
+                              <span className="mr-2 font-semibold text-[var(--st-outline)]">
                                 {String.fromCharCode(65 + optIdx)}.
                               </span>
                               {opt}
                             </span>
-                            {isRevealed && isRight && <CheckCircle2 className="size-4 shrink-0 text-[var(--st-phosphor)]" />}
+                            {isRevealed && isRight && <CheckCircle2 className="size-4 shrink-0 text-[var(--st-accent)]" />}
                             {isRevealed && chosen && !isRight && <XCircle className="size-4 shrink-0 text-[var(--st-crimson)]" />}
                           </button>
                         );
@@ -357,7 +369,7 @@ export function InterviewPrepPage() {
                         placeholder={`Enter value in ${q.numericUnit ?? 'units'}…`}
                         className="field-rect w-56!"
                       />
-                      <span className="mono text-xs text-[var(--st-on-var)]">{q.numericUnit}</span>
+                      <span className="text-[14px] text-[var(--st-on-var)]">{q.numericUnit}</span>
                       <button type="button" onClick={() => gradeNumeric(q)} className="btn primary py-1.5!">
                         Check Answer
                       </button>
@@ -373,7 +385,7 @@ export function InterviewPrepPage() {
                         className="btn py-1.5!"
                       >
                         <HelpCircle className="size-3.5" />
-                        {isRevealed ? 'Hide Solution' : 'Reveal Engineering Explanation'}
+                        {isRevealed ? 'Hide Solution' : 'Show answer'}
                       </button>
                       {isRevealed && (
                         <>
@@ -400,12 +412,12 @@ export function InterviewPrepPage() {
 
                   {/* Engineering Principle Explanation */}
                   {isRevealed && (
-                    <div className="sub space-y-2 border-[color-mix(in_srgb,var(--st-cyan)_30%,transparent)] p-4 text-xs">
-                      <p className="font-semibold text-[var(--st-phosphor)]">
+                    <div className="sub space-y-2 border-[color-mix(in_srgb,var(--st-accent)_30%,transparent)] p-4 text-[14px]">
+                      <p className="font-semibold text-[var(--st-accent-text)]">
                         Answer: {q.modelAnswer}
                       </p>
                       <p className="leading-relaxed text-[var(--st-on)]">
-                        <strong className="text-[var(--st-cyan)]">Underlying Engineering Principle: </strong>
+                        <strong className="text-[var(--st-accent-text)]">Why it works: </strong>
                         {q.engineeringPrinciple}
                       </p>
                       {q.formulaLatex && (
@@ -423,7 +435,7 @@ export function InterviewPrepPage() {
       ) : (
         /* CORE INDUSTRY PREPARATION TRACKS (9 OIL & GAS + 8 AUTOMATION OEMs) */
         <>
-          <div className="sub flex items-start gap-3 px-4 py-3 text-xs">
+          <div className="sub flex items-start gap-3 px-4 py-3 text-[14px]">
             <AlertCircle className="mt-0.5 size-4 shrink-0 text-[var(--st-amber)]" />
             <p className="text-[var(--st-on-var)]">{INDUSTRY_PREP_DISCLAIMER}</p>
           </div>
@@ -461,13 +473,13 @@ export function InterviewPrepPage() {
                   onClick={() => setSelectedCompanyId(c.id)}
                   className={`flex w-full cursor-pointer items-center justify-between gap-2 rounded-2xl px-3.5 py-2.5 text-left transition ${
                     activeCompany?.id === c.id
-                      ? 'bg-[var(--st-3)] text-[var(--st-cyan)] ring-1 ring-[var(--st-cyan)]/40'
+                      ? 'bg-[var(--st-3)] text-[var(--st-accent-text)] ring-1 ring-[var(--st-accent)]/40'
                       : 'text-[var(--st-on-var)] hover:bg-[var(--st-2)] hover:text-[var(--st-on)]'
                   }`}
                 >
                   <div className="min-w-0">
-                    <p className="truncate text-xs font-semibold text-[var(--st-on)]">{c.name}</p>
-                    <p className="mono text-[10px] uppercase">
+                    <p className="truncate text-[14px] font-semibold text-[var(--st-on)]">{c.name}</p>
+                    <p className="text-[14px] text-[var(--st-outline)]">
                       {c.sector === 'oil-gas' ? 'Oil & Gas' : 'Automation OEM'}
                     </p>
                   </div>
@@ -480,31 +492,31 @@ export function InterviewPrepPage() {
               <section className="glass space-y-4 p-6">
                 <div className="border-b border-[var(--st-line)] pb-4">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="status" style={{ '--tone': 'var(--st-cyan)' } as React.CSSProperties}>
-                      {activeCompany.sector === 'oil-gas' ? 'OIL & GAS TRACK' : 'AUTOMATION OEM TRACK'}
+                    <span className="status" style={{ '--tone': 'var(--st-accent)' } as React.CSSProperties}>
+                      {activeCompany.sector === 'oil-gas' ? 'Oil & Gas track' : 'Automation OEM track'}
                     </span>
                   </div>
-                  <h2 className="mt-2 text-xl font-semibold text-[var(--st-on)]">{activeCompany.name}</h2>
-                  <p className="muted text-sm">{activeCompany.roleFocus}</p>
+                  <h2 className="mt-2 text-[20px] font-semibold text-[var(--st-on)]">{activeCompany.name}</h2>
+                  <p className="muted text-[14px]">{activeCompany.roleFocus}</p>
                 </div>
 
                 <div className="space-y-2">
-                  <p className="eyebrow">PUBLICLY DOCUMENTED DOMAIN FOCUS</p>
-                  <p className="text-xs leading-relaxed text-[var(--st-on)]">{activeCompany.publiclyKnownFocus}</p>
+                  <p className="eyebrow">Company focus</p>
+                  <p className="text-[16px] leading-relaxed text-[var(--st-on)]">{activeCompany.publiclyKnownFocus}</p>
                 </div>
 
                 <div className="grid gap-3 md:grid-cols-2">
                   <div className="sub space-y-2 p-4">
-                    <p className="eyebrow text-[var(--st-cyan)]">RELEVANT TECHNOLOGIES</p>
-                    <ul className="space-y-1.5 text-xs text-[var(--st-on)]">
+                    <p className="eyebrow">Relevant technologies</p>
+                    <ul className="space-y-1.5 text-[14px] text-[var(--st-on)]">
                       {activeCompany.coreTechnologies.map((t) => (
                         <li key={t}>• {t}</li>
                       ))}
                     </ul>
                   </div>
                   <div className="sub space-y-2 p-4">
-                    <p className="eyebrow text-[var(--st-iris)]">PRIORITY TECHNICAL SUBJECTS</p>
-                    <ul className="space-y-1.5 text-xs text-[var(--st-on)]">
+                    <p className="eyebrow">Priority technical subjects</p>
+                    <ul className="space-y-1.5 text-[14px] text-[var(--st-on)]">
                       {activeCompany.keySubjects.map((s) => (
                         <li key={s}>• {s}</li>
                       ))}
@@ -513,24 +525,22 @@ export function InterviewPrepPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <p className="eyebrow text-[var(--st-amber)]">
-                    EDITORIAL PRACTICE QUESTIONS (CONCEPTUAL &amp; PLANT INTERVIEW DRILLS)
-                  </p>
+                  <p className="eyebrow">Practice questions</p>
                   {activeCompany.practiceQuestions.map((pq) => (
-                    <div key={pq.question} className="sub space-y-1.5 p-4 text-xs">
-                      <span className="pill mono text-[10px]">{pq.topic}</span>
+                    <div key={pq.question} className="sub space-y-1.5 p-4 text-[14px]">
+                      <span className="pill text-[14px]">{pq.topic}</span>
                       <p className="font-semibold text-[var(--st-on)]">{pq.question}</p>
                       <p className="text-[var(--st-on-var)]">
-                        <strong className="text-[var(--st-phosphor)]">Model Guideline: </strong>
+                        <strong className="text-[var(--st-accent-text)]">Guideline answer: </strong>
                         {pq.guidelineAnswer}
                       </p>
                     </div>
                   ))}
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--st-line)] pt-3 text-[11px] text-[var(--st-outline)]">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--st-line)] pt-3 text-[14px] text-[var(--st-outline)]">
                   <span>{activeCompany.sourceDisclosure}</span>
-                  <Link to="/instrumentation" className="mono text-[var(--st-cyan)] hover:underline">
+                  <Link to="/browse" className="font-semibold text-[var(--st-accent-text)] hover:underline">
                     Review Field Instruments →
                   </Link>
                 </div>

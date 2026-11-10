@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { PALETTE_3D } from '@/3d/palette';
 
 export const CAD_CLIP_PLANE = new THREE.Plane(new THREE.Vector3(0, 0, -1), 0.005);
 
@@ -12,30 +13,38 @@ export interface MaterialPreset {
 }
 
 export const MAT_PRESETS = {
-  ss316: { color: '#c4ccd4', metalness: 0.86, roughness: 0.25 },
-  ssDark: { color: '#78828e', metalness: 0.82, roughness: 0.34 },
-  chrome: { color: '#eef2f6', metalness: 0.94, roughness: 0.11 },
-  brass: { color: '#cfa548', metalness: 0.85, roughness: 0.28 },
-  bronze: { color: '#9c6b3a', metalness: 0.8, roughness: 0.34 },
-  copper: { color: '#c96b3e', metalness: 0.85, roughness: 0.28 },
-  gold: { color: '#ebb844', metalness: 0.94, roughness: 0.16 },
-  castIron: { color: '#3b424c', metalness: 0.56, roughness: 0.48 },
-  anodizedDark: { color: '#21262d', metalness: 0.42, roughness: 0.54 },
-  blueHousing: { color: '#1e4e79', metalness: 0.38, roughness: 0.42 },
-  yellowSafety: { color: '#d49a17', metalness: 0.18, roughness: 0.45 },
-  alnicoRed: { color: '#a3322c', metalness: 0.58, roughness: 0.35 },
-  alumina: { color: '#f3eee4', metalness: 0.02, roughness: 0.4 },
-  steatite: { color: '#e6dcc6', metalness: 0.03, roughness: 0.48 },
-  ptfe: { color: '#f1f5f9', metalness: 0.02, roughness: 0.36 },
-  peek: { color: '#a88459', metalness: 0.04, roughness: 0.46 },
-  kapton: { color: '#d97706', metalness: 0.12, roughness: 0.32, transparent: true, opacity: 0.88 },
-  rubber: { color: '#1b1d22', metalness: 0.02, roughness: 0.82 },
-  phenolic: { color: '#422014', metalness: 0.05, roughness: 0.55 },
-  siliconWafer: { color: '#39465e', metalness: 0.65, roughness: 0.18 },
-  glass: { color: '#d8e8f8', metalness: 0.05, roughness: 0.08, transparent: true, opacity: 0.32, depthWrite: false },
-  quartz: { color: '#e6f4ff', metalness: 0.05, roughness: 0.06, transparent: true, opacity: 0.26, depthWrite: false },
-  blueLiquid: { color: '#2b8cbe', metalness: 0.08, roughness: 0.15, transparent: true, opacity: 0.68, depthWrite: false },
-  mercury: { color: '#d1d5db', metalness: 0.96, roughness: 0.08 },
+  // Brushed stainless steel parts: metalness 0.8–0.9, roughness 0.35–0.5 (#8FA3B3)
+  ss316: { color: PALETTE_3D.wettedMetal, metalness: 0.86, roughness: 0.42 },
+  mercury: { color: PALETTE_3D.wettedMetal, metalness: 0.9, roughness: 0.35 },
+  brass: { color: PALETTE_3D.wettedMetal, metalness: 0.85, roughness: 0.42 },
+  chrome: { color: PALETTE_3D.wettedMetal, metalness: 0.88, roughness: 0.36 },
+  // Secondary body — fittings, covers, flanges (#4F7FA6), painted/moulded: metalness 0.1–0.2, roughness 0.5–0.65
+  ssDark: { color: PALETTE_3D.secondaryBody, metalness: 0.18, roughness: 0.56 },
+  bronze: { color: PALETTE_3D.secondaryBody, metalness: 0.8, roughness: 0.46 },
+  yellowSafety: { color: PALETTE_3D.secondaryBody, metalness: 0.15, roughness: 0.58 },
+  peek: { color: PALETTE_3D.secondaryBody, metalness: 0, roughness: 0.72 },
+  // Primary body — painted/moulded housings, heads, sheaths (#3C6E96): metalness 0.1–0.2, roughness 0.5–0.65
+  blueHousing: { color: PALETTE_3D.primaryBody, metalness: 0.16, roughness: 0.56 },
+  // Dark structural — bases, brackets, elastomers, PCBs (#22435E)
+  castIron: { color: PALETTE_3D.darkStructural, metalness: 0.2, roughness: 0.62 },
+  anodizedDark: { color: PALETTE_3D.darkStructural, metalness: 0.18, roughness: 0.58 },
+  rubber: { color: PALETTE_3D.darkStructural, metalness: 0, roughness: 0.84 },
+  phenolic: { color: PALETTE_3D.darkStructural, metalness: 0, roughness: 0.76 },
+  siliconWafer: { color: PALETTE_3D.darkStructural, metalness: 0.2, roughness: 0.52 },
+  // Dull copper-orange wires / conductors: metalness 1.0, roughness 0.4 (#B8703F)
+  copper: { color: PALETTE_3D.copperWire, metalness: 1.0, roughness: 0.4 },
+  gold: { color: PALETTE_3D.copperWire, metalness: 1.0, roughness: 0.4 },
+  kapton: { color: PALETTE_3D.copperWire, metalness: 0, roughness: 0.7, transparent: true, opacity: 0.88 },
+  // Rust-red sensing / active accent (#C84B31)
+  alnicoRed: { color: PALETTE_3D.sensingAccent, metalness: 0.18, roughness: 0.54 },
+  // Matte ceramics, insulators, plastics: metalness 0, roughness 0.7–0.85 (#B9C7D2)
+  alumina: { color: PALETTE_3D.insulatorCeramic, metalness: 0, roughness: 0.8 },
+  steatite: { color: PALETTE_3D.insulatorCeramic, metalness: 0, roughness: 0.82 },
+  ptfe: { color: PALETTE_3D.insulatorCeramic, metalness: 0, roughness: 0.75 },
+  // Optics & liquids keeping transparency physics cleanly
+  glass: { color: PALETTE_3D.insulatorCeramic, metalness: 0.04, roughness: 0.14, transparent: true, opacity: 0.3, depthWrite: false },
+  quartz: { color: PALETTE_3D.secondaryBody, metalness: 0.04, roughness: 0.12, transparent: true, opacity: 0.26, depthWrite: false },
+  blueLiquid: { color: PALETTE_3D.primaryBody, metalness: 0.05, roughness: 0.22, transparent: true, opacity: 0.68, depthWrite: false },
 } as const satisfies Record<string, MaterialPreset>;
 
 export type MatKey = keyof typeof MAT_PRESETS;
@@ -64,12 +73,12 @@ export function buildDialFaceTexture(opts: {
   const cy = size / 2;
   const r = size * 0.45;
 
-  ctx.fillStyle = '#f8fafc';
+  ctx.fillStyle = '#E8ECEF';
   ctx.beginPath();
   ctx.arc(cx, cy, size * 0.49, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.strokeStyle = '#cbd5e1';
+  ctx.strokeStyle = '#C4CBD4';
   ctx.lineWidth = 6;
   ctx.beginPath();
   ctx.arc(cx, cy, size * 0.47, 0, Math.PI * 2);
@@ -79,8 +88,8 @@ export function buildDialFaceTexture(opts: {
   const start = ((opts.startDeg ?? 135) * Math.PI) / 180;
   const ticks = opts.majorTicks ?? 6;
 
-  ctx.strokeStyle = '#1e293b';
-  ctx.fillStyle = '#0f172a';
+  ctx.strokeStyle = '#181C22';
+  ctx.fillStyle = '#11151B';
   ctx.lineCap = 'round';
 
   for (let i = 0; i <= ticks * 5; i++) {
@@ -108,16 +117,16 @@ export function buildDialFaceTexture(opts: {
     }
   }
 
-  ctx.fillStyle = '#0f172a';
+  ctx.fillStyle = '#0F2438';
   ctx.font = 'bold 28px ui-monospace, monospace';
   ctx.textAlign = 'center';
   ctx.fillText(opts.unit, cx, cy + r * 0.34);
 
-  ctx.fillStyle = '#475569';
+  ctx.fillStyle = PALETTE_3D.darkStructural;
   ctx.font = '600 18px system-ui, sans-serif';
   ctx.fillText(opts.title, cx, cy - r * 0.22);
   if (opts.subtitle) {
-    ctx.fillStyle = '#0284c7';
+    ctx.fillStyle = PALETTE_3D.sensingAccent;
     ctx.font = '600 15px ui-monospace, monospace';
     ctx.fillText(opts.subtitle, cx, cy + r * 0.52);
   }
@@ -134,8 +143,8 @@ export function buildDialFaceTexture(opts: {
 export function buildLcdDisplayTexture(
   primaryText: string,
   secondaryText: string,
-  bgHex = '#0f1d28',
-  fgHex = '#67e8f9',
+  bgHex = '#102436',
+  fgHex: string = PALETTE_3D.secondaryBody,
 ): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = 512;
@@ -145,7 +154,7 @@ export function buildLcdDisplayTexture(
   ctx.fillStyle = bgHex;
   ctx.fillRect(0, 0, 512, 256);
 
-  ctx.strokeStyle = 'rgba(148,163,184,0.35)';
+  ctx.strokeStyle = 'rgba(169, 209, 240, 0.42)';
   ctx.lineWidth = 8;
   ctx.strokeRect(8, 8, 496, 240);
 
@@ -155,7 +164,7 @@ export function buildLcdDisplayTexture(
   ctx.textBaseline = 'middle';
   ctx.fillText(primaryText, 256, 110);
 
-  ctx.fillStyle = '#cbd5e1';
+  ctx.fillStyle = PALETTE_3D.insulatorCeramic;
   ctx.font = '600 32px ui-monospace, monospace';
   ctx.fillText(secondaryText, 256, 194);
 
@@ -174,10 +183,10 @@ export function buildCroScreenTexture(freqRatio = 1, phaseDeg = 90): THREE.Canva
   canvas.height = 384;
   const ctx = canvas.getContext('2d')!;
 
-  ctx.fillStyle = '#051a10';
+  ctx.fillStyle = '#0E2030';
   ctx.fillRect(0, 0, 512, 384);
 
-  ctx.strokeStyle = 'rgba(74, 222, 128, 0.22)';
+  ctx.strokeStyle = 'rgba(127, 184, 230, 0.24)';
   ctx.lineWidth = 1.5;
   for (let x = 0; x <= 512; x += 51.2) {
     ctx.beginPath();
@@ -192,7 +201,7 @@ export function buildCroScreenTexture(freqRatio = 1, phaseDeg = 90): THREE.Canva
     ctx.stroke();
   }
 
-  ctx.strokeStyle = 'rgba(74, 222, 128, 0.45)';
+  ctx.strokeStyle = 'rgba(169, 209, 240, 0.48)';
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(0, 192);
@@ -202,8 +211,8 @@ export function buildCroScreenTexture(freqRatio = 1, phaseDeg = 90): THREE.Canva
   ctx.stroke();
 
   const phi = (phaseDeg * Math.PI) / 180;
-  ctx.strokeStyle = '#86efac';
-  ctx.shadowColor = '#22c55e';
+  ctx.strokeStyle = PALETTE_3D.selectedHighlight;
+  ctx.shadowColor = PALETTE_3D.sensingAccent;
   ctx.shadowBlur = 10;
   ctx.lineWidth = 4;
   ctx.beginPath();
@@ -238,11 +247,15 @@ export function buildVerticalScaleTexture(
   const ctx = canvas.getContext('2d')!;
 
   ctx.clearRect(0, 0, 160, 512);
-  ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+  ctx.fillStyle = '#E8ECEF';
   ctx.fillRect(0, 0, 160, 512);
 
-  ctx.strokeStyle = '#94a3b8';
-  ctx.fillStyle = '#f8fafc';
+  ctx.strokeStyle = '#2E4F6B';
+  ctx.lineWidth = 4;
+  ctx.strokeRect(2, 2, 156, 508);
+
+  ctx.strokeStyle = '#2E4F6B';
+  ctx.fillStyle = '#1E293B';
   ctx.font = 'bold 24px ui-monospace, monospace';
   ctx.textAlign = 'left';
 
@@ -260,7 +273,7 @@ export function buildVerticalScaleTexture(
       ctx.fillText(String(Math.round(val)), 54, y + 8);
     }
   }
-  ctx.fillStyle = '#38bdf8';
+  ctx.fillStyle = '#2E4F6B';
   ctx.font = 'bold 20px ui-monospace, monospace';
   ctx.fillText(label, 14, 28);
 

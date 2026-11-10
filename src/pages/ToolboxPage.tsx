@@ -27,11 +27,11 @@ type ToolId =
   | 'pid-tuning';
 
 const TOOLS: { id: ToolId; short: string; title: string; formula: string }[] = [
-  { id: 'rtd-resistance', short: 'RTD CVD', title: 'RTD Resistance & Callendar-Van Dusen (IEC 60751)', formula: 'R(t) = R_0(1 + At + Bt^2 + C(t-100)t^3)' },
+  { id: 'rtd-resistance', short: 'RTD CVD', title: 'RTD Resistance & Callendar-Van Dusen Solver', formula: 'R(t) = R_0(1 + At + Bt^2 + C(t-100)t^3)' },
   { id: 'temp-conversion', short: 'Temp Units', title: 'Temperature Scale & Thermal Span Converter', formula: 'T_{\\text{K}} = T_{\\text{C}} + 273.15, \\quad T_{\\text{F}} = 1.8\\,T_{\\text{C}} + 32' },
-  { id: 'thermocouple-emf', short: 'TC + CJC', title: 'Thermocouple ITS-90 Reference & Cold-Junction Compensation', formula: 'E(T_m, 0^\\circ\\text{C}) = E_{\\text{meas}} + E(T_{cj}, 0^\\circ\\text{C})' },
+  { id: 'thermocouple-emf', short: 'TC + CJC', title: 'Thermocouple Reference & Cold-Junction Compensation', formula: 'E(T_m, 0^\\circ\\text{C}) = E_{\\text{meas}} + E(T_{cj}, 0^\\circ\\text{C})' },
   { id: 'pressure-units', short: 'Pressure', title: 'Pressure Unit & Hydrostatic Head Converter', formula: 'P = \\rho \\cdot g \\cdot h' },
-  { id: 'flow-rate', short: 'Orifice Flow', title: 'ISO 5167 Differential Pressure / Orifice Flow Calculator', formula: 'Q = C_d \\cdot \\frac{\\pi d^2}{4\\sqrt{1-\\beta^4}} \\sqrt{\\frac{2\\Delta P}{\\rho}}' },
+  { id: 'flow-rate', short: 'Orifice Flow', title: 'Differential Pressure & Orifice Flow Calculator', formula: 'Q = C_d \\cdot \\frac{\\pi d^2}{4\\sqrt{1-\\beta^4}} \\sqrt{\\frac{2\\Delta P}{\\rho}}' },
   { id: 'level-dp', short: 'DP Level', title: 'Hydrostatic Tank Level (Open / Dry Leg / Wet Leg)', formula: '\\text{LRV} = \\rho_{\\text{proc}} g h_0 - \\rho_{\\text{seal}} g H_{\\text{wet}}' },
   { id: 'loop-scaling', short: '4–20 mA', title: '4–20 mA Loop Scaling, NAMUR NE43 & Load Budget', formula: 'I = 4 + 16\\left(\\frac{\\text{PV}-\\text{LRV}}{\\text{URV}-\\text{LRV}}\\right), \\quad R_{\\max} = \\frac{V_s - V_{\\min}}{0.0215}' },
   { id: 'adc-resolution', short: 'ADC / ENOB', title: 'ADC Quantization Resolution, Counts & ENOB', formula: '\\text{LSB} = \\frac{V_{\\text{FS}}}{2^N}, \\quad \\text{SNR} = 6.02N + 1.76\\text{ dB}' },
@@ -396,12 +396,12 @@ export function ToolboxPage() {
   return (
     <div className="mx-auto flex max-w-[1440px] flex-col gap-5">
       <header>
-        <p className="eyebrow text-[var(--st-cyan)]">ENGINEERING TOOLBOX · 11 VALIDATED SOLVERS</p>
-        <h1 className="text-2xl font-semibold tracking-tight text-[var(--st-on)]">
+        <p className="eyebrow">Engineering toolbox · 11 calculators</p>
+        <h1 className="text-[28px] font-semibold text-[var(--st-on)]">
           Instrumentation &amp; Control Engineering Calculators
         </h1>
-        <p className="muted mt-1 text-sm">
-          Real physical equations with SI/plant unit validation, NAMUR NE43 diagnostics, and closed-loop PID step visualization.
+        <p className="muted mt-1 text-[16px]">
+          Real physical equations with SI/plant unit validation, signal diagnostics, and closed-loop PID step visualization.
         </p>
       </header>
 
@@ -425,10 +425,10 @@ export function ToolboxPage() {
       <section className="glass space-y-5 p-6">
         <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[var(--st-line)] pb-4">
           <div>
-            <span className="eyebrow text-[var(--st-cyan)]">ACTIVE ENGINEERING CALCULATOR</span>
+            <span className="eyebrow text-[var(--st-accent-text)]">ACTIVE ENGINEERING CALCULATOR</span>
             <h2 className="mt-1 text-xl font-semibold text-[var(--st-on)]">{activeTool.title}</h2>
           </div>
-          <div className="rounded-2xl bg-[var(--st-void)] px-4 py-2">
+            <div className="rounded-2xl bg-[var(--st-void)] px-4 py-2">
             <MathBlock latex={activeTool.formula} displayMode={false} />
           </div>
         </div>
@@ -496,10 +496,10 @@ export function ToolboxPage() {
             </div>
 
             <div className="sub space-y-2 p-5">
-              <p className="eyebrow text-[var(--st-cyan)]">IEC 60751 CALCULATED RESULTS</p>
+              <p className="eyebrow">Calculated results</p>
               <div className="kv">
                 <span>{rtdMode === 't2r' ? 'Platinum Resistance R(t)' : 'Computed Temperature t'}</span>
-                <span className="text-base font-bold text-[var(--st-cyan)]">
+                <span className="text-base font-bold text-[var(--st-accent-text)]">
                   {rtdMode === 't2r'
                     ? `${rtdCalc.rExact.toFixed(3)} Ω`
                     : `${Number.isNaN(rtdCalc.tInv) ? 'Out of Range' : rtdCalc.tInv.toFixed(2)} °C`}
@@ -551,10 +551,10 @@ export function ToolboxPage() {
             </div>
             <div className="sub space-y-2 p-5">
               {!tempCalc.valid ? (
-                <p className="text-xs text-[var(--st-crimson)]">Invalid temperature: below Absolute Zero (0 K / −273.15 °C).</p>
+                <p className="text-[14px] text-[var(--st-crimson)]">Invalid temperature: below Absolute Zero (0 K / −273.15 °C).</p>
               ) : (
                 <>
-                  <div className="kv"><span>Celsius</span><span className="text-[var(--st-cyan)]">{tempCalc.C.toFixed(3)} °C</span></div>
+                  <div className="kv"><span>Celsius</span><span className="text-[var(--st-accent-text)]">{tempCalc.C.toFixed(3)} °C</span></div>
                   <div className="kv"><span>Fahrenheit</span><span>{tempCalc.F.toFixed(3)} °F</span></div>
                   <div className="kv"><span>Kelvin (Absolute)</span><span>{tempCalc.K.toFixed(3)} K</span></div>
                   <div className="kv"><span>Rankine (Absolute)</span><span>{tempCalc.R.toFixed(3)} °R</span></div>
@@ -580,7 +580,7 @@ export function ToolboxPage() {
               </div>
               <div className="grid gap-3 sm:grid-cols-3">
                 <label className="space-y-1">
-                  <span className="label">IEC Type</span>
+                  <span className="label">Thermocouple type</span>
                   <select
                     value={tcType}
                     onChange={(e) => setTcType(e.target.value as keyof typeof TC_TABLES)}
@@ -613,13 +613,13 @@ export function ToolboxPage() {
             </div>
 
             <div className="sub space-y-2 p-5">
-              <p className="eyebrow text-[var(--st-cyan)]">ITS-90 COLD-JUNCTION COMPENSATED OUTPUT</p>
+              <p className="eyebrow text-[var(--st-accent-text)]">ITS-90 COLD-JUNCTION COMPENSATED OUTPUT</p>
               <div className="kv"><span>Table EMF E(T_cj, 0 °C)</span><span>{tcCalc.eCjc.toFixed(3)} mV</span></div>
               <div className="kv"><span>Measured Terminal Net EMF</span><span>{tcCalc.eNet.toFixed(3)} mV</span></div>
               <div className="kv"><span>0 °C Referenced EMF E(T_m, 0 °C)</span><span>{tcCalc.eHot0.toFixed(3)} mV</span></div>
               <div className="kv">
                 <span>Process Hot Junction Temperature</span>
-                <span className="text-base font-bold text-[var(--st-cyan)]">{tcCalc.hotTemp.toFixed(2)} °C</span>
+                <span className="text-base font-bold text-[var(--st-accent-text)]">{tcCalc.hotTemp.toFixed(2)} °C</span>
               </div>
             </div>
           </div>
@@ -660,12 +660,12 @@ export function ToolboxPage() {
                 const headKpa = (headRho * 9.81 * headHeight) / 1000;
                 return (
                   <>
-                    <div className="kv"><span>kPa</span><span className="text-[var(--st-cyan)]">{(pa / 1000).toFixed(4)} kPa</span></div>
+                    <div className="kv"><span>kPa</span><span className="text-[var(--st-accent-text)]">{(pa / 1000).toFixed(4)} kPa</span></div>
                     <div className="kv"><span>bar</span><span>{(pa / 1e5).toFixed(5)} bar</span></div>
                     <div className="kv"><span>psi</span><span>{(pa / 6894.757).toFixed(4)} psi</span></div>
                     <div className="kv"><span>mmH₂O</span><span>{(pa / 9.80665).toFixed(2)} mmH₂O</span></div>
                     <div className="kv"><span>mmHg (Torr)</span><span>{(pa / 133.322).toFixed(2)} mmHg</span></div>
-                    <div className="kv"><span>Hydrostatic ρgh ({headHeight} m)</span><span className="text-[var(--st-phosphor)]">{headKpa.toFixed(3)} kPa</span></div>
+                    <div className="kv"><span>Hydrostatic ρgh ({headHeight} m)</span><span className="text-[var(--st-accent-text)]">{headKpa.toFixed(3)} kPa</span></div>
                   </>
                 );
               })()}
@@ -700,11 +700,11 @@ export function ToolboxPage() {
             </div>
             <div className="sub space-y-2 p-5">
               {!flowCalc.valid ? (
-                <p className="text-xs text-[var(--st-crimson)]">Invalid geometry: ensure 0 &lt; bore d &lt; pipe D and ρ &gt; 0.</p>
+                <p className="text-[14px] text-[var(--st-crimson)]">Invalid geometry: ensure 0 &lt; bore d &lt; pipe D and ρ &gt; 0.</p>
               ) : (
                 <>
-                  <div className="kv"><span>Beta Ratio (β = d/D)</span><span>{flowCalc.beta.toFixed(3)} {flowCalc.beta < 0.2 || flowCalc.beta > 0.75 ? '(Out of ISO 0.2–0.75)' : '(ISO OK)'}</span></div>
-                  <div className="kv"><span>Volumetric Flow Q</span><span className="text-base font-bold text-[var(--st-cyan)]">{flowCalc.qM3h.toFixed(2)} m³/h</span></div>
+                  <div className="kv"><span>Beta Ratio (β = d/D)</span><span>{flowCalc.beta.toFixed(3)} {flowCalc.beta < 0.2 || flowCalc.beta > 0.75 ? '(Out of 0.2–0.75)' : '(In range)'}</span></div>
+                  <div className="kv"><span>Volumetric Flow Q</span><span className="text-base font-bold text-[var(--st-accent-text)]">{flowCalc.qM3h.toFixed(2)} m³/h</span></div>
                   <div className="kv"><span>Mass Flow ṁ</span><span>{flowCalc.mKgh.toFixed(1)} kg/h</span></div>
                   <div className="kv"><span>Upstream Pipe Velocity</span><span>{flowCalc.velMps.toFixed(2)} m/s</span></div>
                   <div className="kv"><span>Permanent Unrecovered Loss</span><span className="text-[var(--st-amber)]">{flowCalc.permLossKpa.toFixed(2)} kPa</span></div>
@@ -736,10 +736,10 @@ export function ToolboxPage() {
               </div>
             </div>
             <div className="sub space-y-2 p-5">
-              <p className="eyebrow text-[var(--st-cyan)]">DP TRANSMITTER CALIBRATION RANGE</p>
+              <p className="eyebrow text-[var(--st-accent-text)]">DP TRANSMITTER CALIBRATION RANGE</p>
               <div className="kv"><span>Configuration Mode</span><span className="text-[var(--st-amber)]">{levelCalc.modeNote}</span></div>
-              <div className="kv"><span>LRV (4 mA · 0%)</span><span className="text-[var(--st-cyan)]">{levelCalc.lrvKpa.toFixed(3)} kPa ({levelCalc.lrvMmH2O.toFixed(0)} mmH₂O)</span></div>
-              <div className="kv"><span>URV (20 mA · 100%)</span><span className="text-[var(--st-cyan)]">{levelCalc.urvKpa.toFixed(3)} kPa ({levelCalc.urvMmH2O.toFixed(0)} mmH₂O)</span></div>
+              <div className="kv"><span>LRV (4 mA · 0%)</span><span className="text-[var(--st-accent-text)]">{levelCalc.lrvKpa.toFixed(3)} kPa ({levelCalc.lrvMmH2O.toFixed(0)} mmH₂O)</span></div>
+              <div className="kv"><span>URV (20 mA · 100%)</span><span className="text-[var(--st-accent-text)]">{levelCalc.urvKpa.toFixed(3)} kPa ({levelCalc.urvMmH2O.toFixed(0)} mmH₂O)</span></div>
               <div className="kv"><span>Calibrated Span</span><span>{levelCalc.spanKpa.toFixed(3)} kPa</span></div>
             </div>
           </div>
@@ -770,11 +770,11 @@ export function ToolboxPage() {
               </div>
             </div>
             <div className="sub space-y-2 p-5">
-              <div className="kv"><span>Loop Current</span><span className="text-base font-bold text-[var(--st-cyan)]">{loopCalc.ma.toFixed(3)} mA</span></div>
+              <div className="kv"><span>Loop Current</span><span className="text-base font-bold text-[var(--st-accent-text)]">{loopCalc.ma.toFixed(3)} mA</span></div>
               <div className="kv"><span>Process Variable</span><span>{loopCalc.pv.toFixed(2)} {loopUnit} ({loopCalc.pct.toFixed(1)}%)</span></div>
               <div className="kv"><span>NAMUR NE43 Diagnostics</span><span>{loopCalc.namur}</span></div>
               <div className="kv"><span>Max Allowed Loop Load (@21.5 mA)</span><span>{loopCalc.rMax.toFixed(1)} Ω</span></div>
-              <div className="kv"><span>Terminal Voltage @ 21.5 mA</span><span className={loopCalc.txVoltageAt215 < loopTxMinV ? 'text-[var(--st-crimson)]' : 'text-[var(--st-phosphor)]'}>{loopCalc.txVoltageAt215.toFixed(2)} V {loopLoadOhms < 250 ? '(Needs ≥250 Ω for HART!)' : ''}</span></div>
+              <div className="kv"><span>Terminal Voltage @ 21.5 mA</span><span className={loopCalc.txVoltageAt215 < loopTxMinV ? 'text-[var(--st-crimson)]' : 'text-[var(--st-accent-text)]'}>{loopCalc.txVoltageAt215.toFixed(2)} V {loopLoadOhms < 250 ? '(Needs ≥250 Ω for HART!)' : ''}</span></div>
             </div>
           </div>
         )}
@@ -798,10 +798,10 @@ export function ToolboxPage() {
                 return (
                   <>
                     <div className="kv"><span>Total Quantization Levels</span><span>{levels.toLocaleString()}</span></div>
-                    <div className="kv"><span>1 LSB Step Size</span><span className="text-[var(--st-cyan)]">{(lsb * 1e6).toFixed(2)} µV ({(lsb * 1e3).toFixed(4)} mV)</span></div>
+                    <div className="kv"><span>1 LSB Step Size</span><span className="text-[var(--st-accent-text)]">{(lsb * 1e6).toFixed(2)} µV ({(lsb * 1e3).toFixed(4)} mV)</span></div>
                     <div className="kv"><span>Digital Output Code</span><span>{code} (0x{code.toString(16).toUpperCase()})</span></div>
                     <div className="kv"><span>Ideal Quantization SNR</span><span>{idealSnr.toFixed(2)} dB</span></div>
-                    <div className="kv"><span>Effective Number of Bits (ENOB)</span><span className="text-[var(--st-phosphor)]">{enob.toFixed(2)} bits</span></div>
+                    <div className="kv"><span>Effective Number of Bits (ENOB)</span><span className="text-[var(--st-accent-text)]">{enob.toFixed(2)} bits</span></div>
                   </>
                 );
               })()}
@@ -842,7 +842,7 @@ export function ToolboxPage() {
                     : wbVexc * (dr / r);
                 return (
                   <>
-                    <div className="kv"><span>Exact Output Voltage</span><span className="text-base font-bold text-[var(--st-cyan)]">{(exactV * 1000).toFixed(3)} mV</span></div>
+                    <div className="kv"><span>Exact Output Voltage</span><span className="text-base font-bold text-[var(--st-accent-text)]">{(exactV * 1000).toFixed(3)} mV</span></div>
                     <div className="kv"><span>Linearized Approximation</span><span>{(approxV * 1000).toFixed(3)} mV</span></div>
                     <div className="kv"><span>Fractional ΔR/R</span><span>{((dr / r) * 100).toFixed(3)}%</span></div>
                     <div className="kv"><span>Bridge Common-Mode DC</span><span>{(wbVexc / 2).toFixed(2)} V</span></div>
@@ -872,11 +872,11 @@ export function ToolboxPage() {
                 const rssCombined = Math.hypot(errUutTol, errRefTol);
                 return (
                   <>
-                    <div className="kv"><span>Absolute Error</span><span className="text-[var(--st-cyan)]">{absErr >= 0 ? `+${absErr.toFixed(4)}` : absErr.toFixed(4)}</span></div>
+                    <div className="kv"><span>Absolute Error</span><span className="text-[var(--st-accent-text)]">{absErr >= 0 ? `+${absErr.toFixed(4)}` : absErr.toFixed(4)}</span></div>
                     <div className="kv"><span>Relative % of Reading</span><span>{pctRdg.toFixed(3)}%</span></div>
                     <div className="kv"><span>% of Full Span Error</span><span>{pctSpan.toFixed(3)}% FS</span></div>
                     <div className="kv"><span>RSS Combined Uncertainty</span><span>±{rssCombined.toFixed(4)}</span></div>
-                    <div className="kv"><span>Test Uncertainty Ratio (TUR)</span><span className={tur >= 4 ? 'text-[var(--st-phosphor)]' : 'text-[var(--st-amber)]'}>{tur.toFixed(2)}:1 {tur >= 4 ? '(Meets ≥4:1 ISO 17025)' : '(Below 4:1 target!)'}</span></div>
+                    <div className="kv"><span>Test Uncertainty Ratio (TUR)</span><span className={tur >= 4 ? 'text-[var(--st-accent-text)]' : 'text-[var(--st-amber)]'}>{tur.toFixed(2)}:1 {tur >= 4 ? '(Meets 4:1 target)' : '(Below 4:1 target!)'}</span></div>
                   </>
                 );
               })()}
@@ -897,7 +897,7 @@ export function ToolboxPage() {
               <label className="block space-y-1"><span className="label">Dead Time θ (s)</span><input type="number" step="0.2" min={0.2} value={pidTheta} onChange={(e) => setPidTheta(Number(e.target.value))} className="field-rect" /></label>
 
               <div className="border-t border-[var(--st-line)] pt-2">
-                <div className="kv"><span>Proportional Gain Kc</span><span className="text-[var(--st-cyan)]">{pidCalc.kc.toFixed(3)}</span></div>
+                <div className="kv"><span>Proportional Gain Kc</span><span className="text-[var(--st-accent-text)]">{pidCalc.kc.toFixed(3)}</span></div>
                 <div className="kv"><span>Integral Time Ti</span><span>{pidCalc.ti.toFixed(2)} s</span></div>
                 <div className="kv"><span>Derivative Time Td</span><span>{pidCalc.td.toFixed(2)} s</span></div>
               </div>
@@ -921,7 +921,7 @@ export function ToolboxPage() {
                     />
                     <ReferenceLine y={1.0} stroke="#a6a6a6" strokeDasharray="4 4" />
                     <Line type="monotone" dataKey="sp" name="Setpoint (SP)" stroke="#cdbdff" strokeWidth={1.5} dot={false} />
-                    <Line type="monotone" dataKey="pv" name="Process Variable (PV)" stroke={theme === 'light' ? '#4a7300' : '#c5f467'} strokeWidth={2.4} dot={false} />
+                    <Line type="monotone" dataKey="pv" name="Process Variable (PV)" stroke={theme === 'light' ? '#2F5F8A' : '#7FB3DE'} strokeWidth={2.4} dot={false} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>

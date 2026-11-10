@@ -4,6 +4,7 @@ import { CAD_MODELS, type CadModelConfig } from '@/data/models3d';
 import { INSTRUMENT_SIMULATIONS } from '@/data/simulations';
 import type { CanonicalInstrumentEntry, InstrumentFamilyKey } from '@/types/cad';
 import { ELECTRICAL_ANALYTICAL_CONTROL_ENTRIES } from './registry/electricalAnalyticalControl';
+import { EMBEDDED_SIGNAL_CONTROL_ENTRIES } from './registry/embeddedSignalControl';
 import { PROCESS_INSTRUMENT_ENTRIES } from './registry/processInstruments';
 
 function adaptGlbToCanonical(
@@ -35,7 +36,7 @@ function adaptGlbToCanonical(
     family: opts.family,
     classification: 'standalone-instrument',
     standardRef: cfg.standard,
-    primaryRoute: cfg.topicRoute,
+    primaryRoute: `/instrument/${cfg.id}`,
     existingTopicRef: opts.existingTopicRef,
     hasDedicated3D: true,
     hasSimulation: Boolean(INSTRUMENT_SIMULATIONS[opts.simulationId]),
@@ -155,6 +156,7 @@ const RAW_CANONICAL_ENTRIES: CanonicalInstrumentEntry[] = [
   ...GLB_ENTRIES,
   ...PROCESS_INSTRUMENT_ENTRIES,
   ...ELECTRICAL_ANALYTICAL_CONTROL_ENTRIES,
+  ...EMBEDDED_SIGNAL_CONTROL_ENTRIES,
 ];
 
 // Inject reverse curriculum links automatically from NITJ_CURRICULUM_SUBJECTS concepts

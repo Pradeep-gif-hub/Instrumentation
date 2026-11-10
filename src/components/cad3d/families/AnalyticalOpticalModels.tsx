@@ -1,7 +1,7 @@
 import { useFrame } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import { CadPartGroup, useCadSim } from '../CadPart';
+import { CadPartGroup, useCadSim, useInstrumentFinish } from '../CadPart';
 import { buildLcdDisplayTexture, wavelengthToHex } from '../materials';
 import { HelicalTube, PbrMat } from '../primitives';
 
@@ -30,9 +30,9 @@ export function UvVisAssembly() {
           <cylinderGeometry args={[0.16, 0.16, 0.48, 22]} />
           <PbrMat preset="quartz" />
         </mesh>
-        <mesh userData={{ selfEmissive: true }}>
+        <mesh>
           <sphereGeometry args={[0.09, 16, 16]} />
-          <meshStandardMaterial color="#f8fafc" emissive="#fef08a" emissiveIntensity={1.25} />
+          <PbrMat preset="alumina" />
         </mesh>
       </CadPartGroup>
 
@@ -44,7 +44,7 @@ export function UvVisAssembly() {
         {[-0.12, -0.04, 0.04, 0.12].map((x, idx) => (
           <mesh key={idx} position={[x, 0, 0.045]}>
             <boxGeometry args={[0.025, 0.38, 0.01]} />
-            <PbrMat preset="gold" />
+            <PbrMat preset="alnicoRed" />
           </mesh>
         ))}
       </CadPartGroup>
@@ -68,14 +68,14 @@ export function UvVisAssembly() {
           <PbrMat preset="quartz" />
         </mesh>
         {/* Optical Sample Beam (attenuated by concentration) */}
-        <mesh userData={{ selfEmissive: true }} position={[-0.1, 0, 0.15]} rotation={[0, 0, Math.PI / 2]}>
+        <mesh position={[-0.1, 0, 0.15]} rotation={[0, 0, Math.PI / 2]}>
           <cylinderGeometry args={[0.03, 0.03, 1.35, 14]} />
-          <meshStandardMaterial color={beamColor} emissive={beamColor} emissiveIntensity={1.1} transparent opacity={sampleOpacity} />
+          <meshStandardMaterial color={beamColor} transparent opacity={sampleOpacity} roughness={0.35} />
         </mesh>
         {/* Reference Beam (100% T) */}
-        <mesh userData={{ selfEmissive: true }} position={[-0.1, 0, -0.35]} rotation={[0, 0, Math.PI / 2]}>
+        <mesh position={[-0.1, 0, -0.35]} rotation={[0, 0, Math.PI / 2]}>
           <cylinderGeometry args={[0.03, 0.03, 1.35, 14]} />
-          <meshStandardMaterial color={beamColor} emissive={beamColor} emissiveIntensity={1.2} />
+          <meshStandardMaterial color={beamColor} transparent opacity={0.85} roughness={0.35} />
         </mesh>
       </CadPartGroup>
 
@@ -102,9 +102,9 @@ export function ColorimeterAssembly() {
         </mesh>
       </CadPartGroup>
       <CadPartGroup partId="col_lamp" basePos={[-0.75, 0.15, 0]} explodeOffset={[-0.6, 0.4, 0]}>
-        <mesh userData={{ selfEmissive: true }}>
+        <mesh>
           <sphereGeometry args={[0.16, 20, 20]} />
-          <meshStandardMaterial color="#fef08a" emissive="#eab308" emissiveIntensity={1.1} />
+          <PbrMat preset="alumina" />
         </mesh>
       </CadPartGroup>
       <CadPartGroup partId="col_filter_wheel" basePos={[-0.25, 0.15, 0]} rotation={[sim.primaryNorm * Math.PI, 0, Math.PI / 2]} explodeOffset={[-0.2, 0.75, 0]}>
@@ -147,15 +147,15 @@ export function FtirAssembly() {
         </mesh>
       </CadPartGroup>
       <CadPartGroup partId="ft_globar" basePos={[-0.95, 0.12, 0]} explodeOffset={[-0.65, 0.4, 0]}>
-        <mesh userData={{ selfEmissive: true }} rotation={[0, 0, Math.PI / 2]}>
+        <mesh rotation={[0, 0, Math.PI / 2]}>
           <cylinderGeometry args={[0.12, 0.12, 0.42, 20]} />
-          <meshStandardMaterial color="#f97316" emissive="#dc2626" emissiveIntensity={1.2} />
+          <PbrMat preset="alnicoRed" />
         </mesh>
       </CadPartGroup>
       <CadPartGroup partId="ft_beamsplitter" basePos={[0, 0.12, 0]} rotation={[0, Math.PI / 4, 0]} explodeOffset={[0, 0.8, 0]}>
         <mesh>
           <boxGeometry args={[0.58, 0.5, 0.05]} />
-          <PbrMat preset="quartz" colorOverride="#facc15" />
+          <PbrMat preset="quartz" />
         </mesh>
       </CadPartGroup>
       <CadPartGroup partId="ft_fixed_mirror" basePos={[0, 0.12, -0.68]} explodeOffset={[0, 0.4, -0.75]}>
@@ -192,9 +192,9 @@ export function FlameAasAssembly() {
           <cylinderGeometry args={[0.2, 0.2, 0.72, 24]} />
           <PbrMat preset="glass" />
         </mesh>
-        <mesh userData={{ selfEmissive: true }} position={[0.38, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+        <mesh position={[0.38, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
           <cylinderGeometry args={[0.03, 0.03, 1.85, 12]} />
-          <meshStandardMaterial color="#f43f5e" emissive="#e11d48" emissiveIntensity={1.2 - sim.primaryNorm * 0.75} />
+          <PbrMat preset="alnicoRed" />
         </mesh>
       </CadPartGroup>
 
@@ -203,9 +203,9 @@ export function FlameAasAssembly() {
           <boxGeometry args={[0.95, 0.45, 0.42]} />
           <PbrMat preset="ss316" />
         </mesh>
-        <mesh userData={{ selfEmissive: true }} position={[0, 0.52, 0]}>
+        <mesh position={[0, 0.52, 0]}>
           <boxGeometry args={[0.72, 0.52, 0.1]} />
-          <meshStandardMaterial color="#38bdf8" emissive="#0284c7" emissiveIntensity={1.0} transparent opacity={0.78} />
+          <PbrMat preset="blueLiquid" />
         </mesh>
       </CadPartGroup>
 
@@ -221,7 +221,8 @@ export function FlameAasAssembly() {
 
 export function GcChromatographAssembly() {
   const sim = useCadSim();
-  const ovenGlow = `#${new THREE.Color('#3b82f6').lerp(new THREE.Color('#ef4444'), sim.primaryNorm).getHexString()}`;
+  const finish = useInstrumentFinish();
+  const ovenGlow = `#${new THREE.Color(finish.roles.primaryBody.color).lerp(new THREE.Color(finish.roles.sensing.color), sim.primaryNorm).getHexString()}`;
 
   return (
     <group>
@@ -233,9 +234,9 @@ export function GcChromatographAssembly() {
       </CadPartGroup>
 
       <CadPartGroup partId="gc_column" basePos={[0, -0.08, 0.05]} explodeOffset={[0, 0.2, 0.85]}>
-        <mesh userData={{ selfEmissive: true }}>
+        <mesh>
           <torusGeometry args={[0.48, 0.035, 14, 48]} />
-          <meshStandardMaterial color={ovenGlow} emissive={ovenGlow} emissiveIntensity={0.25 + sim.primaryNorm * 0.45} metalness={0.65} roughness={0.28} />
+          <meshStandardMaterial color={ovenGlow} metalness={0.18} roughness={0.55} />
         </mesh>
         <HelicalTube radius={0.44} height={0.42} turns={6} tubeRadius={0.02} preset="copper" />
       </CadPartGroup>
@@ -257,7 +258,7 @@ export function GcChromatographAssembly() {
       <CadPartGroup partId="gc_carrier" basePos={[-1.25, -0.1, 0]} explodeOffset={[-0.85, 0, 0]}>
         <mesh>
           <cylinderGeometry args={[0.22, 0.22, 1.4, 24]} />
-          <PbrMat preset="ssDark" colorOverride="#047857" />
+          <PbrMat preset="blueHousing" />
         </mesh>
       </CadPartGroup>
     </group>
@@ -334,9 +335,9 @@ export function MassSpecAssembly() {
             <PbrMat preset="chrome" />
           </mesh>
         ))}
-        <mesh userData={{ selfEmissive: true }} rotation={[0, 0, Math.PI / 2]}>
+        <mesh rotation={[0, 0, Math.PI / 2]}>
           <cylinderGeometry args={[0.025, 0.025, 1.35, 12]} />
-          <meshStandardMaterial color="#38bdf8" emissive="#0ea5e9" emissiveIntensity={0.4 + sim.primaryNorm * 0.8} />
+          <PbrMat preset="blueHousing" />
         </mesh>
       </CadPartGroup>
       <CadPartGroup partId="ms_detector" basePos={[0.92, 0, 0]} explodeOffset={[0.75, 0, 0]}>
@@ -351,6 +352,7 @@ export function MassSpecAssembly() {
 
 export function PhElectrodeAssembly() {
   const sim = useCadSim();
+  const finish = useInstrumentFinish();
   const phVal = sim.primaryValue.toFixed(2);
   const mvVal = ((7 - sim.primaryValue) * 59.16).toFixed(1);
   const lcdTex = useMemo(() => buildLcdDisplayTexture(`pH ${phVal}`, `${mvVal} mV · ATC 25°C`), [phVal, mvVal]);
@@ -365,7 +367,16 @@ export function PhElectrodeAssembly() {
         </mesh>
         <mesh position={[0, -0.1, 0]}>
           <cylinderGeometry args={[0.68, 0.68, 0.76, 32]} />
-          <PbrMat preset="blueLiquid" colorOverride={sim.primaryValue < 6.5 ? '#ef4444' : sim.primaryValue > 7.5 ? '#3b82f6' : '#22c55e'} />
+          <PbrMat
+            preset="blueLiquid"
+            colorOverride={
+              sim.primaryValue < 6.5
+                ? finish.roles.sensing.color
+                : sim.primaryValue > 7.5
+                  ? finish.roles.structural.color
+                  : finish.roles.primaryBody.color
+            }
+          />
         </mesh>
       </CadPartGroup>
 
@@ -474,7 +485,7 @@ export function TurbidityAssembly() {
         </mesh>
         <mesh>
           <cylinderGeometry args={[0.4, 0.4, 1.05, 28]} />
-          <meshStandardMaterial color="#94a3b8" transparent opacity={0.18 + sim.primaryNorm * 0.55} roughness={0.4} />
+          <PbrMat preset="glass" />
         </mesh>
       </CadPartGroup>
       <CadPartGroup partId="tb_led" basePos={[-0.95, 0, 0]} explodeOffset={[-0.75, 0, 0]}>
@@ -482,9 +493,9 @@ export function TurbidityAssembly() {
           <cylinderGeometry args={[0.18, 0.18, 0.42, 22]} />
           <PbrMat preset="anodizedDark" />
         </mesh>
-        <mesh userData={{ selfEmissive: true }} position={[0.52, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+        <mesh position={[0.52, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
           <cylinderGeometry args={[0.035, 0.035, 0.72, 14]} />
-          <meshStandardMaterial color="#f43f5e" emissive="#e11d48" emissiveIntensity={0.85} />
+          <PbrMat preset="alnicoRed" />
         </mesh>
       </CadPartGroup>
       <CadPartGroup partId="tb_ref_0deg" basePos={[0.92, 0, 0]} explodeOffset={[0.75, 0, 0]}>
@@ -572,9 +583,9 @@ export function NdirTcdAssembly() {
           <boxGeometry args={[1.25, 0.42, 0.72]} />
           <PbrMat preset="ss316" />
         </mesh>
-        <mesh userData={{ selfEmissive: true }} position={[0, 0.24, 0]}>
+        <mesh position={[0, 0.24, 0]}>
           <cylinderGeometry args={[0.04, 0.04, 0.4, 14]} />
-          <meshStandardMaterial color="#f59e0b" emissive="#ea580c" emissiveIntensity={0.3 + sim.primaryNorm * 0.8} />
+          <PbrMat preset="alnicoRed" />
         </mesh>
       </CadPartGroup>
     </group>
@@ -588,9 +599,9 @@ export function PolarimeterRefractometerAssembly() {
   return (
     <group>
       <CadPartGroup partId="rp_na_lamp" basePos={[-1.18, 0.1, 0]} explodeOffset={[-0.75, 0, 0]}>
-        <mesh userData={{ selfEmissive: true }}>
+        <mesh>
           <cylinderGeometry args={[0.18, 0.18, 0.48, 22]} />
-          <meshStandardMaterial color="#facc15" emissive="#eab308" emissiveIntensity={1.1} />
+          <PbrMat preset="copper" />
         </mesh>
       </CadPartGroup>
       <CadPartGroup partId="rp_polarizer" basePos={[-0.65, 0.1, 0]} explodeOffset={[-0.3, 0.65, 0]}>
@@ -616,7 +627,7 @@ export function PolarimeterRefractometerAssembly() {
         </mesh>
         <mesh position={[0.1, 0.38, 0]}>
           <boxGeometry args={[0.04, 0.28, 0.04]} />
-          <meshStandardMaterial color="#dc2626" />
+          <PbrMat preset="alnicoRed" />
         </mesh>
       </CadPartGroup>
     </group>
@@ -646,9 +657,155 @@ export function NmrPhotoacousticAssembly() {
           <cylinderGeometry args={[0.28, 0.28, 0.72, 26]} />
           <PbrMat preset="brass" />
         </mesh>
-        <mesh userData={{ selfEmissive: true }} position={[0, 0.42, 0]}>
+        <mesh position={[0, 0.42, 0]}>
           <cylinderGeometry args={[0.14, 0.14, 0.15, 20]} />
-          <meshStandardMaterial color="#22d3ee" emissive="#06b6d4" emissiveIntensity={0.2 + sim.primaryNorm * 0.7} />
+          <PbrMat preset="alnicoRed" />
+        </mesh>
+      </CadPartGroup>
+    </group>
+  );
+}
+
+export function MonochromatorOpticsAssembly() {
+  const sim = useCadSim();
+  const wavelengthNm = Math.round(sim.primaryValue || 540);
+  const beamColor = wavelengthToHex(wavelengthNm);
+  const gratingRot = -0.35 + (sim.primaryNorm ?? 0.5) * 0.7;
+
+  return (
+    <group>
+      {/* Optical rail chassis */}
+      <CadPartGroup partId="mo_chassis" basePos={[0, -0.45, 0]} explodeOffset={[0, -0.55, 0]} isCutawayShell>
+        <mesh>
+          <boxGeometry args={[2.8, 0.28, 1.55]} />
+          <PbrMat preset="anodizedDark" />
+        </mesh>
+      </CadPartGroup>
+
+      {/* Light source: LED / LASER diode collimated emitter */}
+      <CadPartGroup partId="mo_source" basePos={[-1.15, 0.08, -0.4]} explodeOffset={[-0.7, 0.35, 0]}>
+        <mesh rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.14, 0.14, 0.44, 22]} />
+          <PbrMat preset="ssDark" />
+        </mesh>
+        <mesh position={[0.25, 0, 0]}>
+          <sphereGeometry args={[0.07, 14, 14]} />
+          <PbrMat preset="alumina" />
+        </mesh>
+      </CadPartGroup>
+
+      {/* Entrance slit & focusing mirror */}
+      <CadPartGroup partId="mo_mirrors" basePos={[-0.45, 0.08, 0.35]} explodeOffset={[-0.35, 0.55, 0.45]}>
+        <mesh rotation={[0, 0.38, 0]}>
+          <boxGeometry args={[0.08, 0.44, 0.42]} />
+          <PbrMat preset="chrome" />
+        </mesh>
+        <mesh position={[0.92, 0, 0]} rotation={[0, -0.38, 0]}>
+          <boxGeometry args={[0.08, 0.44, 0.42]} />
+          <PbrMat preset="chrome" />
+        </mesh>
+      </CadPartGroup>
+
+      {/* Rotatable Blazed Diffraction Grating */}
+      <CadPartGroup partId="mo_grating" basePos={[0.02, 0.1, -0.45]} rotation={[0, gratingRot, 0]} explodeOffset={[0, 0.78, -0.4]}>
+        <mesh>
+          <boxGeometry args={[0.42, 0.46, 0.08]} />
+          <PbrMat preset="chrome" />
+        </mesh>
+        {[-0.12, -0.04, 0.04, 0.12].map((x) => (
+          <mesh key={x} position={[x, 0, 0.045]}>
+            <boxGeometry args={[0.015, 0.42, 0.015]} />
+            <meshStandardMaterial color={beamColor} roughness={0.4} metalness={0.2} />
+          </mesh>
+        ))}
+      </CadPartGroup>
+
+      {/* Bandpass filter wheel & lens stage */}
+      <CadPartGroup partId="mo_filter_fiber" basePos={[0.58, 0.08, 0]} explodeOffset={[0.35, 0.55, 0]}>
+        <mesh rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.26, 0.26, 0.08, 28]} />
+          <PbrMat preset="blueHousing" />
+        </mesh>
+        <mesh position={[0.06, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.14, 0.14, 0.1, 20]} />
+          <meshStandardMaterial color={beamColor} transparent opacity={0.75} />
+        </mesh>
+      </CadPartGroup>
+
+      {/* Exit slit & Si Photodiode / PMT detector */}
+      <CadPartGroup partId="mo_detector" basePos={[1.1, 0.08, -0.15]} explodeOffset={[0.75, 0.35, 0]}>
+        <mesh>
+          <boxGeometry args={[0.26, 0.38, 0.34]} />
+          <PbrMat preset="blueHousing" />
+        </mesh>
+        <mesh position={[0.14, 0.08, 0]}>
+          <sphereGeometry args={[0.05, 12, 12]} />
+          <meshStandardMaterial color={beamColor} roughness={0.4} metalness={0.2} />
+        </mesh>
+      </CadPartGroup>
+    </group>
+  );
+}
+
+export function ElectrochemicalGasSensorAssembly() {
+  const sim = useCadSim();
+  const level = sim.primaryNorm ?? 0.45;
+
+  return (
+    <group>
+      {/* Flameproof / cylindrical cell body */}
+      <CadPartGroup partId="eg_body" basePos={[0, -0.05, 0]} explodeOffset={[0, -0.5, 0]} isCutawayShell>
+        <mesh>
+          <cylinderGeometry args={[0.56, 0.56, 1.12, 32]} />
+          <PbrMat preset="ptfe" />
+        </mesh>
+      </CadPartGroup>
+
+      {/* Top PTFE Hydrophobic Diffusion Membrane + Capillary barrier */}
+      <CadPartGroup partId="eg_membrane" basePos={[0, 0.54, 0]} explodeOffset={[0, 0.85, 0]}>
+        <mesh>
+          <cylinderGeometry args={[0.5, 0.5, 0.06, 28]} />
+          <PbrMat preset="alumina" />
+        </mesh>
+        <mesh position={[0, 0.05, 0]}>
+          <cylinderGeometry args={[0.44, 0.44, 0.04, 24]} />
+          <PbrMat preset="ss316" />
+        </mesh>
+      </CadPartGroup>
+
+      {/* 3-Electrode stack: Sensing WE, Counter CE, Reference RE */}
+      <CadPartGroup partId="eg_electrodes" basePos={[0, 0.14, 0]} explodeOffset={[0.65, 0.45, 0]}>
+        <mesh position={[0, 0.18, 0]}>
+          <cylinderGeometry args={[0.38, 0.38, 0.05, 24]} />
+          <PbrMat preset="gold" />
+        </mesh>
+        <mesh position={[0, 0.0, 0]}>
+          <cylinderGeometry args={[0.36, 0.36, 0.05, 24]} />
+          <PbrMat preset="copper" />
+        </mesh>
+        <mesh position={[0, -0.18, 0]}>
+          <cylinderGeometry args={[0.36, 0.36, 0.05, 24]} />
+          <PbrMat preset="ssDark" />
+        </mesh>
+      </CadPartGroup>
+
+      {/* Acid Electrolyte reservoir */}
+      <CadPartGroup partId="eg_electrolyte" basePos={[0, -0.22, 0]} explodeOffset={[-0.65, 0, 0]}>
+        <mesh>
+          <cylinderGeometry args={[0.42, 0.42, 0.42, 24]} />
+          <PbrMat preset="blueLiquid" />
+        </mesh>
+      </CadPartGroup>
+
+      {/* Bottom Potentiostat Conditioning PCB & Pin Header */}
+      <CadPartGroup partId="eg_potentiostat" basePos={[0, -0.68, 0]} explodeOffset={[0, -0.75, 0]}>
+        <mesh>
+          <cylinderGeometry args={[0.5, 0.5, 0.12, 24]} />
+          <PbrMat preset="blueHousing" />
+        </mesh>
+        <mesh position={[0, -0.1, 0.25]}>
+          <sphereGeometry args={[0.05, 12, 12]} />
+          <PbrMat preset="alnicoRed" />
         </mesh>
       </CadPartGroup>
     </group>
@@ -687,6 +844,10 @@ export function renderAnalyticalOpticalModel(key: string) {
       return <PolarimeterRefractometerAssembly />;
     case 'nmr-photoacoustic':
       return <NmrPhotoacousticAssembly />;
+    case 'monochromator-optics':
+      return <MonochromatorOpticsAssembly />;
+    case 'electrochemical-gas-sensor':
+      return <ElectrochemicalGasSensorAssembly />;
     default:
       return null;
   }

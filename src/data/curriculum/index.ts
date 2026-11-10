@@ -118,6 +118,52 @@ const CONCEPT_INSTRUMENT_LINKS: Record<
     { id: 'digital-multimeter', label: 'Digital Multimeter', hasSimulation: true },
   ],
 
+  // Semester IV — ICDC0204 Signal Processing
+  'sp-u1-signals-ops': [
+    { id: 'dsp-processor-board', label: 'Modified Harvard DSP', hasSimulation: true },
+    { id: 'cro-crt', label: 'Waveform Scope Monitor', hasSimulation: true },
+  ],
+  'sp-u1-systems-conv-corr': [
+    { id: 'ultrasonic-flow-meter', label: 'Cross-Correlation Flowmeter', hasSimulation: true },
+    { id: 'radar', label: 'FMCW Echo Correlator', hasSimulation: true },
+  ],
+  'sp-u1-sampling-quantization': [
+    { id: 'sampling-quantizer', label: 'Sampling & SQNR Analyzer', hasSimulation: true },
+    { id: 'adc-and-dac', label: 'SAR ADC & R-2R DAC', hasSimulation: true },
+  ],
+  'sp-u2-ctfs-dtft': [
+    { id: 'dft-fft-analyzer', label: 'DFT / FFT Analyzer', hasSimulation: true },
+    { id: 'filters', label: 'Practical Active LPF', hasSimulation: true },
+  ],
+  'sp-u2-dft-convolution': [
+    { id: 'dft-fft-analyzer', label: 'Radix-2 DFT Matrix Engine', hasSimulation: true },
+    { id: 'dsp-processor-board', label: 'DSP Core', hasSimulation: true },
+  ],
+  'sp-u2-fft-butterflies': [
+    { id: 'dft-fft-analyzer', label: 'DIT/DIF Butterfly Spectrum', hasSimulation: true },
+    { id: 'ftir-spectrometer', label: 'FTIR Interferogram FFT', hasSimulation: true },
+  ],
+  'sp-u3-ztransform-roc': [
+    { id: 'fir-iir-filter', label: 'Z-Plane Pole-Zero Filter', hasSimulation: true },
+    { id: 'process-controller', label: 'Discrete PID Controller', hasSimulation: true },
+  ],
+  'sp-u3-zplane-stability': [
+    { id: 'fir-iir-filter', label: 'Digital Stability Unit-Circle', hasSimulation: true },
+    { id: 'load-cell', label: '50 Hz Notch Load Cell DSP', hasSimulation: true },
+  ],
+  'sp-u4-fir-structures-design': [
+    { id: 'fir-iir-filter', label: 'Linear-Phase FIR Window', hasSimulation: true },
+    { id: 'dsp-processor-board', label: 'Hardware MAC Delay Line', hasSimulation: true },
+  ],
+  'sp-u4-iir-analog-design': [
+    { id: 'fir-iir-filter', label: 'IIR Butterworth / Bilinear', hasSimulation: true },
+    { id: 'filters', label: 'Analog Sallen-Key Prototype', hasSimulation: true },
+  ],
+  'sp-u5-dsp-arch-fwl': [
+    { id: 'dsp-processor-board', label: 'Modified Harvard MAC DSP', hasSimulation: true },
+    { id: 'sampling-quantizer', label: 'Fixed-Point Quantizer', hasSimulation: true },
+  ],
+
   // Semester IV — ICDC0206 Control System Engineering
   'cse-u6-components': [
     { id: 'servomotor', label: 'AC/DC Servomotor', hasSimulation: true },
@@ -188,34 +234,159 @@ const CONCEPT_INSTRUMENT_LINKS: Record<
     { id: 'load-cell', label: 'Shear-Beam Load Cell', hasSimulation: true },
   ],
 
+  // Semester V — ICDC0303 Modern Control System
+  'mcs-u1-statespace-models': [
+    { id: 'state-space-feedback', label: 'State-Space (A,B,C,D) Model', hasSimulation: true },
+    { id: 'servomotor', label: '2nd-Order DC Servomotor', hasSimulation: true },
+  ],
+  'mcs-u1-stm-solution': [
+    { id: 'state-space-feedback', label: 'STM Transient Solver', hasSimulation: true },
+    { id: 'process-controller', label: 'ZOH Digital Controller', hasSimulation: true },
+  ],
+  'mcs-u1-canonical-ext': [
+    { id: 'state-space-feedback', label: 'Canonical Realization Model', hasSimulation: true },
+  ],
+  'mcs-u2-ctrb-obsv-tests': [
+    { id: 'state-space-feedback', label: 'Controllability / Observer', hasSimulation: true },
+  ],
+  'mcs-u2-poleplace-observers': [
+    { id: 'state-space-feedback', label: 'Ackermann Pole Placement', hasSimulation: true },
+    { id: 'servomotor', label: 'Servo Velocity Observer', hasSimulation: true },
+  ],
+  'mcs-u3-nonlinear-phaseplane': [
+    { id: 'control-valves', label: 'Stiction / Dead-Zone Valve', hasSimulation: true },
+    { id: 'spool-valve', label: 'Deadband Hydraulic Spool', hasSimulation: true },
+  ],
+  'mcs-u3-describing-function': [
+    { id: 'process-controller', label: 'Relay Auto-Tuning Loop', hasSimulation: true },
+    { id: 'control-valves', label: 'Limit-Cycle Valve Actuator', hasSimulation: true },
+  ],
+  'mcs-u4-bibo-quadratic-sylvester': [
+    { id: 'lqr-optimal-regulator', label: 'Quadratic Weight Matrix Q, P', hasSimulation: true },
+  ],
+  'mcs-u4-lyapunov-popov': [
+    { id: 'state-space-feedback', label: 'Lyapunov Stability Solver', hasSimulation: true },
+  ],
+  'mcs-u5-variational-pontryagin': [
+    { id: 'lqr-optimal-regulator', label: 'Pontryagin Optimal Control', hasSimulation: true },
+    { id: 'stepper-motor', label: 'Minimum-Time Stepper Move', hasSimulation: true },
+  ],
+  'mcs-u5-lqp-hjb-riccati': [
+    { id: 'lqr-optimal-regulator', label: 'Riccati / LQR Controller', hasSimulation: true },
+  ],
+  'mcs-u5-lqr-enrichment': [
+    { id: 'lqr-optimal-regulator', label: 'Bryson Q/R LQR Tuner', hasSimulation: true },
+  ],
+
   // Semester V — ICDC0305 Analytical and Optical Instrumentation
-  'aoi-u2-chrom': [
+  'aoi-u1-metrics': [
+    { id: 'uv-vis-spectrophotometer', label: 'Analytical UV-Vis Bench', hasSimulation: true },
+    { id: 'electrochemical-gas-sensor', label: 'MEMS / Chem Gas Cell', hasSimulation: true },
+  ],
+  'aoi-u1-smart-mems-ufluidics': [
+    { id: 'electrochemical-gas-sensor', label: 'Micro Gas Sensor Cell', hasSimulation: true },
+    { id: 'arduino-uno', label: 'PC / MCU DAQ Interface', hasSimulation: true },
+  ],
+  'aoi-u2-chrom-gc': [
     { id: 'chromatography', label: 'Gas Chromatograph (GC)', hasSimulation: true },
+    { id: 'mass-spectrometer', label: 'GC-MS Quadrupole Mass Spec', hasSimulation: true },
+  ],
+  'aoi-u2-chrom-hplc-ic': [
     { id: 'hplc-ic-system', label: 'HPLC & Ion Chromatograph', hasSimulation: true },
-    { id: 'mass-spectrometer', label: 'Quadrupole Mass Spec', hasSimulation: true },
+    { id: 'mass-spectrometer', label: 'LC-MS Mass Interface', hasSimulation: true },
   ],
-  'aoi-u3-gas': [
-    { id: 'oxygen-analyzers', label: 'Paramagnetic O₂ Analyzer', hasSimulation: true },
+  'aoi-u3-tcd-heat-mixtures': [
     { id: 'gas-analyzers', label: 'NDIR & TCD Gas Bench', hasSimulation: true },
+    { id: 'wheatstone-bridge', label: 'TCD Filament Bridge', hasSimulation: true },
+  ],
+  'aoi-u3-o2-electrochem-density': [
+    { id: 'oxygen-analyzers', label: 'Paramagnetic O₂ Analyzer', hasSimulation: true },
+    { id: 'electrochemical-gas-sensor', label: '3-Electrode Toxic Gas Cell', hasSimulation: true },
     { id: 'dissolved-oxygen', label: 'Clark Polarographic DO', hasSimulation: true },
+    { id: 'density-meter', label: 'Vibrating Gas Density', hasSimulation: true },
   ],
-  'aoi-u4-chem': [
+  'aoi-u4-ph-redox-cond': [
     { id: 'ph', label: 'Glass Electrode pH Meter', hasSimulation: true },
-    { id: 'conductivity', label: 'Toroidal Conductivity Probe', hasSimulation: true },
+    { id: 'conductivity', label: 'Toroidal Conductivity Cell', hasSimulation: true },
+  ],
+  'aoi-u4-density-multiphase': [
     { id: 'density-meter', label: 'Oscillating U-Tube Density', hasSimulation: true },
+    { id: 'coriolis-flow-meter', label: 'Coriolis Mass & Density', hasSimulation: true },
   ],
-  'aoi-u5-optics': [
+  'aoi-u5-optics-monochromators': [
+    { id: 'monochromator-optics', label: 'Czerny-Turner Monochromator', hasSimulation: true },
+    { id: 'refractometer-polarimeter', label: 'Refractometer & Polarimeter', hasSimulation: true },
+    { id: 'turbidity', label: '90° Scattering Nephelometer', hasSimulation: true },
+  ],
+  'aoi-u5-detectors-laser-fiber': [
     { id: 'photo-detectors', label: 'PMT Photomultiplier & LDR', hasSimulation: true },
-    { id: 'optical-fiber-sensor', label: 'Optical Fiber FBG', hasSimulation: true },
-    { id: 'refractometer-polarimeter', label: 'Polarimeter & Refractometer', hasSimulation: true },
+    { id: 'optical-fiber-sensor', label: 'Optical Fiber FBG Bench', hasSimulation: true },
+    { id: 'monochromator-optics', label: 'LED/LASER Optical Rail', hasSimulation: true },
   ],
-  'aoi-u6-spectro': [
+  'aoi-u6-em-beer-colorimeters': [
     { id: 'uv-vis-spectrophotometer', label: 'Double-Beam UV-Vis Bench', hasSimulation: true },
     { id: 'colorimeter', label: 'Single-Beam Colorimeter', hasSimulation: true },
+    { id: 'monochromator-optics', label: 'Grating Dispersion Stage', hasSimulation: true },
+  ],
+  'aoi-u6-ir-pas-nmr-ms-aas-flame': [
     { id: 'ftir-spectrometer', label: 'Michelson FTIR Bench', hasSimulation: true },
     { id: 'flame-aas-spectrometer', label: 'Flame Photometer & AAS', hasSimulation: true },
     { id: 'nmr-photoacoustic', label: 'FT-NMR & Photoacoustic', hasSimulation: true },
-    { id: 'turbidity', label: '90° Nephelometer', hasSimulation: true },
+    { id: 'mass-spectrometer', label: 'Quadrupole Mass Spec', hasSimulation: true },
+  ],
+
+  // Semester V — ICDC0301 Microprocessors and Embedded Systems
+  'mpes-u1-arch-org': [
+    { id: 'intel-8085', label: 'Intel 8085 Von Neumann', hasSimulation: true },
+    { id: 'intel-8051', label: 'Intel 8051 Harvard MCU', hasSimulation: true },
+  ],
+  'mpes-u2-8085-arch-pins': [
+    { id: 'intel-8085', label: 'Intel 8085 40-Pin DIP', hasSimulation: true },
+  ],
+  'mpes-u2-8085-instr-timing-stack-int': [
+    { id: 'intel-8085', label: 'Intel 8085 Timing & CPU', hasSimulation: true },
+  ],
+  'mpes-u3-mem-io-schemes': [
+    { id: 'intel-8085', label: '8085 Bus Interface', hasSimulation: true },
+    { id: 'ic-8255', label: '8255A I/O Expander', hasSimulation: true },
+  ],
+  'mpes-u3-peripherals-825x': [
+    { id: 'ic-8255', label: '8255A PPI (24 Pins)', hasSimulation: true },
+    { id: 'ic-8253', label: '8253/8254 PIT Timers', hasSimulation: true },
+    { id: 'ic-8251', label: '8251A USART Serial', hasSimulation: true },
+    { id: 'ic-8279', label: '8279 Kbd/Display Ctrl', hasSimulation: true },
+  ],
+  'mpes-u4-8086-arch-seg': [
+    { id: 'intel-8086', label: 'Intel 8086 BIU/EU CPU', hasSimulation: true },
+  ],
+  'mpes-u4-8086-modes-addr-int': [
+    { id: 'intel-8086', label: 'Intel 8086 Min/Max Modes', hasSimulation: true },
+  ],
+  'mpes-u5-8051-arch-instr': [
+    { id: 'intel-8051', label: 'Intel 8051 Harvard MCU', hasSimulation: true },
+  ],
+  'mpes-u5-8051-timers-uart-int': [
+    { id: 'intel-8051', label: '8051 Timer & UART Baud', hasSimulation: true },
+    { id: 'ic-8251', label: 'USART Serial Ref', hasSimulation: true },
+  ],
+  'mpes-u5-8051-interfacing': [
+    { id: 'lcd-display-16x2', label: '16×2 HD44780 LCD Module', hasSimulation: true },
+    { id: 'seven-segment-display', label: '7-Segment LED Display', hasSimulation: true },
+    { id: 'adc-and-dac', label: 'SAR ADC & R-2R DAC Board', hasSimulation: true },
+    { id: 'intel-8051', label: 'Intel 8051 MCU', hasSimulation: true },
+  ],
+  'mpes-u6-embedded-codesign': [
+    { id: 'intel-8051', label: '8051 Embedded Core', hasSimulation: true },
+    { id: 'dsp-processor-board', label: 'Dedicated MAC DSP', hasSimulation: true },
+  ],
+  'mpes-u7-arduino-platform': [
+    { id: 'arduino-uno', label: 'Arduino UNO R3 Board', hasSimulation: true },
+    { id: 'lcd-display-16x2', label: '16×2 LCD Shield', hasSimulation: true },
+  ],
+  'mpes-u7-raspberry-pi': [
+    { id: 'raspberry-pi', label: 'Raspberry Pi Linux SBC', hasSimulation: true },
+    { id: 'arduino-uno', label: 'Arduino Co-Processor', hasSimulation: true },
+    { id: 'adc-and-dac', label: 'External I2C/SPI ADC', hasSimulation: true },
   ],
 
   // Semester V — ICDC0307 Process Dynamics and Control
@@ -290,14 +461,14 @@ export function getSubjectsForSemesterTab(tab: number | 'additional'): Curriculu
 export const DRIVE_COMPANION_COURSES = [
   { sem: '3rd Sem Drive', name: 'OOPs Minor', note: 'CS Minor elective tracked alongside core ICE Sem III' },
   {
-    sem: '4th Sem Drive',
-    name: 'Data Structures & Signal Processing (+ SP_Lab)',
-    note: 'Signal Processing feeds FIR/IIR enrichment & analytical FFT; DS supports technical software placements',
+    sem: '4th Sem Core + Drive',
+    name: 'Signal Processing (ICDC0204) & Data Structures',
+    note: 'Signal Processing ICDC0204 now integrated as full 5-section Sem IV NITJ Core subject; DS supports placements',
   },
   {
-    sem: '5th Sem Drive',
-    name: 'Microprocessor & Embedded Systems · Computer Organisation & Architecture',
-    note: 'Covered interactively in INSTRUMENTA Electronics & Embedded / Automation PLC hubs',
+    sem: '5th Sem Core + Drive',
+    name: 'Microprocessors & Embedded Systems (ICDC0301) · Computer Org & Architecture',
+    note: 'Microprocessors & Embedded Systems ICDC0301 now integrated as full 7-section Sem V NITJ Core subject with 8085/8086/8051/Arduino 3D models',
   },
 ] as const;
 

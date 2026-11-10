@@ -46,7 +46,7 @@ export function InstrumentationHubPage() {
     <div className="mx-auto flex max-w-[1440px] flex-col gap-5">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="eyebrow text-[var(--st-cyan)]">
+          <p className="eyebrow text-[var(--st-accent-text)]">
             {activeCategoryMeta ? activeCategoryMeta.eyebrow : 'INSTRUMENTATION KNOWLEDGE HUB · 7 DOMAINS'}
           </p>
           <h1 className="text-2xl font-semibold tracking-tight text-[var(--st-on)]">
@@ -61,7 +61,7 @@ export function InstrumentationHubPage() {
 
         <div className="flex flex-wrap items-center gap-2">
           <Link to="/lab" className="btn">
-            <Compass className="size-4 text-[var(--st-cyan)]" />
+            <Compass className="size-4 text-[var(--st-accent-text)]" />
             Full Curriculum 3D Lab &amp; Inventory
           </Link>
           <Link to="/instrumentation/temperature/rtd" className="btn primary">
@@ -137,7 +137,7 @@ export function InstrumentationHubPage() {
                     <span className="eyebrow">{topic.categoryLabel}</span>
                     <div className="flex items-center gap-1.5">
                       {has3D && (
-                        <span className="status" style={{ '--tone': 'var(--st-cyan)' } as React.CSSProperties}>
+                        <span className="status" style={{ '--tone': 'var(--st-accent)' } as React.CSSProperties}>
                           {hasSim ? '3D + Sim' : '3D CAD'}
                         </span>
                       )}
@@ -156,7 +156,7 @@ export function InstrumentationHubPage() {
                           })
                         }
                         aria-label={`Bookmark ${topic.title}`}
-                        className={`icon-btn size-7! ${saved ? 'border-[var(--st-cyan)]! text-[var(--st-cyan)]!' : ''}`}
+                        className={`icon-btn size-7! ${saved ? 'border-[var(--st-accent)]! text-[var(--st-accent-text)]!' : ''}`}
                       >
                         <Bookmark className="size-3.5" />
                       </button>
@@ -167,7 +167,7 @@ export function InstrumentationHubPage() {
                     to={`/instrumentation/${topic.category}/${topic.slug}`}
                     className="block group"
                   >
-                    <h2 className="text-base font-semibold text-[var(--st-on)] transition group-hover:text-[var(--st-cyan)]">
+                    <h2 className="text-base font-semibold text-[var(--st-on)] transition group-hover:text-[var(--st-accent-text)]">
                       {topic.title}
                     </h2>
                     <p className="muted mt-1 line-clamp-2 text-xs leading-relaxed">{topic.subtitle}</p>
@@ -196,7 +196,7 @@ export function InstrumentationHubPage() {
                           : 'Open 3D Explorer & Docs'
                         : 'Open 20-Point Spec Sheet'}
                     </span>
-                    <ArrowRight className="size-3.5 text-[var(--st-cyan)]" />
+                    <ArrowRight className="size-3.5 text-[var(--st-accent-text)]" />
                   </Link>
                 </div>
               </div>

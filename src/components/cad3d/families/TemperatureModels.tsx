@@ -1,15 +1,16 @@
 import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
-import { CadPartGroup, useCadSim } from '../CadPart';
+import { CadPartGroup, useCadSim, useInstrumentFinish } from '../CadPart';
 import { buildDialFaceTexture, buildLcdDisplayTexture } from '../materials';
 import { DialPointer, FlangeWithBolts, HelicalTube, PbrMat } from '../primitives';
 
 export function ThermistorAssembly() {
   const sim = useCadSim();
+  const finish = useInstrumentFinish();
   const hotColor = useMemo(() => {
-    const c = new THREE.Color('#2563eb').lerp(new THREE.Color('#f97316'), sim.primaryNorm);
+    const c = new THREE.Color(finish.roles.primaryBody.color).lerp(new THREE.Color(finish.roles.sensing.color), sim.primaryNorm);
     return `#${c.getHexString()}`;
-  }, [sim.primaryNorm]);
+  }, [sim.primaryNorm, finish.roles.primaryBody.color, finish.roles.sensing.color]);
 
   return (
     <group>
@@ -20,11 +21,11 @@ export function ThermistorAssembly() {
         </mesh>
         <mesh position={[-0.04, -0.36, 0]}>
           <cylinderGeometry args={[0.024, 0.024, 0.25, 16]} />
-          <PbrMat preset="copper" colorOverride="#dc2626" />
+          <PbrMat preset="alnicoRed" />
         </mesh>
         <mesh position={[0.04, -0.36, 0]}>
           <cylinderGeometry args={[0.024, 0.024, 0.25, 16]} />
-          <PbrMat preset="copper" colorOverride="#f8fafc" />
+          <PbrMat preset="alumina" />
         </mesh>
       </CadPartGroup>
 
@@ -58,14 +59,12 @@ export function ThermistorAssembly() {
       </CadPartGroup>
 
       <CadPartGroup partId="th_oxide_bead" basePos={[0, -0.98, 0]} explodeOffset={[0, -0.55, 0.45]}>
-        <mesh userData={{ selfEmissive: true }}>
+        <mesh>
           <sphereGeometry args={[0.11, 28, 28]} />
           <meshStandardMaterial
             color={hotColor}
-            emissive={hotColor}
-            emissiveIntensity={0.22 + sim.primaryNorm * 0.45}
-            metalness={0.35}
-            roughness={0.35}
+            metalness={0.18}
+            roughness={0.58}
           />
         </mesh>
       </CadPartGroup>
@@ -226,12 +225,14 @@ export function FilledSystemAssembly() {
 
 export function OpticalPyrometerAssembly() {
   const sim = useCadSim();
+  const finish = useInstrumentFinish();
   const filamentColor = useMemo(() => {
-    const c = new THREE.Color('#991b1b')
-      .lerp(new THREE.Color('#f97316'), Math.min(1, sim.primaryNorm * 1.3))
-      .lerp(new THREE.Color('#fef08a'), Math.max(0, (sim.primaryNorm - 0.5) * 2));
+    const c = new THREE.Color(finish.roles.copper.color).lerp(
+      new THREE.Color(finish.roles.sensing.color),
+      Math.min(1, sim.primaryNorm),
+    );
     return `#${c.getHexString()}`;
-  }, [sim.primaryNorm]);
+  }, [sim.primaryNorm, finish.roles.copper.color, finish.roles.sensing.color]);
 
   return (
     <group rotation={[0, Math.PI / 2, 0]}>
@@ -254,12 +255,12 @@ export function OpticalPyrometerAssembly() {
           <cylinderGeometry args={[0.18, 0.18, 0.34, 24]} />
           <PbrMat preset="glass" />
         </mesh>
-        <mesh userData={{ selfEmissive: true }} rotation={[0, 0, Math.PI / 2]}>
+        <mesh rotation={[0, 0, Math.PI / 2]}>
           <torusGeometry args={[0.075, 0.018, 12, 24, Math.PI]} />
           <meshStandardMaterial
             color={filamentColor}
-            emissive={filamentColor}
-            emissiveIntensity={0.4 + sim.primaryNorm * 1.6}
+            metalness={0.2}
+            roughness={0.5}
           />
         </mesh>
       </CadPartGroup>
@@ -267,7 +268,7 @@ export function OpticalPyrometerAssembly() {
       <CadPartGroup partId="op_red_filter" basePos={[0.35, 0, 0]} explodeOffset={[0, -0.55, 0.45]}>
         <mesh rotation={[0, 0, Math.PI / 2]}>
           <cylinderGeometry args={[0.28, 0.28, 0.04, 32]} />
-          <meshStandardMaterial color="#dc2626" transparent opacity={0.62} roughness={0.1} />
+          <PbrMat preset="alnicoRed" />
         </mesh>
       </CadPartGroup>
 
@@ -325,15 +326,9 @@ export function RadiationPyrometerAssembly() {
       </CadPartGroup>
 
       <CadPartGroup partId="rp_thermopile" basePos={[-0.35, 0, 0]} explodeOffset={[0, 0.25, 0.65]}>
-        <mesh userData={{ selfEmissive: true }} rotation={[0, 0, Math.PI / 2]}>
+        <mesh rotation={[0, 0, Math.PI / 2]}>
           <cylinderGeometry args={[0.11, 0.11, 0.16, 20]} />
-          <meshStandardMaterial
-            color="#f59e0b"
-            emissive="#f59e0b"
-            emissiveIntensity={0.15 + sim.primaryNorm * 0.65}
-            metalness={0.6}
-            roughness={0.3}
-          />
+          <PbrMat preset="alnicoRed" />
         </mesh>
       </CadPartGroup>
     </group>
@@ -372,7 +367,7 @@ export function IrSensorAssembly() {
       <CadPartGroup partId="ir_mems_thermopile" basePos={[0.0, 0, 0]} explodeOffset={[0, -0.55, 0.5]}>
         <mesh>
           <boxGeometry args={[0.42, 0.24, 0.24]} />
-          <PbrMat preset="gold" />
+          <PbrMat preset="alnicoRed" />
         </mesh>
       </CadPartGroup>
 
@@ -392,10 +387,11 @@ export function IrSensorAssembly() {
 
 export function ThermowellAssembly() {
   const sim = useCadSim();
+  const finish = useInstrumentFinish();
   const safeRatio = (0.35 + sim.primaryNorm * 0.45).toFixed(2);
   const badgeTex = useMemo(
-    () => buildLcdDisplayTexture(`r = ${safeRatio}`, 'ASME PTC 19.3 TW', '#0d1b2a', '#a3e635'),
-    [safeRatio],
+    () => buildLcdDisplayTexture(`r = ${safeRatio}`, 'ASME PTC 19.3 TW', '#102436', finish.roles.ceramic.color),
+    [safeRatio, finish.roles.ceramic.color],
   );
   useEffect(() => () => badgeTex.dispose(), [badgeTex]);
 
@@ -426,7 +422,7 @@ export function ThermowellAssembly() {
       <CadPartGroup partId="tw_inner_bore" basePos={[0, -0.42, 0]} explodeOffset={[0.68, -0.25, 0]}>
         <mesh>
           <cylinderGeometry args={[0.055, 0.055, 1.5, 20]} />
-          <PbrMat preset="copper" />
+          <PbrMat preset="alnicoRed" />
         </mesh>
         <mesh position={[0.45, 0.5, 0]}>
           <boxGeometry args={[0.55, 0.28, 0.06]} />
@@ -455,7 +451,7 @@ export function TempTransmitterAssembly() {
       <CadPartGroup partId="tt_pcb_board" basePos={[0, 0.18, 0]} explodeOffset={[0, 0.35, 0]}>
         <mesh>
           <cylinderGeometry args={[0.7, 0.7, 0.06, 36]} />
-          <PbrMat preset="siliconWafer" colorOverride="#15803d" />
+          <PbrMat preset="siliconWafer" />
         </mesh>
       </CadPartGroup>
 

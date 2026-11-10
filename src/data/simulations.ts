@@ -2586,5 +2586,502 @@ export const INSTRUMENT_SIMULATIONS: Record<string, InstrumentSimulationConfig> 
       };
     },
   },
+  'monochromator-optics': {
+    id: 'monochromator-optics',
+    title: 'Diffraction Grating Monochromator & Dispersion',
+    governingFormulaLatex: 'd(\\sin\\alpha + \\sin\\beta) = m\\lambda, \\quad D = \\frac{m}{d\\cos\\beta}',
+    assumptions: 'Czerny-Turner 1200 lines/mm grating (d = 833.3 nm), fixed α = 15°, first diffraction order m = 1.',
+    isEducationalApproximation: false,
+    primaryParam: { key: 'primary', label: 'Target Wavelength λ', unit: 'nm', min: 250, max: 800, step: 10, defaultValue: 540 },
+    evaluate: (lamNm) => {
+      const dNm = 833.33;
+      const sinAlpha = Math.sin((15 * Math.PI) / 180);
+      const calcBetaDeg = (l: number) => {
+        const arg = Math.min(0.98, Math.max(-0.98, l / dNm - sinAlpha));
+        return (Math.asin(arg) * 180) / Math.PI;
+      };
+      const betaDeg = calcBetaDeg(lamNm);
+      return {
+        outputValue: `${betaDeg.toFixed(1)}°`,
+        outputNumeric: Number(betaDeg.toFixed(2)),
+        outputUnit: 'Exit Angle β',
+        secondaryOutput: `Grating spacing d = 833.3 nm · Linear dispersion ~ 1.6 nm/mm at slit`,
+        normalizedPrimary: normOf(lamNm, 250, 800),
+        observation: `Tilting the grating positions λ = ${lamNm} nm cleanly at diffraction exit angle ${betaDeg.toFixed(1)}°.`,
+        curve: sweepCurve(250, 800, calcBetaDeg),
+        xLabel: 'Wavelength',
+        xUnit: 'nm',
+        yLabel: 'Diffraction Angle β',
+        yUnit: 'deg',
+      };
+    },
+  },
+  'electrochemical-gas-sensor': {
+    id: 'electrochemical-gas-sensor',
+    title: 'Electrochemical Toxic Gas Cell (3-Electrode Current)',
+    governingFormulaLatex: 'I_{\\text{lim}} = \\frac{n F A D\\,C_{\\text{gas}}}{\\delta}',
+    assumptions: 'CO electrochemical cell sensitivity 70 nA/ppm under diffusion-limited capillary entry.',
+    isEducationalApproximation: true,
+    primaryParam: { key: 'primary', label: 'Gas Concentration CO', unit: 'ppm', min: 0, max: 500, step: 10, defaultValue: 50 },
+    evaluate: (ppm) => {
+      const currentUa = ppm * 0.07;
+      return {
+        outputValue: `${currentUa.toFixed(2)} μA`,
+        outputNumeric: Number(currentUa.toFixed(2)),
+        outputUnit: 'Cell Current',
+        secondaryOutput: ppm >= 200 ? 'IDLH / High-gas alarm threshold exceeded!' : ppm >= 35 ? 'OSHA TWA alarm threshold active' : 'Safe ambient breathing zone level',
+        normalizedPrimary: normOf(ppm, 0, 500),
+        observation: `Diffusion through the hydrophobic PTFE barrier drives ${currentUa.toFixed(2)} μA directly linear to ${ppm} ppm CO.`,
+        curve: sweepCurve(0, 500, (c) => c * 0.07),
+        xLabel: 'CO Gas',
+        xUnit: 'ppm',
+        yLabel: 'Current',
+        yUnit: 'μA',
+      };
+    },
+  },
+  'intel-8085': {
+    id: 'intel-8085',
+    title: 'Intel 8085 Crystal Clock & Machine-Cycle Timing',
+    governingFormulaLatex: 'T_{\\text{state}} = \\frac{2}{f_{\\text{crystal}}}, \\quad t_{\\text{M1}} = 4\\,T_{\\text{state}}',
+    assumptions: 'Internal ÷2 clock prescaler; standard 4-T opcode fetch + 3-T memory read.',
+    isEducationalApproximation: false,
+    primaryParam: { key: 'primary', label: 'Crystal Frequency', unit: 'MHz', min: 2, max: 10, step: 0.5, defaultValue: 6 },
+    evaluate: (xtal) => {
+      const fclk = xtal / 2;
+      const tNs = 1000 / fclk;
+      const addTimeUs = (4 * tNs) / 1000;
+      const staTimeUs = (13 * tNs) / 1000;
+      return {
+        outputValue: `${fclk.toFixed(2)} MHz · ${tNs.toFixed(1)} ns/T`,
+        outputNumeric: Number(tNs.toFixed(1)),
+        outputUnit: 'ns / T-state',
+        secondaryOutput: `Opcode Fetch (4T) = ${addTimeUs.toFixed(2)} μs · STA addr (13T) = ${staTimeUs.toFixed(2)} μs`,
+        normalizedPrimary: normOf(xtal, 2, 10),
+        observation: `A ${xtal.toFixed(1)} MHz quartz crystal divides internally by 2 to run the 8085 bus at ${fclk.toFixed(2)} MHz.`,
+        curve: sweepCurve(2, 10, (x) => 1000 / (x / 2)),
+        xLabel: 'Crystal Freq',
+        xUnit: 'MHz',
+        yLabel: 'T-State Period',
+        yUnit: 'ns',
+      };
+    },
+  },
+  'intel-8086': {
+    id: 'intel-8086',
+    title: 'Intel 8086 Physical Address & Clock Rate Calculator',
+    governingFormulaLatex: '\\text{PA}_{20\\text{-bit}} = (\\text{Segment}_{16} \\times 16) + \\text{Offset}_{16}',
+    assumptions: '20-bit BIU physical address adder combining 16-bit CS segment and 16-bit IP offset.',
+    isEducationalApproximation: false,
+    primaryParam: { key: 'primary', label: 'Segment CS (dec/hex)', unit: '0x1000+', min: 0, max: 65535, step: 256, defaultValue: 8192 },
+    secondaryParam: { key: 'secondary', label: 'Offset IP', unit: 'bytes', min: 0, max: 65535, step: 16, defaultValue: 512 },
+    evaluate: (seg, off) => {
+      const pa = ((seg << 4) + off) & 0xfffff;
+      const segHex = seg.toString(16).toUpperCase().padStart(4, '0');
+      const offHex = off.toString(16).toUpperCase().padStart(4, '0');
+      const paHex = pa.toString(16).toUpperCase().padStart(5, '0');
+      return {
+        outputValue: `${paHex}H`,
+        outputNumeric: pa,
+        outputUnit: '20-bit Addr',
+        secondaryOutput: `${segHex}H : ${offHex}H -> (${segHex}0H + ${offHex}H) = ${paHex}H`,
+        normalizedPrimary: normOf(seg, 0, 65535),
+        normalizedSecondary: normOf(off, 0, 65535),
+        observation: `Shifting segment ${segHex}H left by 4 bits and adding offset ${offHex}H addresses byte ${paHex}H inside 1 MB RAM.`,
+        curve: sweepCurve(0, 65535, (s) => ((s << 4) + off) & 0xfffff),
+        xLabel: 'Segment',
+        xUnit: 'CS',
+        yLabel: 'Physical Byte',
+        yUnit: 'Addr',
+      };
+    },
+  },
+  'intel-8051': {
+    id: 'intel-8051',
+    title: '8051 Machine Cycle & Timer Reload Calculator',
+    governingFormulaLatex: 'f_{\\text{cycle}} = \\frac{f_{\\text{osc}}}{12}, \\quad \\text{Delay} = (65536 - \\text{Count})\\cdot T_{\\text{cycle}}',
+    assumptions: 'Classic 8051 12-clock machine cycle with 16-bit Timer-0 in Mode 1.',
+    isEducationalApproximation: false,
+    primaryParam: { key: 'primary', label: 'Timer Count (16-bit)', unit: 'ticks', min: 100, max: 50000, step: 100, defaultValue: 10000 },
+    evaluate: (ticks) => {
+      const fosc = 11.0592;
+      const tCycleUs = 12 / fosc;
+      const delayMs = (ticks * tCycleUs) / 1000;
+      const reloadHex = (65536 - Math.round(ticks)).toString(16).toUpperCase().padStart(4, '0');
+      return {
+        outputValue: `${delayMs.toFixed(2)} ms`,
+        outputNumeric: Number(delayMs.toFixed(3)),
+        outputUnit: 'Timer Delay',
+        secondaryOutput: `11.0592 MHz XTAL (T_MC = ${tCycleUs.toFixed(3)} μs) · Load TH0:TL0 = ${reloadHex}H`,
+        normalizedPrimary: normOf(ticks, 100, 50000),
+        observation: `Counting ${ticks} machine cycles before TF0 overflow takes ${delayMs.toFixed(2)} ms at 11.0592 MHz.`,
+        curve: sweepCurve(100, 50000, (n) => (n * tCycleUs) / 1000),
+        xLabel: 'Ticks',
+        xUnit: 'cycles',
+        yLabel: 'Delay',
+        yUnit: 'ms',
+      };
+    },
+  },
+  'ic-8253': {
+    id: 'ic-8253',
+    title: '8253/8254 PIT Divider & Square-Wave Output',
+    governingFormulaLatex: 'f_{\\text{out}} = \\frac{f_{\\text{clk}}}{N_{\\text{divisor}}}',
+    assumptions: 'Mode 3 symmetric square-wave generator driven by f_clk = 2.00 MHz.',
+    isEducationalApproximation: false,
+    primaryParam: { key: 'primary', label: '16-Bit Divisor N', unit: 'counts', min: 10, max: 5000, step: 10, defaultValue: 200 },
+    evaluate: (n) => {
+      const foutKhz = 2000 / n;
+      return {
+        outputValue: `${foutKhz.toFixed(2)} kHz`,
+        outputNumeric: Number(foutKhz.toFixed(2)),
+        outputUnit: 'OUT Frequency',
+        secondaryOutput: `Period = ${(1000 / foutKhz).toFixed(1)} μs · Load control word 36H for Mode 3 square wave`,
+        normalizedPrimary: normOf(n, 10, 5000),
+        observation: `Dividing a 2 MHz clock by N = ${n} yields a clean 50% duty-cycle ${foutKhz.toFixed(2)} kHz timing wave.`,
+        curve: sweepCurve(10, 5000, (d) => 2000 / d),
+        xLabel: 'Divisor N',
+        xUnit: 'cnt',
+        yLabel: 'Output Freq',
+        yUnit: 'kHz',
+      };
+    },
+  },
+  'ic-8251': {
+    id: 'ic-8251',
+    title: '8251A USART Asynchronous Baud Divider',
+    governingFormulaLatex: '\\text{Baud} = \\frac{f_{\\text{TxC/RxC}}}{k_{\\text{prescale}}}, \\quad T_{\\text{bit}} = \\frac{1}{\\text{Baud}}',
+    assumptions: '×16 oversampling mode with 1 start, 8 data, 1 stop bit (10 bits/frame).',
+    isEducationalApproximation: false,
+    primaryParam: { key: 'primary', label: 'Baud Clock f_TxC', unit: 'kHz', min: 19.2, max: 1843.2, step: 19.2, defaultValue: 153.6 },
+    evaluate: (fkhz) => {
+      const baud = (fkhz * 1000) / 16;
+      const charsPerSec = baud / 10;
+      return {
+        outputValue: `${Math.round(baud)} bps`,
+        outputNumeric: Math.round(baud),
+        outputUnit: 'Baud Rate',
+        secondaryOutput: `Throughput ≈ ${charsPerSec.toFixed(0)} bytes/sec (8N1 serial framing)`,
+        normalizedPrimary: normOf(fkhz, 19.2, 1843.2),
+        observation: `With ×16 internal UART clock sampling, ${fkhz.toFixed(1)} kHz produces standard ${Math.round(baud)} baud serial frames.`,
+        curve: sweepCurve(19.2, 1843.2, (f) => (f * 1000) / 16),
+        xLabel: 'TxC Clock',
+        xUnit: 'kHz',
+        yLabel: 'Serial Rate',
+        yUnit: 'bps',
+      };
+    },
+  },
+  'ic-8255': {
+    id: 'ic-8255',
+    title: '8255A PPI Port Configuration & Output Drive',
+    governingFormulaLatex: 'I_{\\text{total}} = N_{\\text{active}} \\cdot I_{\\text{pin}}',
+    assumptions: 'Mode 0 simple I/O driving active LED/optocoupler loads (4 mA/pin max) across 24 bits.',
+    isEducationalApproximation: true,
+    primaryParam: { key: 'primary', label: 'Active Output Bits', unit: 'pins', min: 0, max: 24, step: 1, defaultValue: 8 },
+    evaluate: (pins) => {
+      const mA = pins * 2.5;
+      return {
+        outputValue: `${pins} / 24 pins High`,
+        outputNumeric: pins,
+        outputUnit: 'GPIO Active',
+        secondaryOutput: `Control Word 80H (All Ports Mode 0 Out) · Sink current ≈ ${mA.toFixed(1)} mA`,
+        normalizedPrimary: normOf(pins, 0, 24),
+        observation: `Programming 80H into Control Register sets PA, PB, PC (upper/lower) as latched 24-bit outputs.`,
+        curve: sweepCurve(0, 24, (p) => p * 2.5),
+        xLabel: 'Active Pins',
+        xUnit: 'bits',
+        yLabel: 'Current',
+        yUnit: 'mA',
+      };
+    },
+  },
+  'ic-8279': {
+    id: 'ic-8279',
+    title: '8279 Keyboard Debounce & Scan Timing',
+    governingFormulaLatex: 'f_{\\text{scan}} = \\frac{f_{\\text{clk}}}{PP}, \\quad t_{\\text{debounce}} \\approx 10\\,\\text{ms}',
+    assumptions: 'Prescaler PP divides 2 MHz bus clock to 100 kHz scan clock with 8-byte key FIFO.',
+    isEducationalApproximation: true,
+    primaryParam: { key: 'primary', label: 'Clock Prescaler PP', unit: 'div', min: 2, max: 31, step: 1, defaultValue: 20 },
+    evaluate: (pp) => {
+      const scanKhz = 2000 / pp;
+      const frameMs = (5.12 * 100) / scanKhz;
+      return {
+        outputValue: `${scanKhz.toFixed(1)} kHz`,
+        outputNumeric: Number(scanKhz.toFixed(1)),
+        outputUnit: 'Scan Clock',
+        secondaryOutput: `Full 64-key debounce scan ≈ ${(frameMs * 2).toFixed(2)} ms · Offloads CPU polling`,
+        normalizedPrimary: normOf(pp, 2, 31),
+        observation: `Setting PP = ${pp} scans the 8×8 keypad matrix automatically without CPU intervention.`,
+        curve: sweepCurve(2, 31, (p) => 2000 / p),
+        xLabel: 'Prescaler PP',
+        xUnit: 'div',
+        yLabel: 'Scan Clk',
+        yUnit: 'kHz',
+      };
+    },
+  },
+  'arduino-uno': {
+    id: 'arduino-uno',
+    title: 'Arduino UNO 10-Bit ADC & analogWrite PWM',
+    governingFormulaLatex: '\\text{ADC} = \\text{round}\\!\\left(\\frac{V_{\\text{in}}}{5.0}\\cdot 1023\\right), \\quad \\text{Duty} = \\frac{\\text{PWM}}{255}',
+    assumptions: 'ATmega328P at 5.00 V AVCC reference, 10-bit ADC (4.88 mV/step) mapped to 8-bit Timer PWM.',
+    isEducationalApproximation: false,
+    primaryParam: { key: 'primary', label: 'Sensor Voltage A0', unit: 'V', min: 0, max: 5, step: 0.05, defaultValue: 2.5 },
+    evaluate: (vin) => {
+      const adc = Math.min(1023, Math.round((vin / 5) * 1023));
+      const pwm = Math.round(adc / 4);
+      const dutyPct = (pwm / 255) * 100;
+      return {
+        outputValue: `ADC ${adc} · PWM ${pwm}`,
+        outputNumeric: adc,
+        outputUnit: '10-bit Raw',
+        secondaryOutput: `Step = 4.88 mV/count · Mapped analogWrite duty = ${dutyPct.toFixed(1)}%`,
+        normalizedPrimary: normOf(vin, 0, 5),
+        observation: `analogRead(A0) returns ${adc} (0–1023), driving ~${dutyPct.toFixed(1)}% PWM brightness/motor speed.`,
+        curve: sweepCurve(0, 5, (v) => Math.round((v / 5) * 1023)),
+        xLabel: 'Pin Voltage',
+        xUnit: 'V',
+        yLabel: 'ADC Count',
+        yUnit: 'counts',
+      };
+    },
+  },
+  'raspberry-pi': {
+    id: 'raspberry-pi',
+    title: 'Raspberry Pi GPIO Current & CPU Clock Scaling',
+    governingFormulaLatex: 'I_{\\text{gpio}} = \\frac{3.3\\,\\text{V} - V_{\\text{LED}}}{R_{\\text{series}}}, \\quad I_{\\text{pin}} \\le 16\\,\\text{mA}',
+    assumptions: '3.3 V unbuffered BCM GPIO driving a 2.0 V green LED through series resistor R.',
+    isEducationalApproximation: false,
+    primaryParam: { key: 'primary', label: 'Series Resistor R', unit: 'Ω', min: 68, max: 1000, step: 22, defaultValue: 220 },
+    evaluate: (r) => {
+      const mA = ((3.3 - 2.0) / r) * 1000;
+      const safe = mA <= 16;
+      return {
+        outputValue: `${mA.toFixed(2)} mA`,
+        outputNumeric: Number(mA.toFixed(2)),
+        outputUnit: 'GPIO Current',
+        secondaryOutput: safe ? 'Within 16 mA BCM pin safety limit' : 'WARNING: exceeds 16 mA CMOS pin rating!',
+        normalizedPrimary: normOf(r, 68, 1000),
+        observation: `At 3.3 V logic, a ${r} Ω resistor limits GPIO output current to ${mA.toFixed(2)} mA.`,
+        curve: sweepCurve(68, 1000, (rv) => ((3.3 - 2.0) / rv) * 1000),
+        xLabel: 'Series R',
+        xUnit: 'Ω',
+        yLabel: 'Pin Current',
+        yUnit: 'mA',
+      };
+    },
+  },
+  'lcd-16x2': {
+    id: 'lcd-16x2',
+    title: '16×2 HD44780 Contrast & Backlight Loop',
+    governingFormulaLatex: 'V_{\\text{contrast}} = 5.0\\,\\text{V} - V_0, \\quad \\text{Data Pins} = \\text{4-bit or 8-bit}',
+    assumptions: 'Optimal twisted-nematic contrast requires V_0 ≈ 0.4–1.0 V (V_DD − V_0 ≈ 4.0–4.6 V).',
+    isEducationalApproximation: true,
+    primaryParam: { key: 'primary', label: 'Trim Potentiometer V_0', unit: 'V', min: 0, max: 3.5, step: 0.1, defaultValue: 0.7 },
+    evaluate: (v0) => {
+      const drive = 5 - v0;
+      const visPct = Math.max(0, Math.min(100, 100 - Math.abs(v0 - 0.7) * 55));
+      return {
+        outputValue: `${visPct.toFixed(0)}% Contrast`,
+        outputNumeric: Number(visPct.toFixed(0)),
+        outputUnit: 'Clarity',
+        secondaryOutput: `LC Drive V_DD−V_0 = ${drive.toFixed(1)} V · 6 GPIO pins needed in 4-bit mode (RS,E,D4-D7)`,
+        normalizedPrimary: normOf(v0, 0, 3.5),
+        observation: v0 > 1.8 ? 'V_0 too high — pixels appear blank white!' : 'Contrast near optimal ~4.3 V LC bias for crisp ASCII blocks.',
+        curve: sweepCurve(0, 3.5, (v) => Math.max(0, Math.min(100, 100 - Math.abs(v - 0.7) * 55))),
+        xLabel: 'Pin V0 Voltage',
+        xUnit: 'V',
+        yLabel: 'Readability',
+        yUnit: '%',
+      };
+    },
+  },
+  'seven-seg': {
+    id: 'seven-seg',
+    title: '7-Segment LED Multiplexing & Segment Current',
+    governingFormulaLatex: 'I_{\\text{seg}} = \\frac{V_{\\text{CC}} - V_f}{R_{\\text{lim}}}, \\quad f_{\\text{mux}} \\ge 100\\,\\text{Hz}',
+    assumptions: 'Red GaAsP LED (V_f = 1.9 V) driven at 5 V TTL logic with 330 Ω limiting resistors.',
+    isEducationalApproximation: false,
+    primaryParam: { key: 'primary', label: 'Resistor per Segment', unit: 'Ω', min: 150, max: 1000, step: 30, defaultValue: 330 },
+    evaluate: (r) => {
+      const iSegMa = ((5.0 - 1.9) / r) * 1000;
+      const total8Ma = iSegMa * 7;
+      return {
+        outputValue: `${iSegMa.toFixed(1)} mA / seg`,
+        outputNumeric: Number(iSegMa.toFixed(1)),
+        outputUnit: 'Segment I',
+        secondaryOutput: `Digit "8" common return peak ≈ ${total8Ma.toFixed(1)} mA (needs transistor driver)`,
+        normalizedPrimary: normOf(r, 150, 1000),
+        observation: `Each segment draws ${iSegMa.toFixed(1)} mA; displaying "8" sinks ${total8Ma.toFixed(1)} mA through the common pin.`,
+        curve: sweepCurve(150, 1000, (rv) => ((5.0 - 1.9) / rv) * 1000),
+        xLabel: 'Limiting R',
+        xUnit: 'Ω',
+        yLabel: 'Segment I',
+        yUnit: 'mA',
+      };
+    },
+  },
+  'dsp-processor': {
+    id: 'dsp-processor',
+    title: 'DSP Single-Cycle MAC & FIR Throughput',
+    governingFormulaLatex: 'N_{\\max,\\text{taps}} = \\left\\lfloor \\frac{f_{\\text{DSP}}}{f_s} \\right\\rfloor',
+    assumptions: 'Modified Harvard DSP core executing 1 Multiply-Accumulate + zero-overhead loop per clock.',
+    isEducationalApproximation: false,
+    primaryParam: { key: 'primary', label: 'DSP Core Clock', unit: 'MHz', min: 20, max: 200, step: 10, defaultValue: 100 },
+    secondaryParam: { key: 'secondary', label: 'Sample Rate f_s', unit: 'kHz', min: 8, max: 192, step: 8, defaultValue: 48 },
+    evaluate: (clkMhz, fsKhz) => {
+      const budgetTaps = Math.floor((clkMhz * 1000) / fsKhz);
+      return {
+        outputValue: `${budgetTaps} Taps / Sample`,
+        outputNumeric: budgetTaps,
+        outputUnit: 'Max FIR Order',
+        secondaryOutput: `${clkMhz} MMAC/s sustained · Sample window = ${(1000 / fsKhz).toFixed(1)} μs`,
+        normalizedPrimary: normOf(clkMhz, 20, 200),
+        normalizedSecondary: normOf(fsKhz, 8, 192),
+        observation: `A ${clkMhz} MHz MAC core executes up to ${budgetTaps} FIR taps per sample cleanly before next ADC interrupt.`,
+        curve: sweepCurve(20, 200, (c) => Math.floor((c * 1000) / fsKhz)),
+        xLabel: 'DSP Clock',
+        xUnit: 'MHz',
+        yLabel: 'FIR Tap Budget',
+        yUnit: 'taps',
+      };
+    },
+  },
+  'sampling-quantizer': {
+    id: 'sampling-quantizer',
+    title: 'Nyquist Sampling Ratio & Quantization SQNR',
+    governingFormulaLatex: '\\text{SQNR}_{\\text{dB}} \\approx 6.02\\,N + 1.76, \\quad f_s > 2 f_{\\max}',
+    assumptions: 'Uniform N-bit mid-tread quantizer excited by full-scale sinusoid at f_max.',
+    isEducationalApproximation: false,
+    primaryParam: { key: 'primary', label: 'Quantizer Wordlength N', unit: 'bits', min: 4, max: 24, step: 1, defaultValue: 12 },
+    evaluate: (bits) => {
+      const sqnr = 6.02 * bits + 1.76;
+      return {
+        outputValue: `${sqnr.toFixed(1)} dB`,
+        outputNumeric: Number(sqnr.toFixed(1)),
+        outputUnit: 'SQNR',
+        secondaryOutput: `Levels 2^N = ${Math.pow(2, Math.round(bits)).toLocaleString()} · ~6.02 dB gained per extra bit`,
+        normalizedPrimary: normOf(bits, 4, 24),
+        observation: `Each added ADC bit doubles voltage resolution and increases theoretical full-scale SQNR by 6.02 dB.`,
+        curve: sweepCurve(4, 24, (n) => 6.02 * n + 1.76),
+        xLabel: 'Resolution N',
+        xUnit: 'bits',
+        yLabel: 'SQNR',
+        yUnit: 'dB',
+      };
+    },
+  },
+  'dft-fft-analyzer': {
+    id: 'dft-fft-analyzer',
+    title: 'Radix-2 FFT Speedup vs Direct DFT',
+    governingFormulaLatex: '\\text{DFT} = N^2, \\quad \\text{FFT} = \\frac{N}{2}\\log_2 N, \\quad \\Delta f = \\frac{f_s}{N}',
+    assumptions: 'Complex multiply count comparison across power-of-two block lengths N = 2^k.',
+    isEducationalApproximation: false,
+    primaryParam: { key: 'primary', label: 'Log2 Block Size k (N=2^k)', unit: 'stage', min: 3, max: 12, step: 1, defaultValue: 8 },
+    evaluate: (k) => {
+      const n = Math.pow(2, Math.round(k));
+      const direct = n * n;
+      const fft = (n / 2) * Math.round(k);
+      const speedup = direct / fft;
+      return {
+        outputValue: `${speedup.toFixed(1)}× faster`,
+        outputNumeric: Number(speedup.toFixed(1)),
+        outputUnit: 'FFT Speedup',
+        secondaryOutput: `N = ${n}: Direct DFT = ${direct.toLocaleString()} mults vs Radix-2 FFT = ${fft.toLocaleString()}`,
+        normalizedPrimary: normOf(k, 3, 12),
+        observation: `At N = ${n}, Radix-2 butterfly symmetry slashes complex multiplications from ${direct.toLocaleString()} to ${fft.toLocaleString()}.`,
+        curve: sweepCurve(3, 12, (kv) => {
+          const nv = Math.pow(2, Math.round(kv));
+          return (nv * nv) / ((nv / 2) * Math.round(kv));
+        }),
+        xLabel: 'Stage k (N=2^k)',
+        xUnit: 'k',
+        yLabel: 'Speedup',
+        yUnit: '×',
+      };
+    },
+  },
+  'fir-iir-filter': {
+    id: 'fir-iir-filter',
+    title: 'Digital Butterworth IIR Order & Magnitude Roll-Off',
+    governingFormulaLatex: '|H(j\\omega)| = \\frac{1}{\\sqrt{1 + (\\omega / \\omega_c)^{2N}}}',
+    assumptions: 'Low-pass digital filter mapped cleanly via Bilinear Transform from N-th order Butterworth.',
+    isEducationalApproximation: false,
+    primaryParam: { key: 'primary', label: 'Filter Order N', unit: 'poles', min: 1, max: 8, step: 1, defaultValue: 4 },
+    evaluate: (order) => {
+      const calcDb = (freqRatio: number) => -10 * Math.log10(1 + Math.pow(freqRatio, 2 * order));
+      const attenAt2fc = calcDb(2.0);
+      return {
+        outputValue: `${attenAt2fc.toFixed(1)} dB @ 2f_c`,
+        outputNumeric: Number(attenAt2fc.toFixed(1)),
+        outputUnit: 'dB Atten',
+        secondaryOutput: `Stopband slope = −${Math.round(order * 20)} dB/decade · All poles inside |z| < 1`,
+        normalizedPrimary: normOf(order, 1, 8),
+        observation: `A ${Math.round(order)}th-order IIR filter attenuates signals at twice cutoff frequency by ${attenAt2fc.toFixed(1)} dB.`,
+        curve: sweepCurve(0.2, 4.0, calcDb),
+        xLabel: 'f / fc Ratio',
+        xUnit: '×fc',
+        yLabel: 'Magnitude',
+        yUnit: 'dB',
+      };
+    },
+  },
+  'state-space-feedback': {
+    id: 'state-space-feedback',
+    title: '2nd-Order State-Feedback Pole Placement (A − BK)',
+    governingFormulaLatex: '\\dot{x} = (A - BK)x, \\quad \\omega_n = \\sqrt{k_1}, \\quad \\zeta = \\frac{k_2}{2\\sqrt{k_1}}',
+    assumptions: 'Double-integrator plant ẍ = u stabilized cleanly via state feedback u = −k₁x₁ − k₂x₂ (k₁ = 16).',
+    isEducationalApproximation: false,
+    primaryParam: { key: 'primary', label: 'Velocity Gain k₂', unit: 'gain', min: 1, max: 14, step: 0.5, defaultValue: 5.6 },
+    evaluate: (k2) => {
+      const wn = 4.0;
+      const zeta = k2 / (2 * wn);
+      const mp = zeta < 1 ? Math.exp((-zeta * Math.PI) / Math.sqrt(1 - zeta * zeta)) * 100 : 0;
+      return {
+        outputValue: `ζ = ${zeta.toFixed(2)} · %Mp = ${mp.toFixed(1)}%`,
+        outputNumeric: Number(zeta.toFixed(2)),
+        outputUnit: 'Damping ζ',
+        secondaryOutput: `Closed-loop eigenvalues: ${zeta < 1 ? `−${(zeta * wn).toFixed(2)} ± j${(wn * Math.sqrt(1 - zeta * zeta)).toFixed(2)}` : 'Overdamped Real LHP'}`,
+        normalizedPrimary: normOf(k2, 1, 14),
+        observation: `Tuning k₂ = ${k2.toFixed(1)} places damping ratio ζ = ${zeta.toFixed(2)}, yielding ${mp.toFixed(1)}% overshoot.`,
+        curve: sweepCurve(1, 14, (v) => {
+          const z = v / 8;
+          return z < 1 ? Math.exp((-z * Math.PI) / Math.sqrt(1 - z * z)) * 100 : 0;
+        }),
+        xLabel: 'Gain k₂',
+        xUnit: 'N·s/m',
+        yLabel: 'Overshoot',
+        yUnit: '%',
+      };
+    },
+  },
+  'lqr-optimal-regulator': {
+    id: 'lqr-optimal-regulator',
+    title: 'LQR Riccati Tradeoff: State Weight Q vs Effort R',
+    governingFormulaLatex: 'J = \\int_0^\\infty (q\\,x^2 + R\\,u^2)\\,dt, \\quad K^* = \\sqrt{q/R}',
+    assumptions: 'Scalar integrator plant ẋ = u solved exactly via continuous Algebraic Riccati Equation.',
+    isEducationalApproximation: false,
+    primaryParam: { key: 'primary', label: 'State Weight Q', unit: 'q', min: 1, max: 100, step: 1, defaultValue: 16 },
+    secondaryParam: { key: 'secondary', label: 'Control Weight R', unit: 'r', min: 0.25, max: 10, step: 0.25, defaultValue: 1 },
+    evaluate: (q, r) => {
+      const k = Math.sqrt(q / Math.max(0.1, r));
+      const ts = 4 / k;
+      return {
+        outputValue: `K* = ${k.toFixed(2)}`,
+        outputNumeric: Number(k.toFixed(2)),
+        outputUnit: 'Optimal Gain',
+        secondaryOutput: `2% Settling time ≈ ${ts.toFixed(2)} s · Guaranteed Phase Margin ≥ 60°`,
+        normalizedPrimary: normOf(q, 1, 100),
+        normalizedSecondary: normOf(r, 0.25, 10),
+        observation: `Penalizing error at Q = ${q} vs effort R = ${r} gives optimal Riccati feedback K* = ${k.toFixed(2)}.`,
+        curve: sweepCurve(1, 100, (qv) => Math.sqrt(qv / Math.max(0.1, r))),
+        xLabel: 'Weight Q',
+        xUnit: 'q',
+        yLabel: 'Gain K*',
+        yUnit: 'gain',
+      };
+    },
+  },
 };
 

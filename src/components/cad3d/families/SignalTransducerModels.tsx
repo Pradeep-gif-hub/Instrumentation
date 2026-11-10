@@ -36,7 +36,7 @@ export function HallEffectAssembly() {
       <CadPartGroup partId="hl_pcb" basePos={[0.52, -0.6, 0]} explodeOffset={[0.45, -0.65, 0]}>
         <mesh>
           <boxGeometry args={[0.65, 0.14, 1.15]} />
-          <PbrMat preset="siliconWafer" colorOverride="#15803d" />
+          <PbrMat preset="siliconWafer" />
         </mesh>
       </CadPartGroup>
     </group>
@@ -96,16 +96,16 @@ export function OpticalFiberAssembly() {
       <CadPartGroup partId="of_core" basePos={[0, 0, 0]} explodeOffset={[0, -0.55, 0]}>
         <mesh rotation={[0, 0, Math.PI / 2]}>
           <cylinderGeometry args={[0.15, 0.15, 2.4, 24]} />
-          <PbrMat preset="quartz" colorOverride="#38bdf8" />
+          <PbrMat preset="quartz" />
         </mesh>
       </CadPartGroup>
 
       <CadPartGroup partId="of_fbg" basePos={[0, 0, 0]} explodeOffset={[0, 0, 0.7]}>
         <group scale={[stretch, 1, 1]}>
           {[-0.3, -0.18, -0.06, 0.06, 0.18, 0.3].map((x, idx) => (
-            <mesh userData={{ selfEmissive: true }} key={idx} position={[x, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
+            <mesh key={idx} position={[x, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
               <cylinderGeometry args={[0.16, 0.16, 0.03, 20]} />
-              <meshStandardMaterial color="#a3e635" emissive="#65a30d" emissiveIntensity={0.75} />
+              <PbrMat preset="alnicoRed" />
             </mesh>
           ))}
         </group>
@@ -128,15 +128,9 @@ export function PhotoDetectorsAssembly() {
 
       <CadPartGroup partId="pd_dynodes" basePos={[-0.35, 0, 0]} explodeOffset={[0, 0, 0.7]}>
         {[-0.55, -0.28, 0, 0.28, 0.55].map((y, idx) => (
-          <mesh userData={{ selfEmissive: true }} key={idx} position={[idx % 2 === 0 ? -0.12 : 0.12, y, 0]} rotation={[0, 0, idx % 2 === 0 ? 0.5 : -0.5]}>
+          <mesh key={idx} position={[idx % 2 === 0 ? -0.12 : 0.12, y, 0]} rotation={[0, 0, idx % 2 === 0 ? 0.5 : -0.5]}>
             <boxGeometry args={[0.2, 0.06, 0.26]} />
-            <meshStandardMaterial
-              color="#eab308"
-              emissive="#38bdf8"
-              emissiveIntensity={sim.primaryNorm * (0.1 + idx * 0.2)}
-              metalness={0.85}
-              roughness={0.2}
-            />
+            <PbrMat preset="copper" />
           </mesh>
         ))}
       </CadPartGroup>
@@ -148,7 +142,7 @@ export function PhotoDetectorsAssembly() {
         </mesh>
         <mesh position={[0, 0, 0.07]}>
           <boxGeometry args={[0.45, 0.45, 0.02]} />
-          <PbrMat preset="copper" colorOverride="#b91c1c" />
+          <PbrMat preset="alnicoRed" />
         </mesh>
       </CadPartGroup>
     </group>
@@ -161,7 +155,7 @@ export function InaOpampAssembly() {
       <CadPartGroup partId="in_pcb" basePos={[0, -0.15, 0]} explodeOffset={[0, -0.45, 0]}>
         <mesh>
           <boxGeometry args={[2.0, 0.12, 1.35]} />
-          <PbrMat preset="siliconWafer" colorOverride="#14532d" />
+          <PbrMat preset="siliconWafer" />
         </mesh>
       </CadPartGroup>
       <CadPartGroup partId="in_ic_chips" basePos={[0, 0.05, 0]} explodeOffset={[0, 0.65, 0]}>
@@ -192,7 +186,7 @@ export function ActiveFilterAssembly() {
       <CadPartGroup partId="af_pcb" basePos={[0, -0.15, 0]} explodeOffset={[0, -0.45, 0]}>
         <mesh>
           <boxGeometry args={[2.0, 0.12, 1.35]} />
-          <PbrMat preset="siliconWafer" colorOverride="#1e3a8a" />
+          <PbrMat preset="siliconWafer" />
         </mesh>
       </CadPartGroup>
       <CadPartGroup partId="af_opamp_ic" basePos={[0, 0.04, 0]} explodeOffset={[0, 0.6, 0]}>
@@ -249,7 +243,7 @@ export function AdcDacBoardAssembly() {
       <CadPartGroup partId="ad_pcb" basePos={[0, -0.15, 0]} explodeOffset={[0, -0.45, 0]}>
         <mesh>
           <boxGeometry args={[2.25, 0.12, 1.45]} />
-          <PbrMat preset="siliconWafer" colorOverride="#15803d" />
+          <PbrMat preset="siliconWafer" />
         </mesh>
       </CadPartGroup>
       <CadPartGroup partId="ad_ic_sh" basePos={[-0.35, 0.05, 0]} explodeOffset={[-0.5, 0.65, 0]}>
@@ -262,9 +256,9 @@ export function AdcDacBoardAssembly() {
         {Array.from({ length: 8 }, (_, bit) => {
           const on = ((code >> bit) & 1) === 1;
           return (
-            <mesh userData={{ selfEmissive: true }} key={bit} position={[-0.4 + bit * 0.12, 0.05, -0.55]}>
+            <mesh key={bit} position={[-0.4 + bit * 0.12, 0.05, -0.55]}>
               <sphereGeometry args={[0.04, 14, 14]} />
-              <meshStandardMaterial color={on ? '#84cc16' : '#334155'} emissive={on ? '#84cc16' : '#000000'} emissiveIntensity={on ? 1.1 : 0} />
+              <PbrMat preset={on ? 'alnicoRed' : 'anodizedDark'} />
             </mesh>
           );
         })}

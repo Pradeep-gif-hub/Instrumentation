@@ -16,12 +16,16 @@ const OVERVIEW_MERMAID = `flowchart LR
   TSC --> IMS["Sem IV · ICDC0208 IMS"]
   EMMI --> IMS
   ADE --> TSC
+  ADE --> SP["Sem IV · ICDC0204 Signal Processing"]
+  ADE --> MPES["Sem V · ICDC0301 Microprocessors & Embedded"]
   CT --> CSE["Sem IV · ICDC0206 Control"]
   NM --> CSE
   CSE --> MCS["Sem V · ICDC0303 Modern Control"]
   CSE --> PDC["Sem V · ICDC0307 Process Control"]
   IMS --> AOI["Sem V · ICDC0305 Analytical & Optical"]
+  SP --> AOI
   EM["Sem IV · ICDC0202 Electrical Machines"] --> PDC
+  MPES --> PDC
   IMS --> CAL["Supp · ICMI0303 Testing & Calibration"]`;
 
 export function CrossSemesterGraph({ onSelectSubject }: CrossSemesterGraphProps) {
@@ -52,7 +56,7 @@ export function CrossSemesterGraph({ onSelectSubject }: CrossSemesterGraphProps)
       {/* 6 Interactive Pathway Selector + Detail */}
       <div className="glass space-y-5 p-5">
         <div className="flex items-center gap-2">
-          <GitBranch className="size-4 text-[var(--st-cyan)]" />
+          <GitBranch className="size-4 text-[var(--st-accent-text)]" />
           <p className="eyebrow">SELECT A CONCEPT PROGRESSION TRACK (6 CORE PATHWAYS)</p>
         </div>
 
@@ -69,7 +73,7 @@ export function CrossSemesterGraph({ onSelectSubject }: CrossSemesterGraphProps)
                 }}
                 className={`cursor-pointer rounded-2xl border p-3 text-left transition ${
                   active
-                    ? 'border-[var(--st-cyan)] bg-[var(--st-3)] text-[var(--st-on)]'
+                    ? 'border-[var(--st-accent)] bg-[var(--st-3)] text-[var(--st-on)]'
                     : 'border-[var(--st-line)] bg-[var(--st-1)] text-[var(--st-on-var)] hover:bg-[var(--st-2)]'
                 }`}
               >
@@ -92,14 +96,14 @@ export function CrossSemesterGraph({ onSelectSubject }: CrossSemesterGraphProps)
                 <button
                   type="button"
                   onClick={() => onSelectSubject(node.subjectId)}
-                  className="group flex h-full min-w-[175px] max-w-[235px] cursor-pointer flex-col justify-between rounded-xl border border-[var(--st-line)] bg-[var(--st-1)] p-3 text-left transition hover:border-[var(--st-cyan)]"
+                  className="group flex h-full min-w-[175px] max-w-[235px] cursor-pointer flex-col justify-between rounded-xl border border-[var(--st-line)] bg-[var(--st-1)] p-3 text-left transition hover:border-[var(--st-accent)]"
                 >
                   <div>
                     <div className="flex items-center justify-between gap-2">
-                      <span className="mono text-[10px] font-semibold uppercase text-[var(--st-cyan)]">
+                      <span className="mono text-[10px] font-semibold uppercase text-[var(--st-accent-text)]">
                         {node.semesterLabel}
                       </span>
-                      <ArrowUpRight className="size-3 text-[var(--st-outline)] group-hover:text-[var(--st-cyan)]" />
+                      <ArrowUpRight className="size-3 text-[var(--st-outline)] group-hover:text-[var(--st-accent-text)]" />
                     </div>
                     <p className="mt-1 text-xs font-semibold text-[var(--st-on)]">
                       {node.subjectName}
@@ -124,7 +128,7 @@ export function CrossSemesterGraph({ onSelectSubject }: CrossSemesterGraphProps)
               </p>
               <p className="label mt-3">Introduced &amp; Developed Across</p>
               <p className="mt-1 text-xs text-[var(--st-on)]">{pathway.introducedIn}</p>
-              <p className="mt-0.5 text-xs text-[var(--st-cyan)]">→ {pathway.developedIn}</p>
+              <p className="mt-0.5 text-xs text-[var(--st-accent-text)]">→ {pathway.developedIn}</p>
             </div>
             <div className="rounded-xl border border-[var(--st-line)] bg-[var(--st-1)] p-3.5">
               <p className="label">Industrial Loop Execution</p>
@@ -135,11 +139,11 @@ export function CrossSemesterGraph({ onSelectSubject }: CrossSemesterGraphProps)
           </div>
 
           {/* Pathway Synthesis Interview Question */}
-          <div className="rounded-xl border border-[var(--st-lime)]/30 bg-[var(--st-1)] p-3.5">
+          <div className="rounded-xl border border-[var(--st-accent)]/30 bg-[var(--st-1)] p-3.5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <HelpCircle className="size-4 text-[var(--st-lime)]" />
-                <span className="mono text-[11px] font-semibold uppercase text-[var(--st-lime)]">
+                <HelpCircle className="size-4 text-[var(--st-accent-text)]" />
+                <span className="mono text-[11px] font-semibold uppercase text-[var(--st-accent-text)]">
                   Cross-Semester Placement Question
                 </span>
               </div>

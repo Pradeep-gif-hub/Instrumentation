@@ -83,7 +83,7 @@ export const TEMPERATURE_TOPICS: InstrumentTopic[] = [
       series: [
         {
           name: 'Pt100 (IEC 60751)',
-          color: '#c5f467',
+          color: '#7FB3DE',
           points: [
             { x: -200, y: 18.52 },
             { x: -100, y: 60.26 },
@@ -303,14 +303,14 @@ export const TEMPERATURE_TOPICS: InstrumentTopic[] = [
         },
         {
           name: 'Type K (Chromel-Alumel)',
-          color: '#c5f467',
+          color: '#7FB3DE',
           points: [
             { x: 0, y: 0 }, { x: 100, y: 4.096 }, { x: 200, y: 8.138 }, { x: 400, y: 16.397 }, { x: 600, y: 24.905 }, { x: 800, y: 33.275 }, { x: 1000, y: 41.276 },
           ],
         },
         {
           name: 'Type S (Pt-10%Rh / Pt)',
-          color: '#22ef7e',
+          color: '#cdbdff',
           points: [
             { x: 0, y: 0 }, { x: 200, y: 1.441 }, { x: 400, y: 3.259 }, { x: 600, y: 5.239 }, { x: 800, y: 7.345 }, { x: 1000, y: 9.587 },
           ],
@@ -469,7 +469,7 @@ export const TEMPERATURE_TOPICS: InstrumentTopic[] = [
       series: [
         {
           name: '10 kΩ NTC (β=3950 K)',
-          color: '#c5f467',
+          color: '#7FB3DE',
           points: [
             { x: -20, y: 97.1 }, { x: 0, y: 32.65 }, { x: 25, y: 10.0 }, { x: 50, y: 3.60 }, { x: 75, y: 1.48 }, { x: 100, y: 0.678 }, { x: 125, y: 0.339 },
           ],
@@ -584,7 +584,7 @@ export const TEMPERATURE_TOPICS: InstrumentTopic[] = [
       series: [
         {
           name: 'Blackbody (ε = 1.0)',
-          color: '#c5f467',
+          color: '#7FB3DE',
           points: [
             { x: 100, y: 1.10 }, { x: 300, y: 6.11 }, { x: 500, y: 20.25 }, { x: 700, y: 50.83 }, { x: 900, y: 107.3 }, { x: 1100, y: 201.4 },
           ],
@@ -703,7 +703,7 @@ export const TEMPERATURE_TOPICS: InstrumentTopic[] = [
       xUnit: '°C',
       yUnit: '°C',
       series: [
-        { name: 'Blackbody (ε=1.0)', color: '#c5f467', points: [{ x: 800, y: 800 }, { x: 1000, y: 1000 }, { x: 1200, y: 1200 }, { x: 1400, y: 1400 }] },
+        { name: 'Blackbody (ε=1.0)', color: '#7FB3DE', points: [{ x: 800, y: 800 }, { x: 1000, y: 1000 }, { x: 1200, y: 1200 }, { x: 1400, y: 1400 }] },
         { name: 'Molten Steel (ε=0.4)', color: '#ff9100', points: [{ x: 800, y: 848 }, { x: 1000, y: 1068 }, { x: 1200, y: 1291 }, { x: 1400, y: 1517 }] },
       ],
     },
@@ -806,7 +806,7 @@ export const TEMPERATURE_TOPICS: InstrumentTopic[] = [
       xUnit: '°C',
       yUnit: '% FS',
       series: [
-        { name: 'Broadband T⁴ Response', color: '#c5f467', points: [{ x: 400, y: 5 }, { x: 700, y: 18 }, { x: 1000, y: 46 }, { x: 1200, y: 74 }, { x: 1400, y: 100 }] },
+        { name: 'Broadband T⁴ Response', color: '#7FB3DE', points: [{ x: 400, y: 5 }, { x: 700, y: 18 }, { x: 1000, y: 46 }, { x: 1200, y: 74 }, { x: 1400, y: 100 }] },
       ],
     },
     specifications: [
@@ -875,7 +875,7 @@ export const TEMPERATURE_TOPICS: InstrumentTopic[] = [
       yLabel: 'Pointer Angle',
       xUnit: '°C',
       yUnit: 'deg',
-      series: [{ name: '270° Span Gauge', color: '#c5f467', points: [{ x: 0, y: 0 }, { x: 75, y: 67.5 }, { x: 150, y: 135 }, { x: 225, y: 202.5 }, { x: 300, y: 270 }] }],
+      series: [{ name: '270° Span Gauge', color: '#7FB3DE', points: [{ x: 0, y: 0 }, { x: 75, y: 67.5 }, { x: 150, y: 135 }, { x: 225, y: 202.5 }, { x: 300, y: 270 }] }],
     },
     specifications: [
       { parameter: 'Accuracy Class', value: '±1% full scale (ASME B40.200 Grade A / EN 13190 Class 1)', standardOrNote: 'Read at eye level to avoid parallax' },
@@ -948,7 +948,7 @@ export const TEMPERATURE_TOPICS: InstrumentTopic[] = [
       yLabel: 'Natural Frequency fₙ',
       xUnit: 'mm',
       yUnit: 'Hz',
-      series: [{ name: 'Tapered 316L (24→16 mm)', color: '#c5f467', points: [{ x: 100, y: 1450 }, { x: 150, y: 645 }, { x: 200, y: 360 }, { x: 250, y: 230 }, { x: 300, y: 160 }, { x: 350, y: 118 }] }],
+      series: [{ name: 'Tapered 316L (24→16 mm)', color: '#7FB3DE', points: [{ x: 100, y: 1450 }, { x: 150, y: 645 }, { x: 200, y: 360 }, { x: 250, y: 230 }, { x: 300, y: 160 }, { x: 350, y: 118 }] }],
     },
     specifications: [
       { parameter: 'Standard Bore Diameter', value: '6.6 mm (0.260") for 6 mm / 1/4" probes', standardOrNote: 'Tight clearance minimizes air-gap lag' },
@@ -1021,7 +1021,7 @@ export const TEMPERATURE_TOPICS: InstrumentTopic[] = [
       yLabel: 'Loop Current',
       xUnit: '°C',
       yUnit: 'mA',
-      series: [{ name: '4–20 mA Scaled Output', color: '#c5f467', points: [{ x: 0, y: 4.0 }, { x: 50, y: 8.0 }, { x: 100, y: 12.0 }, { x: 150, y: 16.0 }, { x: 200, y: 20.0 }] }],
+      series: [{ name: '4–20 mA Scaled Output', color: '#7FB3DE', points: [{ x: 0, y: 4.0 }, { x: 50, y: 8.0 }, { x: 100, y: 12.0 }, { x: 150, y: 16.0 }, { x: 200, y: 20.0 }] }],
     },
     specifications: [
       { parameter: 'Supply Voltage Requirement', value: '12 – 42 VDC (minimum ~12 V at transmitter terminals)', standardOrNote: 'Must include 250 Ω HART load drop (5 V @ 20 mA)' },

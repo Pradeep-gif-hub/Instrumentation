@@ -1,59 +1,30 @@
-import { lazy, Suspense } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import type { InstrumentFamilyKey } from '@/types/cad';
 
-const TemperatureLazy = lazy(() =>
-  import('./families/TemperatureModels').then((m) => ({
-    default: ({ modelKey }: { modelKey: string }) => <>{m.renderTemperatureModel(modelKey)}</>,
-  })),
-);
+type FamilyRenderer = (modelKey: string) => ReactNode;
 
-const MotionLazy = lazy(() =>
-  import('./families/MotionModels').then((m) => ({
-    default: ({ modelKey }: { modelKey: string }) => <>{m.renderMotionModel(modelKey)}</>,
-  })),
-);
+const FAMILY_LOADERS: Record<InstrumentFamilyKey, () => Promise<FamilyRenderer>> = {
+  temperature: () =>
+    import('./families/TemperatureModels').then((m) => m.renderTemperatureModel),
+  motion: () => import('./families/MotionModels').then((m) => m.renderMotionModel),
+  'pressure-force': () =>
+    import('./families/PressureForceModels').then((m) => m.renderPressureForceModel),
+  flow: () => import('./families/FlowModels').then((m) => m.renderFlowModel),
+  'level-props': () =>
+    import('./families/LevelPropsModels').then((m) => m.renderLevelPropsModel),
+  'electrical-bridge': () =>
+    import('./families/ElectricalBridgeModels').then((m) => m.renderElectricalBridgeModel),
+  'analytical-optical': () =>
+    import('./families/AnalyticalOpticalModels').then((m) => m.renderAnalyticalOpticalModel),
+  'control-actuator': () =>
+    import('./families/ControlActuatorModels').then((m) => m.renderControlActuatorModel),
+  'signal-transducer': () =>
+    import('./families/SignalTransducerModels').then((m) => m.renderSignalTransducerModel),
+  'embedded-digital': () =>
+    import('./families/EmbeddedDigitalModels').then((m) => m.renderEmbeddedDigitalModel),
+};
 
-const PressureForceLazy = lazy(() =>
-  import('./families/PressureForceModels').then((m) => ({
-    default: ({ modelKey }: { modelKey: string }) => <>{m.renderPressureForceModel(modelKey)}</>,
-  })),
-);
-
-const FlowLazy = lazy(() =>
-  import('./families/FlowModels').then((m) => ({
-    default: ({ modelKey }: { modelKey: string }) => <>{m.renderFlowModel(modelKey)}</>,
-  })),
-);
-
-const LevelPropsLazy = lazy(() =>
-  import('./families/LevelPropsModels').then((m) => ({
-    default: ({ modelKey }: { modelKey: string }) => <>{m.renderLevelPropsModel(modelKey)}</>,
-  })),
-);
-
-const ElectricalBridgeLazy = lazy(() =>
-  import('./families/ElectricalBridgeModels').then((m) => ({
-    default: ({ modelKey }: { modelKey: string }) => <>{m.renderElectricalBridgeModel(modelKey)}</>,
-  })),
-);
-
-const AnalyticalOpticalLazy = lazy(() =>
-  import('./families/AnalyticalOpticalModels').then((m) => ({
-    default: ({ modelKey }: { modelKey: string }) => <>{m.renderAnalyticalOpticalModel(modelKey)}</>,
-  })),
-);
-
-const ControlActuatorLazy = lazy(() =>
-  import('./families/ControlActuatorModels').then((m) => ({
-    default: ({ modelKey }: { modelKey: string }) => <>{m.renderControlActuatorModel(modelKey)}</>,
-  })),
-);
-
-const SignalTransducerLazy = lazy(() =>
-  import('./families/SignalTransducerModels').then((m) => ({
-    default: ({ modelKey }: { modelKey: string }) => <>{m.renderSignalTransducerModel(modelKey)}</>,
-  })),
-);
+const rendererCache = new Map<InstrumentFamilyKey, FamilyRenderer>();
 
 export function ProceduralCadRouter({
   family,
@@ -62,18 +33,30 @@ export function ProceduralCadRouter({
   family: InstrumentFamilyKey;
   proceduralKey: string;
 }) {
-  return (
-    <Suspense fallback={null}>
-      {family === 'temperature' && <TemperatureLazy modelKey={proceduralKey} />}
-      {family === 'motion' && <MotionLazy modelKey={proceduralKey} />}
-      {family === 'pressure-force' && <PressureForceLazy modelKey={proceduralKey} />}
-      {family === 'flow' && <FlowLazy modelKey={proceduralKey} />}
-      {family === 'level-props' && <LevelPropsLazy modelKey={proceduralKey} />}
-      {family === 'electrical-bridge' && <ElectricalBridgeLazy modelKey={proceduralKey} />}
-      {family === 'analytical-optical' && <AnalyticalOpticalLazy modelKey={proceduralKey} />}
-      {family === 'control-actuator' && <ControlActuatorLazy modelKey={proceduralKey} />}
-      {family === 'signal-transducer' && <SignalTransducerLazy modelKey={proceduralKey} />}
-    </Suspense>
+  const [renderer, setRenderer] = useState<FamilyRenderer | null>(
+    () => rendererCache.get(family) ?? null,
   );
-}
 
+  useEffect(() => {
+    const cached = rendererCache.get(family);
+    if (cached) {
+      setRenderer(() => cached);
+      return;
+    }
+
+    let active = true;
+    setRenderer(null);
+    FAMILY_LOADERS[family]().then((fn) => {
+      rendererCache.set(family, fn);
+      if (active) {
+        setRenderer(() => fn);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [family]);
+
+  if (!renderer) return null;
+  return <>{renderer(proceduralKey)}</>;
+}

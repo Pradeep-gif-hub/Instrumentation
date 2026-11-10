@@ -73,7 +73,7 @@ export function InstrumentDetailPage() {
     : undefined;
 
   const [viewportMode, setViewportMode] = useState<'3d' | 'schematic'>('3d');
-  const [selectedPartId, setSelectedPartId] = useState<string>(cadConfig?.parts[0]?.id ?? '');
+  const [selectedPartId, setSelectedPartId] = useState<string>('');
   const [hiddenPartIds, setHiddenPartIds] = useState<Set<string>>(() => new Set());
   const [primaryVal, setPrimaryVal] = useState<number>(simConfig?.primaryParam.defaultValue ?? 0);
   const [secondaryVal, setSecondaryVal] = useState<number>(
@@ -135,10 +135,10 @@ export function InstrumentDetailPage() {
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="eyebrow text-[var(--st-cyan)]">{topic.categoryLabel}</span>
+            <span className="eyebrow text-[var(--st-accent-text)]">{topic.categoryLabel}</span>
             <span className="pill mono text-[10px]">{topic.standardRef}</span>
             {cadConfig && (
-              <span className="status" style={{ '--tone': 'var(--st-cyan)' } as React.CSSProperties}>
+              <span className="status" style={{ '--tone': 'var(--st-accent)' } as React.CSSProperties}>
                 Interactive 3D CAD Assembly
               </span>
             )}
@@ -147,7 +147,7 @@ export function InstrumentDetailPage() {
                 type="button"
                 onClick={() => simRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
                 className="status cursor-pointer"
-                style={{ '--tone': 'var(--st-lime)' } as React.CSSProperties}
+                style={{ '--tone': 'var(--st-accent)' } as React.CSSProperties}
               >
                 <Activity className="mr-1 inline size-3" />
                 Live Physics Sim
@@ -223,13 +223,13 @@ export function InstrumentDetailPage() {
                     to={`/instrumentation/${peer.category}/${peer.slug}`}
                     className={`flex items-center justify-between gap-2 rounded-2xl px-3 py-2 text-xs transition ${
                       active
-                        ? 'bg-[var(--st-3)] font-semibold text-[var(--st-cyan)] ring-1 ring-[var(--st-cyan)]/50'
+                        ? 'bg-[var(--st-3)] font-semibold text-[var(--st-accent-text)] ring-1 ring-[var(--st-accent)]/50'
                         : 'text-[var(--st-on-var)] hover:bg-[var(--st-2)] hover:text-[var(--st-on)]'
                     }`}
                   >
                     <span className="truncate">{peer.shortTitle}</span>
                     {peer3D && (
-                      <span className="mono rounded bg-[var(--st-void)] px-1.5 py-0.5 text-[9px] text-[var(--st-cyan)]">
+                      <span className="mono rounded bg-[var(--st-void)] px-1.5 py-0.5 text-[9px] text-[var(--st-accent-text)]">
                         3D
                       </span>
                     )}
@@ -256,7 +256,7 @@ export function InstrumentDetailPage() {
                             : 'text-[var(--st-on-var)] hover:bg-[var(--st-2)]'
                         }`}
                       >
-                        <span className="mono text-[10px] text-[var(--st-cyan)]">{part.code}</span>
+                        <span className="mono text-[10px] text-[var(--st-accent-text)]">{part.code}</span>
                         <span className={`truncate ${isHidden ? 'line-through opacity-50' : ''}`}>
                           {part.name}
                         </span>
@@ -284,7 +284,7 @@ export function InstrumentDetailPage() {
             <>
               <CadViewer3D
                 config={cadConfig}
-                selectedPart={selectedPart}
+                selectedPart={selectedPartId ? selectedPart : null}
                 onSelectPart={setSelectedPartId}
                 hiddenPartIds={hiddenPartIds}
                 simState={{
@@ -297,13 +297,13 @@ export function InstrumentDetailPage() {
               />
               <div className="sub flex flex-wrap items-center justify-between gap-2.5 px-4 py-2.5 text-[11px] text-[var(--st-on-var)]">
                 <div className="flex items-center gap-2.5">
-                  <Info className="size-4 shrink-0 text-[var(--st-cyan)]" />
+                  <Info className="size-4 shrink-0 text-[var(--st-accent-text)]" />
                   <span>{cadConfig.disclosure}</span>
                 </div>
                 {canonical && (
                   <Link
                     to={`/lab/${canonical.id}`}
-                    className="mono shrink-0 text-[10px] text-[var(--st-cyan)] hover:underline"
+                    className="mono shrink-0 text-[10px] text-[var(--st-accent-text)] hover:underline"
                   >
                     Open in 3D Virtual Lab →
                   </Link>
@@ -333,7 +333,7 @@ export function InstrumentDetailPage() {
 
           {/* Definition & Overview Banner right below central stage */}
           <div className="glass space-y-2 p-5">
-            <p className="eyebrow text-[var(--st-cyan)]">01 · TECHNICAL DEFINITION</p>
+            <p className="eyebrow text-[var(--st-accent-text)]">01 · TECHNICAL DEFINITION</p>
             <p className="text-sm leading-relaxed text-[var(--st-on)]">{topic.definition}</p>
           </div>
         </section>
@@ -343,7 +343,7 @@ export function InstrumentDetailPage() {
           {cadConfig && selectedPart ? (
             <div className="glass space-y-3.5 p-5">
               <div>
-                <span className="eyebrow text-[var(--st-cyan)]">SELECTED COMPONENT · #{selectedPart.code}</span>
+                <span className="eyebrow text-[var(--st-accent-text)]">SELECTED COMPONENT · #{selectedPart.code}</span>
                 <h2 className="mt-1 text-lg font-semibold text-[var(--st-on)]">{selectedPart.name}</h2>
               </div>
 
@@ -356,7 +356,7 @@ export function InstrumentDetailPage() {
                 </div>
                 <div className="border-t border-[var(--st-line)] pt-2">
                   <span className="eyebrow">CONSTRUCTION MATERIAL</span>
-                  <p className="mono mt-1 text-[11px] text-[var(--st-cyan)]">{selectedPart.material}</p>
+                  <p className="mono mt-1 text-[11px] text-[var(--st-accent-text)]">{selectedPart.material}</p>
                 </div>
                 <div className="border-t border-[var(--st-line)] pt-2">
                   <span className="eyebrow text-[var(--st-amber)]">INDUSTRIAL RELEVANCE</span>
@@ -382,7 +382,7 @@ export function InstrumentDetailPage() {
             </div>
           ) : (
             <div className="glass space-y-3.5 p-5">
-              <p className="eyebrow text-[var(--st-cyan)]">PERFORMANCE TELEMETRY</p>
+              <p className="eyebrow text-[var(--st-accent-text)]">PERFORMANCE TELEMETRY</p>
               <div className="sub space-y-1 p-3.5">
                 <div className="kv">
                   <span>Typical Span</span>
@@ -415,7 +415,7 @@ export function InstrumentDetailPage() {
                 <ul className="space-y-1.5 text-[var(--st-on-var)]">
                   {topic.quickRevisionNotes.map((n) => (
                     <li key={n} className="flex items-start gap-2">
-                      <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-[var(--st-phosphor)]" />
+                      <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-[var(--st-accent-text)]" />
                       <span>{n}</span>
                     </li>
                   ))}
@@ -427,8 +427,8 @@ export function InstrumentDetailPage() {
           {canonical && canonical.curriculumLinks.length > 0 && (
             <div className="glass space-y-2.5 p-4">
               <div className="flex items-center gap-2">
-                <GraduationCap className="size-4 text-[var(--st-cyan)]" />
-                <p className="eyebrow text-[var(--st-cyan)]">
+                <GraduationCap className="size-4 text-[var(--st-accent-text)]" />
+                <p className="eyebrow text-[var(--st-accent-text)]">
                   NITJ SYLLABUS COVERAGE ({canonical.curriculumLinks.length})
                 </p>
               </div>
@@ -437,9 +437,9 @@ export function InstrumentDetailPage() {
                   <Link
                     key={`${cl.subjectId}-${cl.conceptId}`}
                     to={`/roadmap?sem=${cl.semesterLabel.toLowerCase().includes('supplement') ? 'additional' : cl.semesterLabel.replace(/[^0-9]/g, '') || '3'}&subject=${encodeURIComponent(cl.subjectId)}&unit=${cl.unitNumber}&concept=${encodeURIComponent(cl.conceptId)}`}
-                    className="sub block px-3 py-2 text-xs transition hover:border-[var(--st-cyan)]/50"
+                    className="sub block px-3 py-2 text-xs transition hover:border-[var(--st-accent)]/50"
                   >
-                    <p className="mono text-[10px] text-[var(--st-cyan)]">
+                    <p className="mono text-[10px] text-[var(--st-accent-text)]">
                       {cl.subjectCode} · {cl.semesterLabel} · Unit {cl.unitNumber}
                     </p>
                     <p className="mt-0.5 font-medium text-[var(--st-on)]">{cl.conceptTitle}</p>
@@ -455,7 +455,7 @@ export function InstrumentDetailPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         {/* 02. Purpose & Working Principle */}
         <section className="glass space-y-3 p-6">
-          <p className="eyebrow text-[var(--st-cyan)]">02 · PURPOSE &amp; WORKING PRINCIPLE</p>
+          <p className="eyebrow text-[var(--st-accent-text)]">02 · PURPOSE &amp; WORKING PRINCIPLE</p>
           <p className="text-sm text-[var(--st-on)]">{topic.purposeAndPrinciple.purpose}</p>
           <p className="text-xs leading-relaxed text-[var(--st-on-var)]">
             {topic.purposeAndPrinciple.workingPrinciple}
@@ -463,7 +463,7 @@ export function InstrumentDetailPage() {
           <ol className="space-y-2 pt-1">
             {topic.purposeAndPrinciple.principleSteps.map((step, i) => (
               <li key={step} className="sub flex items-start gap-3 p-3 text-xs">
-                <span className="mono font-semibold text-[var(--st-cyan)]">0{i + 1}</span>
+                <span className="mono font-semibold text-[var(--st-accent-text)]">0{i + 1}</span>
                 <span className="text-[var(--st-on)]">{step}</span>
               </li>
             ))}
@@ -472,7 +472,7 @@ export function InstrumentDetailPage() {
 
         {/* 03 & 04. Construction & Internal Components */}
         <section className="glass space-y-3 p-6">
-          <p className="eyebrow text-[var(--st-cyan)]">03–04 · CONSTRUCTION &amp; INTERNAL COMPONENTS</p>
+          <p className="eyebrow text-[var(--st-accent-text)]">03–04 · CONSTRUCTION &amp; INTERNAL COMPONENTS</p>
           <p className="text-xs leading-relaxed text-[var(--st-on)]">{topic.construction.summary}</p>
           <p className="muted text-xs leading-relaxed">{topic.construction.assemblyArchitecture}</p>
           <div className="tech-table-wrap">
@@ -488,7 +488,7 @@ export function InstrumentDetailPage() {
                 {topic.internalComponents.map((c) => (
                   <tr key={c.partCode + c.name}>
                     <td className="font-medium">
-                      <span className="mono mr-1.5 text-[var(--st-cyan)]">{c.partCode}</span>
+                      <span className="mono mr-1.5 text-[var(--st-accent-text)]">{c.partCode}</span>
                       {c.name}
                     </td>
                     <td className="mono text-[11px] text-[var(--st-on-var)]">{c.material}</td>
@@ -506,7 +506,7 @@ export function InstrumentDetailPage() {
 
       {/* 05. Types & Classification */}
       <section className="glass space-y-3 p-6">
-        <p className="eyebrow text-[var(--st-cyan)]">05 · TYPES &amp; CLASSIFICATION</p>
+        <p className="eyebrow text-[var(--st-accent-text)]">05 · TYPES &amp; CLASSIFICATION</p>
         <div className="tech-table-wrap">
           <table className="tech-table">
             <thead>
@@ -524,7 +524,7 @@ export function InstrumentDetailPage() {
                   <td className="font-semibold">{t.type}</td>
                   <td className="text-[var(--st-on-var)]">{t.summary}</td>
                   <td className="mono text-[11px]">{t.typicalRange}</td>
-                  <td className="mono text-[11px] text-[var(--st-cyan)]">{t.accuracy}</td>
+                  <td className="mono text-[11px] text-[var(--st-accent-text)]">{t.accuracy}</td>
                   <td>{t.bestFor}</td>
                 </tr>
               ))}
@@ -536,7 +536,7 @@ export function InstrumentDetailPage() {
       {/* 06 & 07. Equations + Characteristic Graph */}
       <div className="grid gap-4 lg:grid-cols-2">
         <section className="glass space-y-4 p-6">
-          <p className="eyebrow text-[var(--st-cyan)]">06 · GOVERNING EQUATIONS &amp; DERIVATIONS</p>
+          <p className="eyebrow text-[var(--st-accent-text)]">06 · GOVERNING EQUATIONS &amp; DERIVATIONS</p>
           {topic.equations.map((eq) => (
             <div key={eq.title} className="sub space-y-3 p-4">
               <p className="text-sm font-semibold text-[var(--st-on)]">{eq.title}</p>
@@ -546,7 +546,7 @@ export function InstrumentDetailPage() {
               <div className="space-y-1">
                 {eq.variables.map((v) => (
                   <div key={v.symbol} className="flex items-baseline justify-between gap-2 text-xs">
-                    <span className="mono text-[var(--st-cyan)]">
+                    <span className="mono text-[var(--st-accent-text)]">
                       <MathBlock latex={v.symbol} displayMode={false} />
                     </span>
                     <span className="flex-1 text-[var(--st-on-var)]">{v.meaning}</span>
@@ -564,7 +564,7 @@ export function InstrumentDetailPage() {
         </section>
 
         <section className="glass space-y-3 p-6">
-          <p className="eyebrow text-[var(--st-cyan)]">07 · CHARACTERISTIC RESPONSE CURVE</p>
+          <p className="eyebrow text-[var(--st-accent-text)]">07 · CHARACTERISTIC RESPONSE CURVE</p>
           <CharacteristicChart curve={topic.characteristicCurve} />
         </section>
       </div>
@@ -572,7 +572,7 @@ export function InstrumentDetailPage() {
       {/* 08, 09, 10 & 11. Specifications, Range, Accuracy, Pros/Cons */}
       <div className="grid gap-4 lg:grid-cols-2">
         <section className="glass space-y-3 p-6">
-          <p className="eyebrow text-[var(--st-cyan)]">08–10 · TECHNICAL SPECIFICATIONS, RANGE &amp; ACCURACY</p>
+          <p className="eyebrow text-[var(--st-accent-text)]">08–10 · TECHNICAL SPECIFICATIONS, RANGE &amp; ACCURACY</p>
           <div className="tech-table-wrap">
             <table className="tech-table">
               <thead>
@@ -586,7 +586,7 @@ export function InstrumentDetailPage() {
                 {topic.specifications.map((sp) => (
                   <tr key={sp.parameter}>
                     <td className="font-medium">{sp.parameter}</td>
-                    <td className="mono text-xs text-[var(--st-cyan)]">{sp.value}</td>
+                    <td className="mono text-xs text-[var(--st-accent-text)]">{sp.value}</td>
                     <td className="text-xs text-[var(--st-on-var)]">{sp.standardOrNote}</td>
                   </tr>
                 ))}
@@ -610,14 +610,14 @@ export function InstrumentDetailPage() {
         </section>
 
         <section className="glass space-y-4 p-6">
-          <p className="eyebrow text-[var(--st-cyan)]">11 · ADVANTAGES &amp; LIMITATIONS</p>
+          <p className="eyebrow text-[var(--st-accent-text)]">11 · ADVANTAGES &amp; LIMITATIONS</p>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="sub space-y-2 p-4">
-              <p className="eyebrow text-[var(--st-phosphor)]">STRENGTHS</p>
+              <p className="eyebrow text-[var(--st-accent-text)]">STRENGTHS</p>
               <ul className="space-y-2 text-xs text-[var(--st-on)]">
                 {topic.advantages.map((a) => (
                   <li key={a} className="flex items-start gap-2">
-                    <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-[var(--st-phosphor)]" />
+                    <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-[var(--st-accent-text)]" />
                     <span>{a}</span>
                   </li>
                 ))}
@@ -641,13 +641,13 @@ export function InstrumentDetailPage() {
       {/* 12, 13 & 14. Applications, Calibration & Installation */}
       <div className="grid gap-4 lg:grid-cols-3">
         <section className="glass space-y-3 p-6">
-          <p className="eyebrow text-[var(--st-cyan)]">12 · INDUSTRIAL APPLICATIONS</p>
+          <p className="eyebrow text-[var(--st-accent-text)]">12 · INDUSTRIAL APPLICATIONS</p>
           <div className="space-y-2.5">
             {topic.applications.map((app) => (
               <div key={app.loopTagExample + app.service} className="sub space-y-1 p-3.5 text-xs">
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-semibold text-[var(--st-on)]">{app.industry}</span>
-                  <span className="mono rounded bg-[var(--st-void)] px-2 py-0.5 text-[10px] text-[var(--st-cyan)]">
+                  <span className="mono rounded bg-[var(--st-void)] px-2 py-0.5 text-[10px] text-[var(--st-accent-text)]">
                     {app.loopTagExample}
                   </span>
                 </div>
@@ -659,7 +659,7 @@ export function InstrumentDetailPage() {
         </section>
 
         <section className="glass space-y-3 p-6">
-          <p className="eyebrow text-[var(--st-cyan)]">13 · CALIBRATION PROCEDURE</p>
+          <p className="eyebrow text-[var(--st-accent-text)]">13 · CALIBRATION PROCEDURE</p>
           <p className="mono text-[11px] text-[var(--st-iris)]">{topic.calibration.referenceStandard}</p>
           <div className="sub p-3 text-xs">
             <p className="eyebrow mb-1">EQUIPMENT</p>
@@ -672,18 +672,18 @@ export function InstrumentDetailPage() {
           <ol className="space-y-1.5 text-xs text-[var(--st-on)]">
             {topic.calibration.procedureSteps.map((st, idx) => (
               <li key={st}>
-                <span className="mono mr-1.5 text-[var(--st-cyan)]">{idx + 1}.</span>
+                <span className="mono mr-1.5 text-[var(--st-accent-text)]">{idx + 1}.</span>
                 {st}
               </li>
             ))}
           </ol>
-          <p className="rounded-xl bg-[var(--st-void)] px-3 py-2 text-xs text-[var(--st-phosphor)]">
+          <p className="rounded-xl bg-[var(--st-void)] px-3 py-2 text-xs text-[var(--st-accent-text)]">
             Acceptance: {topic.calibration.acceptanceCriteria}
           </p>
         </section>
 
         <section className="glass space-y-3 p-6">
-          <p className="eyebrow text-[var(--st-cyan)]">14 · INSTALLATION &amp; COMMON MISTAKES</p>
+          <p className="eyebrow text-[var(--st-accent-text)]">14 · INSTALLATION &amp; COMMON MISTAKES</p>
           <div className="space-y-2 text-xs">
             <p className="eyebrow">MECHANICAL</p>
             {topic.installation.mechanicalRules.map((r) => (
@@ -707,7 +707,7 @@ export function InstrumentDetailPage() {
       <section className="glass space-y-3 p-6">
         <div className="flex items-center gap-2">
           <Wrench className="size-4 text-[var(--st-amber)]" />
-          <p className="eyebrow text-[var(--st-cyan)]">15 · FIELD TROUBLESHOOTING MATRIX</p>
+          <p className="eyebrow text-[var(--st-accent-text)]">15 · FIELD TROUBLESHOOTING MATRIX</p>
         </div>
         <div className="tech-table-wrap">
           <table className="tech-table">
@@ -725,7 +725,7 @@ export function InstrumentDetailPage() {
                   <td className="font-medium text-[var(--st-amber)]">{tr.symptom}</td>
                   <td>{tr.probableCause}</td>
                   <td className="text-[var(--st-on-var)]">{tr.diagnosticCheck}</td>
-                  <td className="text-[var(--st-phosphor)]">{tr.correctiveAction}</td>
+                  <td className="text-[var(--st-accent-text)]">{tr.correctiveAction}</td>
                 </tr>
               ))}
             </tbody>
@@ -736,20 +736,20 @@ export function InstrumentDetailPage() {
       {/* 16 & 17. Manufacturers + Peer Comparisons */}
       <div className="grid gap-4 lg:grid-cols-2">
         <section className="glass space-y-3 p-6">
-          <p className="eyebrow text-[var(--st-cyan)]">16 · MANUFACTURERS &amp; REPRESENTATIVE SERIES</p>
+          <p className="eyebrow text-[var(--st-accent-text)]">16 · MANUFACTURERS &amp; REPRESENTATIVE SERIES</p>
           <div className="space-y-2.5">
             {topic.manufacturers.map((m) => (
               <div key={m.vendor + m.modelSeries} className="sub space-y-1.5 p-3.5 text-xs">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="font-semibold text-[var(--st-on)]">
-                    {m.vendor} · <span className="text-[var(--st-cyan)]">{m.modelSeries}</span>
+                    {m.vendor} · <span className="text-[var(--st-accent-text)]">{m.modelSeries}</span>
                   </span>
                   <span
                     className="status"
                     style={{
                       '--tone':
                         m.verificationStatus === 'sourced-reference'
-                          ? 'var(--st-phosphor)'
+                          ? 'var(--st-accent)'
                           : 'var(--st-amber)',
                     } as React.CSSProperties}
                   >
@@ -764,7 +764,7 @@ export function InstrumentDetailPage() {
                     href={m.sourceUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1 mono text-[11px] text-[var(--st-cyan)] hover:underline"
+                    className="inline-flex items-center gap-1 mono text-[11px] text-[var(--st-accent-text)] hover:underline"
                   >
                     {m.sourceLabel} <ExternalLink className="size-3" />
                   </a>
@@ -777,7 +777,7 @@ export function InstrumentDetailPage() {
         </section>
 
         <section className="glass space-y-3 p-6">
-          <p className="eyebrow text-[var(--st-cyan)]">17 · PEER INSTRUMENT COMPARISON</p>
+          <p className="eyebrow text-[var(--st-accent-text)]">17 · PEER INSTRUMENT COMPARISON</p>
           <div className="tech-table-wrap">
             <table className="tech-table">
               <thead>
@@ -792,7 +792,7 @@ export function InstrumentDetailPage() {
                 {topic.comparisons.map((cmp) => (
                   <tr key={cmp.parameter + cmp.peerName}>
                     <td className="font-medium">{cmp.parameter}</td>
-                    <td className="text-[var(--st-cyan)]">{cmp.thisInstrument}</td>
+                    <td className="text-[var(--st-accent-text)]">{cmp.thisInstrument}</td>
                     <td>
                       <p className="font-medium">{cmp.peerName}</p>
                       <p className="muted text-xs">{cmp.peerValue}</p>
@@ -809,7 +809,7 @@ export function InstrumentDetailPage() {
       {/* 18 & 19. Worked Numericals + Interview Q&A */}
       <div className="grid gap-4 lg:grid-cols-2">
         <section className="glass space-y-3 p-6">
-          <p className="eyebrow text-[var(--st-cyan)]">18 · WORKED NUMERICAL PROBLEMS</p>
+          <p className="eyebrow text-[var(--st-accent-text)]">18 · WORKED NUMERICAL PROBLEMS</p>
           {topic.numericalProblems.map((prob) => (
             <div key={prob.title} className="sub space-y-2.5 p-4 text-xs">
               <p className="text-sm font-semibold text-[var(--st-on)]">{prob.title}</p>
@@ -822,12 +822,12 @@ export function InstrumentDetailPage() {
               <ol className="space-y-1 border-t border-[var(--st-line)] pt-2 text-[var(--st-on)]">
                 {prob.steps.map((st, idx) => (
                   <li key={st}>
-                    <span className="mono mr-1.5 text-[var(--st-cyan)]">{idx + 1}.</span>
+                    <span className="mono mr-1.5 text-[var(--st-accent-text)]">{idx + 1}.</span>
                     {st}
                   </li>
                 ))}
               </ol>
-              <p className="rounded-xl bg-[var(--st-void)] px-3 py-2 font-semibold text-[var(--st-phosphor)]">
+              <p className="rounded-xl bg-[var(--st-void)] px-3 py-2 font-semibold text-[var(--st-accent-text)]">
                 Final Answer: {prob.answer}
               </p>
             </div>
@@ -835,7 +835,7 @@ export function InstrumentDetailPage() {
         </section>
 
         <section className="glass space-y-3 p-6">
-          <p className="eyebrow text-[var(--st-cyan)]">19 · INTERVIEW PRACTICE QUESTIONS</p>
+          <p className="eyebrow text-[var(--st-accent-text)]">19 · INTERVIEW PRACTICE QUESTIONS</p>
           <div className="space-y-2">
             {topic.interviewQuestions.map((qa, idx) => {
               const open = Boolean(openQA[idx]);
@@ -867,18 +867,18 @@ export function InstrumentDetailPage() {
       {/* 20. Quick Revision Notes & Standards Sources */}
       <section className="glass grid gap-4 p-6 md:grid-cols-2">
         <div className="space-y-2">
-          <p className="eyebrow text-[var(--st-cyan)]">20 · QUICK REVISION NOTES</p>
+          <p className="eyebrow text-[var(--st-accent-text)]">20 · QUICK REVISION NOTES</p>
           <ul className="space-y-1.5 text-xs text-[var(--st-on)]">
             {topic.quickRevisionNotes.map((note) => (
               <li key={note} className="flex items-start gap-2">
-                <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-[var(--st-cyan)]" />
+                <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-[var(--st-accent-text)]" />
                 <span>{note}</span>
               </li>
             ))}
           </ul>
         </div>
         <div className="space-y-2">
-          <p className="eyebrow text-[var(--st-cyan)]">TECHNICAL STANDARDS &amp; SOURCES</p>
+          <p className="eyebrow text-[var(--st-accent-text)]">TECHNICAL STANDARDS &amp; SOURCES</p>
           <div className="space-y-2">
             {topic.sources.map((src) => (
               <div key={src.label} className="sub flex items-center justify-between gap-2 px-3.5 py-2 text-xs">
@@ -891,7 +891,7 @@ export function InstrumentDetailPage() {
                     href={src.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-[var(--st-cyan)] hover:underline"
+                    className="text-[var(--st-accent-text)] hover:underline"
                     aria-label={`Open ${src.label}`}
                   >
                     <ExternalLink className="size-3.5" />

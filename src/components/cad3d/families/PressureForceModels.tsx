@@ -25,7 +25,7 @@ export function StrainGaugeAssembly() {
         {/* Force arrow cone pressing at beam tip */}
         <mesh position={[1.95, 0.35, 0]} rotation={[Math.PI, 0, 0]}>
           <coneGeometry args={[0.12, 0.32, 18]} />
-          <meshStandardMaterial color="#ef4444" roughness={0.3} />
+          <PbrMat preset="alnicoRed" />
         </mesh>
       </CadPartGroup>
 
@@ -174,7 +174,7 @@ export function BourdonGaugeAssembly() {
       <CadPartGroup partId="bg_case_bezel" basePos={[0, 0.15, -0.08]} explodeOffset={[0, 0, -0.85]} isCutawayShell>
         <mesh rotation={[Math.PI / 2, 0, 0]}>
           <cylinderGeometry args={[1.02, 1.02, 0.46, 44]} />
-          <PbrMat preset="ss316" />
+          <PbrMat preset="blueHousing" />
         </mesh>
         <mesh position={[0, 0, 0.25]} rotation={[Math.PI / 2, 0, 0]}>
           <cylinderGeometry args={[0.94, 0.94, 0.03, 44]} />
@@ -195,7 +195,18 @@ export function BourdonGaugeAssembly() {
 
       <CadPartGroup partId="bg_bourdon_tube" basePos={[0, 0.15, -0.08]} explodeOffset={[-0.75, 0.25, 0]}>
         <mesh geometry={cTubeGeo} rotation={[0, 0, Math.PI / 2]}>
-          <PbrMat preset="bronze" />
+          <PbrMat preset="copper" />
+        </mesh>
+        {/* Sealed free tip (sensing displacement end) highlighted in warm red-orange */}
+        <mesh
+          position={[
+            -Math.sin(THREE.MathUtils.degToRad(135)) * (0.56 + sim.primaryNorm * 0.04),
+            Math.cos(THREE.MathUtils.degToRad(135)) * (0.56 + sim.primaryNorm * 0.04),
+            0,
+          ]}
+        >
+          <sphereGeometry args={[0.09, 16, 16]} />
+          <PbrMat preset="alnicoRed" />
         </mesh>
       </CadPartGroup>
 
@@ -326,20 +337,14 @@ export function StrainPressureAssembly() {
       <CadPartGroup partId="sp_amplifier_pcb" basePos={[0, 0.35, 0]} explodeOffset={[0.7, 0.2, 0]}>
         <mesh>
           <boxGeometry args={[0.42, 0.65, 0.05]} />
-          <PbrMat preset="siliconWafer" colorOverride="#15803d" />
+          <PbrMat preset="siliconWafer" />
         </mesh>
       </CadPartGroup>
 
       <CadPartGroup partId="sp_m12_connector" basePos={[0, 1.0, 0]} explodeOffset={[0, 0.95, 0]}>
-        <mesh userData={{ selfEmissive: true }}>
+        <mesh>
           <cylinderGeometry args={[0.2, 0.2, 0.38, 24]} />
-          <meshStandardMaterial
-            color="#38bdf8"
-            emissive="#0284c7"
-            emissiveIntensity={sim.primaryNorm * 0.45}
-            metalness={0.35}
-            roughness={0.4}
-          />
+          <PbrMat preset="ssDark" />
         </mesh>
       </CadPartGroup>
     </group>
@@ -407,24 +412,18 @@ export function PiezoPressureAssembly() {
       <CadPartGroup partId="pz_quartz_discs" basePos={[0, -0.35, 0]} explodeOffset={[-0.7, -0.15, 0]}>
         <mesh position={[0, -0.06, 0]}>
           <cylinderGeometry args={[0.26, 0.26, 0.1, 28]} />
-          <PbrMat preset="quartz" colorOverride="#fde047" />
+          <PbrMat preset="quartz" />
         </mesh>
         <mesh position={[0, 0.08, 0]}>
           <cylinderGeometry args={[0.26, 0.26, 0.1, 28]} />
-          <PbrMat preset="quartz" colorOverride="#fde047" />
+          <PbrMat preset="quartz" />
         </mesh>
       </CadPartGroup>
 
       <CadPartGroup partId="pz_electrode" basePos={[0, 0.05, 0]} explodeOffset={[0.7, 0.2, 0]}>
-        <mesh userData={{ selfEmissive: true }}>
+        <mesh>
           <cylinderGeometry args={[0.22, 0.22, 0.42, 24]} />
-          <meshStandardMaterial
-            color="#eab308"
-            emissive="#eab308"
-            emissiveIntensity={0.08 + sim.primaryNorm * 0.55}
-            metalness={0.9}
-            roughness={0.2}
-          />
+          <PbrMat preset="alnicoRed" />
         </mesh>
       </CadPartGroup>
 
@@ -587,13 +586,9 @@ export function VacuumGaugeAssembly() {
       </CadPartGroup>
 
       <CadPartGroup partId="vg_pirani_filament" basePos={[-0.45, 0.25, 0]} explodeOffset={[-0.65, 0.75, 0.4]}>
-        <mesh userData={{ selfEmissive: true }}>
+        <mesh>
           <cylinderGeometry args={[0.045, 0.045, 0.9, 14]} />
-          <meshStandardMaterial
-            color="#f59e0b"
-            emissive="#f97316"
-            emissiveIntensity={0.2 + (1 - sim.primaryNorm) * 1.1}
-          />
+          <PbrMat preset="alnicoRed" />
         </mesh>
       </CadPartGroup>
 

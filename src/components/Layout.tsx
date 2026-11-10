@@ -1,490 +1,519 @@
 import {
-  Activity,
   ArrowLeft,
   Bookmark,
   BookOpen,
   Briefcase,
   Calculator,
   ChevronDown,
-  Cpu,
-  Factory,
-  Gauge,
-  LayoutDashboard,
+  ChevronRight,
+  Compass,
+  Github,
+  Globe,
+  Home,
+  Linkedin,
   Menu,
   Moon,
+  Plus,
   Search,
   Sun,
-  Wrench,
   X,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { Link, matchPath, useLocation, useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
-import { INSTRUMENT_CATEGORIES } from '@/data/instruments';
-import { AUTOMATION_MODULES } from '@/data/automationData';
+import { resolveCanonicalPath } from '@/data/navigationTree';
+import { getPlainDisplayName } from '@/data/simpleGuides';
+import { SITE_LINKS } from '@/lib/siteConfig';
 import { BookmarksDrawer } from './BookmarksDrawer';
 import { SearchModal } from './SearchModal';
+import { SuggestInstrumentModal } from './SuggestInstrumentModal';
 
-interface NavMenuConfig {
-  id: string;
-  label: string;
-  path: string;
-  icon: React.ComponentType<{ className?: string }>;
-  children?: { label: string; sub?: string; to: string }[];
+const SIDEBAR_WIDTH_KEY = 'instrument-ai:sidebar-width';
+const DEFAULT_SIDEBAR_WIDTH = 230;
+const MIN_SIDEBAR_WIDTH = 200;
+const MAX_SIDEBAR_WIDTH = 360;
+
+function clampSidebarWidth(value: number): number {
+  if (!Number.isFinite(value)) return DEFAULT_SIDEBAR_WIDTH;
+  return Math.min(MAX_SIDEBAR_WIDTH, Math.max(MIN_SIDEBAR_WIDTH, Math.round(value)));
 }
 
-const MAIN_NAV: NavMenuConfig[] = [
-  { id: 'overview', label: 'Overview', path: '/', icon: LayoutDashboard },
-  { id: 'roadmap', label: 'Academic Roadmap', path: '/roadmap', icon: BookOpen },
-  {
-    id: 'instrumentation',
-    label: 'Instrumentation',
-    path: '/instrumentation',
-    icon: Gauge,
-    children: [
-      ...INSTRUMENT_CATEGORIES.map((c) => ({
-        label: c.label,
-        sub: c.standards,
-        to: `/instrumentation/${c.id}`,
-      })),
-      { label: 'Flagship: Pt100 RTD 3D CAD', sub: 'Interactive 9-Part Assembly', to: '/instrumentation/temperature/rtd' },
-      { label: '3D Virtual Instrument Lab & Inventory', sub: 'All Curriculum 3D Assemblies & Physics Sims', to: '/lab' },
-    ],
-  },
-  { id: 'electronics', label: 'Electronics', path: '/electronics', icon: Activity },
-  {
-    id: 'automation',
-    label: 'Automation',
-    path: '/automation',
-    icon: Cpu,
-    children: AUTOMATION_MODULES.map((m) => ({
-      label: m.title,
-      sub: m.standard,
-      to: `/automation/${m.id}`,
-    })),
-  },
-  { id: 'applications', label: 'Industrial Applications', path: '/applications', icon: Factory },
-  {
-    id: 'interview',
-    label: 'Interview Preparation',
-    path: '/interview',
-    icon: Briefcase,
-    children: [
-      { label: 'Interactive Question Bank', sub: '40+ MCQ, Numerical, Scenario & Troubleshooting', to: '/interview?tab=bank' },
-      { label: 'Oil & Gas Core PSUs & Refineries', sub: 'RIL, Nayara, IOCL, BPCL, HPCL, ONGC, GAIL, EIL, OIL', to: '/interview?tab=companies&sector=oil-gas' },
-      { label: 'Automation & Instrumentation OEMs', sub: 'Siemens, Schneider, ABB, Honeywell, Emerson, Yokogawa, E+H, Rockwell', to: '/interview?tab=companies&sector=automation' },
-    ],
-  },
-  {
-    id: 'toolbox',
-    label: 'Engineering Toolbox',
-    path: '/toolbox',
-    icon: Calculator,
-    children: [
-      { label: 'RTD Callendar-Van Dusen & Lead Error', sub: 'IEC 60751 Solver', to: '/toolbox/rtd-resistance' },
-      { label: 'Thermocouple ITS-90 & CJC', sub: 'Types K, J, T, E, N, S', to: '/toolbox/thermocouple-emf' },
-      { label: 'Orifice / DP Flow Calculator', sub: 'ISO 5167 Mass/Volume Flow', to: '/toolbox/flow-rate' },
-      { label: '4–20 mA Loop Scaling & Burden', sub: 'NAMUR NE43 + Load Ω Budget', to: '/toolbox/loop-scaling' },
-      { label: 'PID Tuning & Step Simulator', sub: 'ZN / IMC + Closed-Loop Plot', to: '/toolbox/pid-tuning' },
-      { label: 'All 11 Engineering Calculators →', sub: 'Temp, Pressure, Level, ADC, Bridge, Error', to: '/toolbox' },
-    ],
-  },
+function readStoredSidebarWidth(): number {
+  try {
+    const raw = localStorage.getItem(SIDEBAR_WIDTH_KEY);
+    if (!raw) return DEFAULT_SIDEBAR_WIDTH;
+    return clampSidebarWidth(Number(raw));
+  } catch {
+    return DEFAULT_SIDEBAR_WIDTH;
+  }
+}
+
+function BrandMark({ size = 32 }: { size?: number }) {
+  const uid = useId().replace(/:/g, '');
+  const gradId = `inst-ai-bg-${uid}`;
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 64 64"
+      width={size}
+      height={size}
+      aria-hidden="true"
+      className="shrink-0 rounded-[7px]"
+    >
+      <defs>
+        <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#1F2D3D" />
+          <stop offset="1" stopColor="#121A24" />
+        </linearGradient>
+      </defs>
+      <rect width="64" height="64" rx="16" fill={`url(#${gradId})`} />
+      <path
+        d="M17.9 46.1 A20 20 0 1 1 46.1 46.1"
+        fill="none"
+        stroke="#7FB3DE"
+        strokeWidth="4.5"
+        strokeLinecap="round"
+      />
+      <line
+        x1="32"
+        y1="32"
+        x2="42"
+        y2="23"
+        stroke="#E06A4F"
+        strokeWidth="4"
+        strokeLinecap="round"
+      />
+      <circle cx="32" cy="32" r="3.5" fill="#E8F1F8" />
+    </svg>
+  );
+}
+
+const MAIN_LINKS = [
+  { id: 'home', label: 'Home', path: '/', icon: Home },
+  { id: 'learn', label: 'Learn', path: '/learn', icon: BookOpen },
+  { id: 'browse', label: 'Browse', path: '/browse', icon: Compass },
+  { id: 'interview', label: 'Interview Prep', path: '/interview', icon: Briefcase },
+  { id: 'toolbox', label: 'Toolbox', path: '/toolbox', icon: Calculator },
 ];
 
-function buildBreadcrumbs(pathname: string): { label: string; to?: string }[] {
-  const parts = pathname.split('/').filter(Boolean);
-  if (parts.length === 0) return [{ label: 'Overview' }];
+const MORE_LINKS = [
+  { label: 'Automation & PLC', to: '/automation' },
+  { label: 'Plant diagrams', to: '/applications' },
+  { label: 'Signal chain', to: '/electronics' },
+  { label: 'Full syllabus notes', to: '/roadmap' },
+  { label: 'Knowledge graph', to: '/roadmap?view=graph' },
+  { label: 'Subject simulator', to: '/roadmap?view=simulator' },
+];
 
-  const mapLabel = (seg: string) =>
-    seg
-      .split('-')
-      .map((w) => (w.length <= 3 ? w.toUpperCase() : w[0].toUpperCase() + w.slice(1)))
-      .join(' ');
-
-  const crumbs: { label: string; to?: string }[] = [];
-  let acc = '';
-  parts.forEach((seg, idx) => {
-    acc += `/${seg}`;
-    crumbs.push({
-      label: mapLabel(seg),
-      to: idx < parts.length - 1 ? acc : undefined,
-    });
-  });
-  return crumbs;
+function buildPlainBreadcrumb(pathname: string): { label: string; to?: string }[] {
+  if (pathname === '/') return [{ label: 'Home' }];
+  if (pathname.startsWith('/learn')) return [{ label: 'Learn' }];
+  if (pathname.startsWith('/browse') || pathname.startsWith('/instrumentation')) {
+    return [{ label: 'Browse' }];
+  }
+  if (pathname.startsWith('/interview')) return [{ label: 'Interview Prep' }];
+  if (pathname.startsWith('/toolbox')) return [{ label: 'Toolbox' }];
+  if (pathname.startsWith('/automation/ladder')) {
+    return [{ label: 'Automation', to: '/automation' }, { label: 'Ladder simulator' }];
+  }
+  if (pathname.startsWith('/automation')) return [{ label: 'Automation' }];
+  if (pathname.startsWith('/applications')) return [{ label: 'Plant diagrams' }];
+  if (pathname.startsWith('/electronics')) return [{ label: 'Signal chain' }];
+  if (pathname.startsWith('/roadmap')) return [{ label: 'Full syllabus notes' }];
+  return [{ label: 'Instrument-AI' }];
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { theme, toggleTheme, setSearchOpen, bookmarks, setBookmarksOpen } = useApp();
+  const [moreOpen, setMoreOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [suggestOpen, setSuggestOpen] = useState(false);
+
+  const [sidebarWidth, setSidebarWidth] = useState<number>(readStoredSidebarWidth);
+  const [isResizing, setIsResizing] = useState(false);
+
+  const desktopSuggestBtnRef = useRef<HTMLButtonElement | null>(null);
+  const mobileMenuBtnRef = useRef<HTMLButtonElement | null>(null);
+  const activeSuggestTriggerRef = useRef<HTMLElement | null>(null);
+
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [openMenu, setOpenMenu] = useState<string | null>(null);
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [mobileAccordion, setMobileAccordion] = useState<string | null>(null);
-  const topNavRef = useRef<HTMLDivElement | null>(null);
+  const instMatch = matchPath('/instrument/:instrumentId', location.pathname);
+  const activeInstrumentId = instMatch?.params.instrumentId;
+  const canonicalPath = activeInstrumentId ? resolveCanonicalPath(activeInstrumentId) : undefined;
 
-  // Close menus on route change or outside click / Escape
+  const updateSidebarWidth = useCallback((nextWidth: number) => {
+    const clamped = clampSidebarWidth(nextWidth);
+    setSidebarWidth(clamped);
+    try {
+      localStorage.setItem(SIDEBAR_WIDTH_KEY, String(clamped));
+    } catch {
+      // ignore storage errors
+    }
+  }, []);
+
+  const handleResizePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    const startX = e.clientX;
+    const startWidth = sidebarWidth;
+    setIsResizing(true);
+
+    const prevSelect = document.body.style.userSelect;
+    const prevCursor = document.body.style.cursor;
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'col-resize';
+
+    const onMove = (moveEvt: PointerEvent) => {
+      updateSidebarWidth(startWidth + (moveEvt.clientX - startX));
+    };
+
+    const onUp = () => {
+      setIsResizing(false);
+      document.body.style.userSelect = prevSelect;
+      document.body.style.cursor = prevCursor;
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+    };
+
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
+  };
+
   useEffect(() => {
-    setOpenMenu(null);
-    setMobileNavOpen(false);
+    setMobileMenuOpen(false);
   }, [location.pathname, location.search]);
 
   useEffect(() => {
-    const onDocClick = (e: MouseEvent) => {
-      if (topNavRef.current && !topNavRef.current.contains(e.target as Node)) {
-        setOpenMenu(null);
-      }
-    };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setOpenMenu(null);
-        setMobileNavOpen(false);
-      }
+      if (e.key === 'Escape' && mobileMenuOpen) setMobileMenuOpen(false);
     };
-    document.addEventListener('mousedown', onDocClick);
     document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('mousedown', onDocClick);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, []);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [mobileMenuOpen]);
 
   const isNavActive = (path: string) =>
     path === '/' ? location.pathname === '/' : location.pathname.startsWith(path);
 
-  const crumbs = buildBreadcrumbs(location.pathname);
+  const fallbackCrumbs = canonicalPath ? null : buildPlainBreadcrumb(location.pathname);
 
-  return (
-    <div className={`studio ${theme === 'light' ? 'light' : ''}`}>
-      {/* Odyssey-aligned Left Icon Rail (Desktop lg+) */}
-      <aside
-        aria-label="Primary icon navigation"
-        className="rail fixed inset-y-0 left-0 z-30 hidden w-16 flex-col items-center pb-5 pt-2.5 lg:flex"
-      >
-        <Link
-          to="/"
-          aria-label="INSTRUMENTA Overview"
-          title="INSTRUMENTA Home"
-          className="grid size-10 place-items-center rounded-full bg-[var(--st-lime)] text-[#07090e] transition hover:brightness-105"
-        >
-          {/* Precision Crosshair / Instrument Dial Brand Emblem */}
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-            <circle cx="12" cy="12" r="8" />
-            <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
-            <path d="M12 12l4-4" />
-            <circle cx="12" cy="12" r="1.5" fill="currentColor" />
-          </svg>
-        </Link>
+  const openSuggestFromSidebar = (isMobileDrawer: boolean) => {
+    activeSuggestTriggerRef.current = isMobileDrawer
+      ? mobileMenuBtnRef.current
+      : desktopSuggestBtnRef.current;
+    if (isMobileDrawer) setMobileMenuOpen(false);
+    setSuggestOpen(true);
+  };
 
-        <nav className="mt-7 flex flex-col gap-3">
-          {MAIN_NAV.map((item) => {
-            const Icon = item.icon;
-            const active = isNavActive(item.path);
-            return (
-              <Link
-                key={item.id}
-                to={item.path}
-                aria-label={item.label}
-                title={item.label}
-                aria-current={active ? 'page' : undefined}
-                className={`grid size-10 place-items-center rounded-full bg-[var(--st-3)] transition-colors ${
-                  active
-                    ? 'text-[var(--st-on)] ring-1 ring-[var(--st-cyan)] ring-offset-2 ring-offset-[var(--st-0)]'
-                    : 'text-[var(--st-on-var)] hover:text-[var(--st-on)]'
-                }`}
+  const renderSidebarContents = (onNavigate?: () => void) => {
+    const isMobileDrawer = Boolean(onNavigate);
+    return (
+      <div className="flex h-full flex-col justify-between overflow-y-auto px-2 py-4">
+        <div className="space-y-6">
+          <div className="flex items-center justify-between gap-2 px-1.5">
+            <Link
+              to="/"
+              onClick={onNavigate}
+              className="flex min-w-0 items-center gap-2.5 text-[20px] font-semibold tracking-normal text-[var(--st-on)]"
+            >
+              <BrandMark size={32} />
+              <span className="truncate">Instrument-AI</span>
+            </Link>
+            {onNavigate && (
+              <button
+                type="button"
+                onClick={onNavigate}
+                aria-label="Close navigation menu"
+                className="icon-btn"
               >
-                <Icon className="size-[18px]" />
-              </Link>
-            );
-          })}
-        </nav>
+                <X className="size-5" />
+              </button>
+            )}
+          </div>
 
-        <div className="mt-auto flex flex-col items-center gap-2.5">
+          <nav aria-label="Main navigation" className="space-y-1">
+            {MAIN_LINKS.map((item) => {
+              const Icon = item.icon;
+              const active = isNavActive(item.path);
+              return (
+                <Link
+                  key={item.id}
+                  to={item.path}
+                  onClick={onNavigate}
+                  aria-current={active ? 'page' : undefined}
+                  className={`flex items-center gap-2.5 rounded-xl border px-2.5 py-2.5 text-[16px] transition ${active
+                      ? 'border-[var(--st-accent)]/60 bg-[var(--st-3)] font-semibold text-[var(--st-on)]'
+                      : 'border-transparent font-normal text-[var(--st-on-var)] hover:bg-[var(--st-2)] hover:text-[var(--st-on)]'
+                    }`}
+                >
+                  <Icon
+                    className={`size-[18px] shrink-0 ${active ? 'text-[var(--st-accent-text)]' : ''}`}
+                  />
+                  <span className="truncate">{item.label}</span>
+                </Link>
+              );
+            })}
+
+            <button
+              ref={!isMobileDrawer ? desktopSuggestBtnRef : undefined}
+              type="button"
+              onClick={() => openSuggestFromSidebar(isMobileDrawer)}
+              className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl border border-transparent px-2.5 py-2.5 text-left text-[16px] font-normal leading-snug text-[var(--st-on-var)] transition hover:bg-[var(--st-2)] hover:text-[var(--st-on)]"
+            >
+              <Plus className="size-[18px] shrink-0" />
+              <span>Suggest an instrument</span>
+            </button>
+
+            <div className="pt-2">
+              <button
+                type="button"
+                aria-expanded={moreOpen}
+                onClick={() => setMoreOpen((v) => !v)}
+                className="flex w-full cursor-pointer items-center justify-between rounded-xl px-3 py-2.5 text-[16px] font-normal text-[var(--st-on-var)] transition hover:bg-[var(--st-2)] hover:text-[var(--st-on)]"
+              >
+                <span>More</span>
+                {moreOpen ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
+              </button>
+
+              {moreOpen && (
+                <div className="mt-1 space-y-1 border-l border-[var(--st-line)] pl-3">
+                  {MORE_LINKS.map((link) => (
+                    <Link
+                      key={link.to}
+                      to={link.to}
+                      onClick={onNavigate}
+                      className="block rounded-lg px-3 py-2 text-[14px] font-normal text-[var(--st-on-var)] transition hover:bg-[var(--st-2)] hover:text-[var(--st-on)]"
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          </nav>
+        </div>
+
+        <div className="space-y-2 pt-4">
           <button
             type="button"
-            onClick={() => setBookmarksOpen(true)}
-            aria-label="Open saved bookmarks"
-            title="Saved Bookmarks"
-            className="icon-btn relative"
+            onClick={() => {
+              onNavigate?.();
+              setBookmarksOpen(true);
+            }}
+            className="flex w-full cursor-pointer items-center justify-between rounded-xl px-3 py-2.5 text-[14px] font-normal text-[var(--st-on-var)] transition hover:bg-[var(--st-2)] hover:text-[var(--st-on)]"
           >
-            <Bookmark className="size-4" />
+            <span className="flex items-center gap-2.5">
+              <Bookmark className="size-4" />
+              Saved
+            </span>
             {bookmarks.length > 0 && (
-              <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-[var(--st-lime)] text-[9px] font-bold text-[#07090e]">
+              <span className="rounded-full bg-[var(--st-3)] px-2 py-0.5 text-[14px] font-semibold text-[var(--st-on)]">
                 {bookmarks.length}
               </span>
             )}
           </button>
+
           <button
             type="button"
             onClick={toggleTheme}
             aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
-            title="Toggle theme"
-            className="icon-btn"
+            className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2.5 text-[14px] font-normal text-[var(--st-on-var)] transition hover:bg-[var(--st-2)] hover:text-[var(--st-on)]"
           >
             {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
+            <span>{theme === 'dark' ? 'Light theme' : 'Dark theme'}</span>
           </button>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div
+      className={`studio ${theme === 'light' ? 'light' : ''}`}
+      style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
+    >
+      {/* ONE Sidebar (Desktop lg+) */}
+      <aside
+        aria-label="Sidebar navigation"
+        className="rail fixed inset-y-0 left-0 z-20 hidden w-[var(--sidebar-width)] lg:block"
+      >
+        {renderSidebarContents()}
+
+        {/* Vertical divider drag handle (desktop only >= 1024px) */}
+        <div
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize sidebar"
+          aria-valuemin={MIN_SIDEBAR_WIDTH}
+          aria-valuemax={MAX_SIDEBAR_WIDTH}
+          aria-valuenow={sidebarWidth}
+          tabIndex={0}
+          onPointerDown={handleResizePointerDown}
+          onDoubleClick={() => updateSidebarWidth(DEFAULT_SIDEBAR_WIDTH)}
+          onKeyDown={(e) => {
+            if (e.key === 'ArrowLeft') {
+              e.preventDefault();
+              updateSidebarWidth(sidebarWidth - 8);
+            } else if (e.key === 'ArrowRight') {
+              e.preventDefault();
+              updateSidebarWidth(sidebarWidth + 8);
+            } else if (e.key === 'Home') {
+              e.preventDefault();
+              updateSidebarWidth(MIN_SIDEBAR_WIDTH);
+            } else if (e.key === 'End') {
+              e.preventDefault();
+              updateSidebarWidth(MAX_SIDEBAR_WIDTH);
+            }
+          }}
+          title="Drag to resize sidebar (double-click to reset)"
+          className="group absolute inset-y-0 -right-1 z-30 flex w-2.5 cursor-col-resize items-center justify-center focus-visible:outline-none"
+        >
+          <span
+            className={`h-full w-[2px] transition-colors ${isResizing
+                ? 'bg-[var(--st-accent)]'
+                : 'bg-transparent group-hover:bg-[var(--st-accent)] group-focus-visible:bg-[var(--st-accent)]'
+              }`}
+          />
         </div>
       </aside>
 
-      {/* Main Content Shell */}
-      <div className="flex min-h-screen flex-col lg:pl-16">
-        {/* Sticky Topbar with Breadcrumbs, Desktop Mega-Menus, Search & Mobile Trigger */}
-        <header className="topbar sticky top-0 z-20 flex min-h-14 flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2">
-          {/* Mobile Brand + Hamburger */}
-          <div className="flex items-center gap-2 lg:hidden">
-            <button
-              type="button"
-              onClick={() => setMobileNavOpen((o) => !o)}
-              className="icon-btn size-9!"
-              aria-expanded={mobileNavOpen}
-              aria-label="Toggle navigation menu"
-            >
-              {mobileNavOpen ? <X className="size-4" /> : <Menu className="size-4" />}
-            </button>
-            <Link to="/" className="mono text-xs font-semibold tracking-wider text-[var(--st-on)]">
-              INSTRUMENTA
-            </Link>
-          </div>
+      {/* Main Column */}
+      <div className="flex min-h-screen min-w-0 flex-col overflow-x-hidden lg:pl-[var(--sidebar-width)]">
+        <header className="topbar sticky top-0 z-10 flex min-h-16 items-center gap-3 px-4 py-3 sm:px-6">
+          {/* Mobile Menu Button */}
+          <button
+            ref={mobileMenuBtnRef}
+            type="button"
+            onClick={() => setMobileMenuOpen(true)}
+            aria-label="Open menu"
+            aria-expanded={mobileMenuOpen}
+            className="btn shrink-0 lg:hidden!"
+          >
+            <Menu className="size-4" />
+            <span>Menu</span>
+          </button>
 
-          {/* Back Button + Breadcrumbs */}
-          <div className="flex min-w-0 items-center gap-2">
+          {/* Back + Plain Breadcrumb */}
+          <div className="flex min-w-0 flex-1 items-center gap-2.5">
             {location.pathname !== '/' && (
               <button
                 type="button"
                 onClick={() => navigate(-1)}
-                className="icon-btn size-8! hidden sm:grid"
+                className="icon-btn size-9! hidden sm:grid"
                 aria-label="Go back"
-                title="Back"
               >
-                <ArrowLeft className="size-3.5" />
+                <ArrowLeft className="size-4" />
               </button>
             )}
-            <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1.5 overflow-hidden">
-              <Link to="/" className="eyebrow hidden text-[var(--st-on)] hover:text-[var(--st-cyan)] sm:inline">
-                INSTRUMENTA
-              </Link>
-              {crumbs.map((c, idx) => (
-                <span key={`${c.label}-${idx}`} className="flex min-w-0 items-center gap-1.5">
-                  <span className="eyebrow hidden sm:inline">/</span>
-                  {c.to ? (
-                    <Link to={c.to} className="eyebrow truncate hover:text-[var(--st-on)]">
-                      {c.label}
-                    </Link>
-                  ) : (
-                    <span className="eyebrow truncate text-[var(--st-on)]">{c.label}</span>
-                  )}
-                </span>
-              ))}
+
+            <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-2 overflow-hidden text-[14px]">
+              {canonicalPath ? (
+                <>
+                  <Link
+                    to={`/learn?sem=${canonicalPath.subject.semesterKey}&subject=${encodeURIComponent(canonicalPath.subject.id)}`}
+                    className="hidden shrink-0 text-[var(--st-on-var)] hover:text-[var(--st-on)] md:inline"
+                  >
+                    {canonicalPath.subject.shortName}
+                  </Link>
+                  <span className="hidden shrink-0 text-[var(--st-outline)] md:inline">›</span>
+                  <Link
+                    to={`/learn?sem=${canonicalPath.subject.semesterKey}&subject=${encodeURIComponent(canonicalPath.subject.id)}&family=${encodeURIComponent(canonicalPath.family.key)}`}
+                    className="shrink-0 text-[var(--st-on-var)] hover:text-[var(--st-on)]"
+                  >
+                    {canonicalPath.family.label}
+                  </Link>
+                  <span className="shrink-0 text-[var(--st-outline)]">›</span>
+                  <span className="truncate font-semibold text-[var(--st-on)]">
+                    {getPlainDisplayName(canonicalPath.entry)}
+                  </span>
+                </>
+              ) : (
+                fallbackCrumbs?.map((c, idx) => (
+                  <span key={`${c.label}-${idx}`} className="flex min-w-0 items-center gap-2">
+                    {idx > 0 && <span className="text-[var(--st-outline)]">›</span>}
+                    {c.to ? (
+                      <Link to={c.to} className="truncate text-[var(--st-on-var)] hover:text-[var(--st-on)]">
+                        {c.label}
+                      </Link>
+                    ) : (
+                      <span className="truncate font-semibold text-[var(--st-on)]">{c.label}</span>
+                    )}
+                  </span>
+                ))
+              )}
             </nav>
           </div>
 
-          {/* Desktop Dropdown / Mega-Menu Navigation */}
-          <div ref={topNavRef} className="ml-2 hidden flex-1 items-center gap-1 xl:flex">
-            {MAIN_NAV.map((item) => {
-              const active = isNavActive(item.path);
-              const isOpen = openMenu === item.id;
-              if (!item.children) {
-                return (
-                  <Link
-                    key={item.id}
-                    to={item.path}
-                    className={`rounded-full px-3 py-1.5 text-xs transition ${
-                      active
-                        ? 'bg-[var(--st-3)] font-medium text-[var(--st-on)]'
-                        : 'text-[var(--st-on-var)] hover:bg-[var(--st-2)] hover:text-[var(--st-on)]'
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              }
-              return (
-                <div key={item.id} className="relative">
-                  <button
-                    type="button"
-                    aria-expanded={isOpen}
-                    onClick={() => setOpenMenu((prev) => (prev === item.id ? null : item.id))}
-                    className={`inline-flex cursor-pointer items-center gap-1 rounded-full px-3 py-1.5 text-xs transition ${
-                      active || isOpen
-                        ? 'bg-[var(--st-3)] font-medium text-[var(--st-on)]'
-                        : 'text-[var(--st-on-var)] hover:bg-[var(--st-2)] hover:text-[var(--st-on)]'
-                    }`}
-                  >
-                    <span>{item.label}</span>
-                    <ChevronDown className={`size-3 transition ${isOpen ? 'rotate-180' : ''}`} />
-                  </button>
-
-                  {isOpen && (
-                    <div className="pod absolute left-0 top-full z-40 mt-2 w-80 rounded-3xl p-2 shadow-2xl">
-                      <div className="mb-1 flex items-center justify-between px-3 py-1.5">
-                        <span className="eyebrow">{item.label}</span>
-                        <Link
-                          to={item.path}
-                          onClick={() => setOpenMenu(null)}
-                          className="mono text-[10px] text-[var(--st-cyan)] hover:underline"
-                        >
-                          Open Hub →
-                        </Link>
-                      </div>
-                      <div className="space-y-0.5">
-                        {item.children.map((sub) => (
-                          <Link
-                            key={sub.to}
-                            to={sub.to}
-                            onClick={() => setOpenMenu(null)}
-                            className="block rounded-2xl px-3 py-2 transition hover:bg-[var(--st-3)]"
-                          >
-                            <p className="text-xs font-medium text-[var(--st-on)]">{sub.label}</p>
-                            {sub.sub && <p className="muted truncate text-[10.5px]">{sub.sub}</p>}
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Right Controls: Search Trigger + Bookmarks + Mobile Theme */}
-          <div className="ml-auto flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setSearchOpen(true)}
-              className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-[var(--st-line)] bg-[var(--st-void)] px-3 py-1.5 text-xs text-[var(--st-on-var)] transition hover:border-[var(--st-edge)] hover:text-[var(--st-on)]"
-            >
-              <Search className="size-3.5" />
-              <span className="hidden sm:inline">Search platform…</span>
-              <kbd className="mono hidden rounded bg-[var(--st-2)] px-1.5 py-0.5 text-[10px] text-[var(--st-outline)] md:inline">
-                ⌘K
-              </kbd>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setBookmarksOpen(true)}
-              className="btn py-1.5! lg:hidden"
-              aria-label="Open bookmarks"
-            >
-              <Bookmark className="size-3.5" />
-              <span className="mono text-[11px]">{bookmarks.length}</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={toggleTheme}
-              aria-label="Toggle color theme"
-              className="icon-btn size-9! lg:hidden"
-            >
-              {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
-            </button>
-          </div>
+          {/* Search Button */}
+          <button
+            type="button"
+            onClick={() => setSearchOpen(true)}
+            aria-label="Search instruments"
+            className="btn shrink-0"
+          >
+            <Search className="size-4" />
+            <span className="hidden sm:inline">Search</span>
+          </button>
         </header>
 
-        {/* Secondary Compact Horizontal Sub-Nav for Medium Viewports (lg to xl) */}
-        <nav
-          aria-label="Desktop section links"
-          className="hidden items-center gap-1.5 overflow-x-auto border-b border-[var(--st-line)] bg-[var(--st-0)] px-4 py-1.5 lg:flex xl:hidden"
-        >
-          {MAIN_NAV.map((item) => {
-            const active = isNavActive(item.path);
-            return (
-              <Link
-                key={item.id}
-                to={item.path}
-                className={`shrink-0 rounded-full px-3 py-1 text-xs transition ${
-                  active
-                    ? 'bg-[var(--st-3)] font-medium text-[var(--st-on)]'
-                    : 'text-[var(--st-on-var)] hover:text-[var(--st-on)]'
-                }`}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
+        <main className="min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8">{children}</main>
 
-        {/* Mobile Expandable Accordion Navigation */}
-        {mobileNavOpen && (
-          <div className="border-b border-[var(--st-line)] bg-[var(--st-0)] p-3 lg:hidden">
-            <nav aria-label="Mobile navigation" className="space-y-1.5">
-              {MAIN_NAV.map((item) => {
-                const Icon = item.icon;
-                const expanded = mobileAccordion === item.id;
-                const active = isNavActive(item.path);
-                if (!item.children) {
-                  return (
-                    <Link
-                      key={item.id}
-                      to={item.path}
-                      className={`flex items-center gap-2.5 rounded-2xl px-3.5 py-2.5 text-sm ${
-                        active ? 'bg-[var(--st-3)] font-medium text-[var(--st-on)]' : 'text-[var(--st-on-var)]'
-                      }`}
-                    >
-                      <Icon className="size-4" />
-                      <span>{item.label}</span>
-                    </Link>
-                  );
-                }
-                return (
-                  <div key={item.id} className="rounded-2xl border border-[var(--st-line)] bg-[var(--st-1)]">
-                    <button
-                      type="button"
-                      onClick={() => setMobileAccordion((prev) => (prev === item.id ? null : item.id))}
-                      aria-expanded={expanded}
-                      className="flex w-full cursor-pointer items-center justify-between px-3.5 py-2.5 text-sm font-medium text-[var(--st-on)]"
-                    >
-                      <span className="flex items-center gap-2.5">
-                        <Icon className="size-4 text-[var(--st-cyan)]" />
-                        {item.label}
-                      </span>
-                      <ChevronDown className={`size-4 transition ${expanded ? 'rotate-180' : ''}`} />
-                    </button>
-                    {expanded && (
-                      <div className="space-y-1 border-t border-[var(--st-line)] px-2 py-2">
-                        <Link
-                          to={item.path}
-                          className="block rounded-xl px-3 py-1.5 text-xs font-medium text-[var(--st-cyan)] hover:bg-[var(--st-2)]"
-                        >
-                          View All {item.label}
-                        </Link>
-                        {item.children.map((sub) => (
-                          <Link
-                            key={sub.to}
-                            to={sub.to}
-                            className="block rounded-xl px-3 py-1.5 text-xs text-[var(--st-on-var)] hover:bg-[var(--st-2)] hover:text-[var(--st-on)]"
-                          >
-                            {sub.label}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </nav>
-          </div>
-        )}
-
-        <main className="flex-1 p-4 md:p-6">{children}</main>
-
-        <footer className="border-t border-[var(--st-line)] px-6 py-4 text-xs text-[var(--st-on-var)]">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="flex items-center gap-2">
-              <Wrench className="size-3.5 text-[var(--st-cyan)]" />
-              <strong className="font-medium text-[var(--st-on)]">INSTRUMENTA</strong>
-              <span>· B.Tech Instrumentation &amp; Control Engineering Platform (Semesters 1–6)</span>
-            </span>
-            <span className="mono text-[11px]">
-              IEC 60751 · IEC 60584 · ISO 5167 · IEC 61131-3 · ISA-5.1
-            </span>
+        <footer className="flex min-h-[48px] flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t border-[var(--st-line)] px-4 py-2.5 text-[14px] text-[var(--st-on-var)] sm:px-8">
+          <span className="min-w-0">Meet the Developer - Pradeep </span>
+          <div className="flex shrink-0 items-center gap-4 whitespace-nowrap">
+            <a
+              href={SITE_LINKS.githubUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="GitHub"
+              className="inline-flex items-center justify-center rounded p-1 text-[var(--st-on-var)] transition hover:text-[var(--st-accent)]"
+            >
+              <Github size={18} aria-hidden="true" />
+            </a>
+            <a
+              href={SITE_LINKS.linkedinUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="LinkedIn"
+              className="inline-flex items-center justify-center rounded p-1 text-[var(--st-on-var)] transition hover:text-[var(--st-accent)]"
+            >
+              <Linkedin size={18} aria-hidden="true" />
+            </a>
+            <a
+              href={SITE_LINKS.websiteUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Website"
+              className="inline-flex items-center justify-center rounded p-1 text-[var(--st-on-var)] transition hover:text-[var(--st-accent)]"
+            >
+              <Globe size={18} aria-hidden="true" />
+            </a>
           </div>
         </footer>
       </div>
 
+      {/* Mobile Full-Screen Navigation Drawer */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-[var(--st-0)] lg:hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Navigation menu"
+        >
+          {renderSidebarContents(() => setMobileMenuOpen(false))}
+        </div>
+      )}
+
       <SearchModal />
       <BookmarksDrawer />
+      <SuggestInstrumentModal
+        open={suggestOpen}
+        onClose={() => setSuggestOpen(false)}
+        returnFocusRef={activeSuggestTriggerRef}
+      />
     </div>
   );
 }
-

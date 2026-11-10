@@ -47,6 +47,29 @@ export class InstrumentaDatabase {
         JSON.stringify(s.units),
       );
     }
+
+    // One-time non-destructive curriculum expansion sync for default non-custom NITJ subjects
+    const seedVersion = this.getPreference<string>('curriculum_seed_version');
+    if (seedVersion !== 'nitj-2025.06-four-subjects') {
+      const updateDefault = this.db.prepare(`
+        UPDATE academic_allocations
+        SET semester = ?, code = ?, name = ?, credits = ?, category = ?, overview = ?, units_json = ?, updated_at = datetime('now')
+        WHERE id = ? AND is_custom = 0
+      `);
+      for (const s of DEFAULT_ACADEMIC_SUBJECTS) {
+        updateDefault.run(
+          s.semester,
+          s.code,
+          s.name,
+          s.credits,
+          s.category,
+          s.overview,
+          JSON.stringify(s.units),
+          s.id,
+        );
+      }
+      this.setPreference('curriculum_seed_version', 'nitj-2025.06-four-subjects');
+    }
   }
 
   // Bookmarks
@@ -210,6 +233,112 @@ export class InstrumentaDatabase {
   clearQuestionAttempts(): QuestionAttempt[] {
     this.db.exec('DELETE FROM question_attempts');
     return [];
+  }
+
+  // UI Preferences (e.g., Navigation Tree open nodes)
+  getPreference<T = unknown>(key: string): T | null {
+    const row = this.db
+      .prepare('SELECT value_json FROM preferences WHERE key = ?')
+      .get(key) as { value_json: string } | undefined;
+    if (!row) return null;
+    try {
+      return JSON.parse(row.value_json) as T;
+    } catch {
+      return null;
+    }
+  }
+
+  setPreference<T = unknown>(key: string, value: T): T {
+    this.db
+      .prepare(`
+        INSERT INTO preferences (key, value_json, updated_at)
+        VALUES (?, ?, datetime('now'))
+        ON CONFLICT(key) DO UPDATE SET
+          value_json = excluded.value_json,
+          updated_at = datetime('now')
+      `)
+      .run(key, JSON.stringify(value));
+    return value;
+  }
+
+  // Instrument Suggestions
+  createSuggestion(input: {
+    name: string;
+    family: string;
+    reason: string;
+    link?: string;
+    contactName?: string;
+    contactEmail?: string;
+  }) {
+    const info = this.db
+      .prepare(`
+        INSERT INTO suggestions (name, family, reason, link, contact_name, contact_email, status)
+        VALUES (?, ?, ?, ?, ?, ?, 'new')
+      `)
+      .run(
+        input.name,
+        input.family,
+        input.reason,
+        input.link ?? '',
+        input.contactName ?? '',
+        input.contactEmail ?? '',
+      );
+    const id = Number(info.lastInsertRowid);
+    const row = this.db
+      .prepare(
+        'SELECT id, name, family, reason, link, contact_name, contact_email, status, created_at FROM suggestions WHERE id = ?',
+      )
+      .get(id) as {
+      id: number;
+      name: string;
+      family: string;
+      reason: string;
+      link: string;
+      contact_name: string;
+      contact_email: string;
+      status: string;
+      created_at: string;
+    };
+    return {
+      id: row.id,
+      name: row.name,
+      family: row.family,
+      reason: row.reason,
+      link: row.link,
+      contactName: row.contact_name,
+      contactEmail: row.contact_email,
+      status: row.status,
+      createdAt: row.created_at,
+    };
+  }
+
+  listSuggestions() {
+    const rows = this.db
+      .prepare(
+        'SELECT id, name, family, reason, link, contact_name, contact_email, status, created_at FROM suggestions ORDER BY created_at DESC, id DESC',
+      )
+      .all() as Array<{
+      id: number;
+      name: string;
+      family: string;
+      reason: string;
+      link: string;
+      contact_name: string;
+      contact_email: string;
+      status: string;
+      created_at: string;
+    }>;
+    return rows.map((row) => ({
+      id: row.id,
+      name: row.name,
+      family: row.family,
+      reason: row.reason,
+      link: row.link,
+      contactName: row.contact_name,
+      contactEmail: row.contact_email,
+      status: row.status,
+      createdAt: row.created_at,
+    }));
   }
 }
 

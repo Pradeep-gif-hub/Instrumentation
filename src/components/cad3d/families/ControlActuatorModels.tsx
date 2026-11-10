@@ -1,7 +1,7 @@
 import { useFrame } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import { CadPartGroup, useCadSim } from '../CadPart';
+import { CadPartGroup, useCadSim, useInstrumentFinish } from '../CadPart';
 import { buildDialFaceTexture, buildLcdDisplayTexture } from '../materials';
 import { DialPointer, FlangeWithBolts, HelicalTube, PbrMat } from '../primitives';
 
@@ -14,7 +14,7 @@ export function ControlValveAssembly() {
       <CadPartGroup partId="cv_globe_body" basePos={[0, -0.72, 0]} explodeOffset={[0, -0.75, 0]} isCutawayShell>
         <mesh rotation={[0, 0, Math.PI / 2]}>
           <cylinderGeometry args={[0.38, 0.38, 1.8, 32]} />
-          <PbrMat preset="castIron" />
+          <PbrMat preset="blueHousing" />
         </mesh>
         <FlangeWithBolts outerR={0.62} innerR={0.34} thickness={0.12} boltCount={8} position={[-0.95, 0, 0]} rotation={[0, 0, Math.PI / 2]} />
         <FlangeWithBolts outerR={0.62} innerR={0.34} thickness={0.12} boltCount={8} position={[0.95, 0, 0]} rotation={[0, 0, Math.PI / 2]} />
@@ -23,11 +23,11 @@ export function ControlValveAssembly() {
       <CadPartGroup partId="cv_plug_stem" basePos={[0, -0.22 + stemLift, 0]} explodeOffset={[0, 0.35, 0.7]}>
         <mesh position={[0, -0.5, 0]}>
           <cylinderGeometry args={[0.14, 0.24, 0.36, 28]} />
-          <PbrMat preset="chrome" />
+          <PbrMat preset="brass" />
         </mesh>
         <mesh position={[0, 0.28, 0]}>
           <cylinderGeometry args={[0.055, 0.055, 1.35, 20]} />
-          <PbrMat preset="chrome" />
+          <PbrMat preset="ss316" />
         </mesh>
       </CadPartGroup>
 
@@ -45,9 +45,9 @@ export function ControlValveAssembly() {
       <CadPartGroup partId="cv_actuator" basePos={[0, 0.98, 0]} explodeOffset={[0, 0.95, 0]} isCutawayShell>
         <mesh>
           <cylinderGeometry args={[0.88, 0.88, 0.32, 36]} />
-          <PbrMat preset="blueHousing" />
+          <PbrMat preset="ssDark" />
         </mesh>
-        <HelicalTube position={[0, -0.22, 0]} radius={0.18} height={0.32} turns={4} tubeRadius={0.025} preset="ssDark" />
+        <HelicalTube position={[0, -0.22, 0]} radius={0.18} height={0.32} turns={4} tubeRadius={0.025} preset="brass" />
       </CadPartGroup>
     </group>
   );
@@ -85,7 +85,7 @@ export function PneumaticActuatorAssembly() {
         </mesh>
         <mesh position={[0, 0.72, 0]}>
           <boxGeometry args={[0.45, 0.12, 0.16]} />
-          <meshStandardMaterial color="#ef4444" />
+          <PbrMat preset="alnicoRed" />
         </mesh>
       </CadPartGroup>
     </group>
@@ -214,7 +214,7 @@ export function SolenoidValveAssembly() {
       <CadPartGroup partId="sv_coil" basePos={[0, 0.42, 0]} explodeOffset={[0, 0.65, 0]} isCutawayShell>
         <mesh>
           <boxGeometry args={[0.86, 0.86, 0.86]} />
-          <PbrMat preset="blueHousing" colorOverride={energized ? '#16a34a' : '#1e4e79'} />
+          <PbrMat preset={energized ? 'alnicoRed' : 'blueHousing'} />
         </mesh>
         <mesh>
           <cylinderGeometry args={[0.26, 0.26, 0.75, 24]} />
@@ -355,11 +355,12 @@ export function ServomotorAssembly() {
 
 export function ProcessControllerAssembly() {
   const sim = useCadSim();
+  const finish = useInstrumentFinish();
   const pv = Math.round(50 + sim.primaryNorm * 120);
   const out = Math.min(100, Math.max(0, Math.round((150 - pv) * 1.4)));
   const lcdTex = useMemo(
-    () => buildLcdDisplayTexture(`PV ${pv}°C`, `SP 150°C · OUT ${out}%`, '#0f172a', '#22d3ee'),
-    [pv, out],
+    () => buildLcdDisplayTexture(`PV ${pv}°C`, `SP 150°C · OUT ${out}%`, '#102436', finish.roles.ceramic.color),
+    [pv, out, finish.roles.ceramic.color],
   );
   useEffect(() => () => lcdTex.dispose(), [lcdTex]);
 
@@ -386,7 +387,7 @@ export function ProcessControllerAssembly() {
       <CadPartGroup partId="pc_io_cards" basePos={[0, 0, -0.25]} explodeOffset={[0.75, 0, 0]}>
         <mesh>
           <boxGeometry args={[0.08, 1.05, 1.05]} />
-          <PbrMat preset="siliconWafer" colorOverride="#15803d" />
+          <PbrMat preset="siliconWafer" />
         </mesh>
       </CadPartGroup>
     </group>

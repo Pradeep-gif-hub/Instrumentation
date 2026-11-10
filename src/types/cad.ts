@@ -7,7 +7,8 @@ export type InstrumentFamilyKey =
   | 'electrical-bridge'
   | 'analytical-optical'
   | 'control-actuator'
-  | 'signal-transducer';
+  | 'signal-transducer'
+  | 'embedded-digital';
 
 export type InventoryClassification =
   | 'standalone-instrument'

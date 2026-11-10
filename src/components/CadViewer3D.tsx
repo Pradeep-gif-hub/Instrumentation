@@ -5,7 +5,17 @@ import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { Eye, EyeOff, Layers, Maximize2, RotateCcw, Scissors } from 'lucide-react';
 import type { CadPartMeta, InstrumentFamilyKey } from '@/types/cad';
-import { CadRuntimeContext, type CadSimState } from './cad3d/CadPart';
+import {
+  HIGHLIGHT_EMISSIVE,
+  PALETTE_3D,
+  VIEWER_3D_THEME,
+} from '@/3d/palette';
+import {
+  getFinishProfile,
+  resolveGlbPartMaterial,
+  type InstrumentFinishProfile,
+} from '@/3d/instrumentFinish';
+import { CadRuntimeContext, InstrumentFinishContext, type CadSimState } from './cad3d/CadPart';
 import { ProceduralCadRouter } from './cad3d/ProceduralCadRouter';
 
 export type CameraPreset = 'iso' | 'front' | 'side' | 'top';
@@ -86,6 +96,7 @@ function resolvePartId(obj: THREE.Object3D | null): string | null {
 function GlbAssemblyContents({
   glbUrl,
   parts,
+  finishProfile,
   selectedPartId,
   hoveredPartId,
   hiddenPartIds,
@@ -94,6 +105,7 @@ function GlbAssemblyContents({
 }: {
   glbUrl: string;
   parts: CadPartMeta[];
+  finishProfile: InstrumentFinishProfile;
   selectedPartId: string | null;
   hoveredPartId: string | null;
   hiddenPartIds?: Set<string>;
@@ -114,10 +126,42 @@ function GlbAssemblyContents({
       }
       if ((obj as THREE.Mesh).isMesh) {
         const mesh = obj as THREE.Mesh;
+        const partId = resolvePartId(mesh);
+        const applyFinish = (cloned: THREE.Material) => {
+          const std = cloned as THREE.MeshStandardMaterial;
+          if ('color' in std) {
+            const { spec, preserveLcd } = resolveGlbPartMaterial(
+              finishProfile,
+              cloned.name,
+              partId,
+            );
+            if (preserveLcd) {
+              std.color.set(spec.color);
+              std.userData = {
+                ...std.userData,
+                baseEmissiveHex: 'emissive' in std ? `#${std.emissive.getHexString()}` : '#000000',
+                baseEmissiveIntensity: 'emissiveIntensity' in std ? std.emissiveIntensity : 0,
+              };
+            } else {
+              std.color.set(spec.color);
+              std.metalness = spec.metalness;
+              std.roughness = spec.roughness;
+              if (spec.transparent !== undefined) std.transparent = spec.transparent;
+              if (spec.opacity !== undefined) std.opacity = spec.opacity;
+              if (spec.depthWrite !== undefined) std.depthWrite = spec.depthWrite;
+            }
+            if ('emissive' in std && !preserveLcd) {
+              std.emissive.set('#000000');
+              std.emissiveIntensity = 0;
+            }
+          }
+          return cloned;
+        };
+
         if (Array.isArray(mesh.material)) {
-          mesh.material = mesh.material.map((m) => m.clone());
+          mesh.material = mesh.material.map((m) => applyFinish(m.clone()));
         } else if (mesh.material) {
-          mesh.material = mesh.material.clone();
+          mesh.material = applyFinish(mesh.material.clone());
         }
         mesh.castShadow = true;
         mesh.receiveShadow = true;
@@ -125,7 +169,7 @@ function GlbAssemblyContents({
     });
 
     return { clonedScene: root, partGroups: groups };
-  }, [gltf.scene, parts]);
+  }, [gltf.scene, parts, finishProfile]);
 
   // Dispose cloned materials cleanly on unmount
   useEffect(() => {
@@ -163,15 +207,29 @@ function GlbAssemblyContents({
         if (!mat) continue;
         const std = mat as THREE.MeshStandardMaterial;
         if ('emissive' in std) {
-          if (isSelected) {
-            std.emissive.set('#9fd138');
-            std.emissiveIntensity = 0.28;
-          } else if (isHovered) {
-            std.emissive.set('#c5f467');
-            std.emissiveIntensity = 0.14;
-          } else {
+          const savedHex = std.userData?._savedColorHex as string | undefined;
+          if (isSelected || isHovered) {
+            const baseHex = savedHex ?? `#${std.color.getHexString()}`;
+            if (!savedHex) std.userData._savedColorHex = baseHex;
+            if ('color' in std && !std.map) {
+              const lerpFactor = isSelected
+                ? HIGHLIGHT_EMISSIVE.selectedColorLerp
+                : HIGHLIGHT_EMISSIVE.hoveredColorLerp;
+              std.color
+                .set(baseHex)
+                .lerp(new THREE.Color(HIGHLIGHT_EMISSIVE.selectedHex), lerpFactor);
+            }
             std.emissive.set('#000000');
             std.emissiveIntensity = 0;
+          } else {
+            if (savedHex && 'color' in std && !std.map) {
+              std.color.set(savedHex);
+            }
+            if (savedHex) delete std.userData._savedColorHex;
+            const baseHex = typeof std.userData?.baseEmissiveHex === 'string' ? std.userData.baseEmissiveHex : '#000000';
+            const baseInt = typeof std.userData?.baseEmissiveIntensity === 'number' ? std.userData.baseEmissiveIntensity : 0;
+            std.emissive.set(baseHex);
+            std.emissiveIntensity = baseInt;
           }
         }
         std.clippingPlanes = crossSection && isCutawayShell ? [clipPlane] : [];
@@ -290,63 +348,75 @@ function AssemblyScene({
   };
 
   const isProcedural = config.sourceType === 'procedural' && config.family && config.proceduralKey;
+  const finishProfile = useMemo(
+    () => getFinishProfile(config.id, config.family, config.proceduralKey),
+    [config.id, config.family, config.proceduralKey],
+  );
 
   return (
     <>
-      <ambientLight intensity={0.48} />
-      <hemisphereLight intensity={0.42} color="#f5f8ff" groundColor="#24272d" />
-      <directionalLight position={[4.5, 6.5, 4.5]} intensity={1.6} castShadow shadow-mapSize={[1024, 1024]} />
-      <directionalLight position={[-4, 2, -3]} intensity={0.75} color="#dbeafe" />
-      <directionalLight position={[0, -3, 3]} intensity={0.4} />
+      <ambientLight intensity={0.32} color={VIEWER_3D_THEME.hemisphereSky} />
+      <hemisphereLight intensity={0.3} color={VIEWER_3D_THEME.hemisphereSky} groundColor={VIEWER_3D_THEME.hemisphereGround} />
+      <directionalLight
+        position={[4.5, 6.5, 4.5]}
+        intensity={1.12}
+        color={VIEWER_3D_THEME.keyLight}
+        castShadow
+        shadow-mapSize={[1024, 1024]}
+      />
+      <directionalLight position={[-3.5, -2.5, 3]} intensity={0.48} color={VIEWER_3D_THEME.warmFillLight} />
 
       <Environment resolution={256}>
         <group rotation={[-Math.PI / 3, 0, 0]}>
-          <Lightformer form="rect" intensity={2.2} position={[0, 5, -2]} scale={[10, 4, 1]} color="#ffffff" />
-          <Lightformer form="rect" intensity={1.1} position={[-6, 1, 2]} rotation={[0, Math.PI / 2, 0]} scale={[8, 4, 1]} color="#e2e8f0" />
-          <Lightformer form="rect" intensity={1.3} position={[6, 2, 2]} rotation={[0, -Math.PI / 2, 0]} scale={[8, 4, 1]} color="#f8fafc" />
-          <Lightformer form="ring" intensity={0.9} position={[0, -4, 0]} rotation={[Math.PI / 2, 0, 0]} scale={[6, 6, 1]} color="#c5f467" />
+          <Lightformer form="rect" intensity={1.55} position={[0, 5, -2]} scale={[10, 4, 1]} color={VIEWER_3D_THEME.envTop} />
+          <Lightformer form="rect" intensity={0.85} position={[-6, 1, 2]} rotation={[0, Math.PI / 2, 0]} scale={[8, 4, 1]} color={VIEWER_3D_THEME.envLeft} />
+          <Lightformer form="rect" intensity={0.95} position={[6, 2, 2]} rotation={[0, -Math.PI / 2, 0]} scale={[8, 4, 1]} color={VIEWER_3D_THEME.envRight} />
+          <Lightformer form="ring" intensity={0.44} position={[0, -4, 0]} rotation={[Math.PI / 2, 0, 0]} scale={[6, 6, 1]} color={VIEWER_3D_THEME.warmFillLight} />
         </group>
       </Environment>
 
-      <CadRuntimeContext.Provider
-        value={{
-          explodeAmount,
-          crossSection,
-          selectedPartId,
-          hoveredPartId,
-          hiddenPartIds,
-          simState,
-        }}
-      >
-        <group
-          onClick={handlePointerClick}
-          onPointerOver={handlePointerOver}
-          onPointerOut={handlePointerOut}
+      <InstrumentFinishContext.Provider value={finishProfile}>
+        <CadRuntimeContext.Provider
+          value={{
+            explodeAmount,
+            crossSection,
+            selectedPartId,
+            hoveredPartId,
+            hiddenPartIds,
+            simState,
+          }}
         >
-          {isProcedural ? (
-            <ProceduralCadRouter
-              family={config.family!}
-              proceduralKey={config.proceduralKey!}
-            />
-          ) : config.glbUrl ? (
-            <GlbAssemblyContents
-              glbUrl={config.glbUrl}
-              parts={config.parts}
-              selectedPartId={selectedPartId}
-              hoveredPartId={hoveredPartId}
-              hiddenPartIds={hiddenPartIds}
-              explodeAmount={explodeAmount}
-              crossSection={crossSection}
-            />
-          ) : null}
-        </group>
-      </CadRuntimeContext.Provider>
+          <group
+            onClick={handlePointerClick}
+            onPointerOver={handlePointerOver}
+            onPointerOut={handlePointerOut}
+          >
+            {isProcedural ? (
+              <ProceduralCadRouter
+                family={config.family!}
+                proceduralKey={config.proceduralKey!}
+              />
+            ) : config.glbUrl ? (
+              <GlbAssemblyContents
+                glbUrl={config.glbUrl}
+                parts={config.parts}
+                finishProfile={finishProfile}
+                selectedPartId={selectedPartId}
+                hoveredPartId={hoveredPartId}
+                hiddenPartIds={hiddenPartIds}
+                explodeAmount={explodeAmount}
+                crossSection={crossSection}
+              />
+            ) : null}
+          </group>
+        </CadRuntimeContext.Provider>
+      </InstrumentFinishContext.Provider>
 
-      {/* Interactive 3D CAD Callout Pins */}
-      {showLabels &&
-        config.parts.map((part) => {
-          if (hiddenPartIds?.has(part.id)) return null;
-          const isSelected = part.id === selectedPartId;
+      {/* Interactive 3D CAD Callout Pins (hover-only by default, or all when Labels toggle active) */}
+      {config.parts.map((part) => {
+        if (hiddenPartIds?.has(part.id)) return null;
+        if (!showLabels && part.id !== hoveredPartId) return null;
+        const isSelected = part.id === selectedPartId;
           const pos: [number, number, number] = [
             part.anchor[0] + part.explodeOffset[0] * explodeAmount,
             part.anchor[1] + part.explodeOffset[1] * explodeAmount,
@@ -360,14 +430,12 @@ function AssemblyScene({
                   ev.stopPropagation();
                   onSelectPart(part.id);
                 }}
-                className={`pod pointer-events-auto flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] transition ${
-                  isSelected
-                    ? 'border-[var(--st-cyan)]! text-[var(--st-cyan)]! ring-1 ring-[var(--st-cyan)]'
-                    : 'text-[var(--st-on)] hover:border-[var(--st-on-var)]'
+                className={`cad-pin pointer-events-auto flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] transition ${
+                  isSelected ? 'is-selected font-semibold' : ''
                 }`}
                 style={{ whiteSpace: 'nowrap' }}
               >
-                <span className="mono font-semibold opacity-80">{part.code}</span>
+                <span className="mono font-semibold opacity-90">{part.code}</span>
                 <span className="hidden sm:inline">{part.name.split('(')[0].trim()}</span>
               </button>
             </Html>
@@ -395,7 +463,7 @@ function AssemblyScene({
 
 export interface CadViewer3DProps {
   config: CadViewerConfigLike;
-  selectedPart: CadPartMeta;
+  selectedPart?: CadPartMeta | null;
   onSelectPart: (partId: string) => void;
   hiddenPartIds?: Set<string>;
   simState?: CadSimState;
@@ -419,7 +487,7 @@ export function CadViewer3D({
 }: CadViewer3DProps) {
   const [explodeAmount, setExplodeAmount] = useState(0);
   const [crossSection, setCrossSection] = useState(false);
-  const [showLabels, setShowLabels] = useState(true);
+  const [showLabels, setShowLabels] = useState(false);
   const [cameraPreset, setCameraPreset] = useState<CameraPreset>('iso');
   const [presetNonce, setPresetNonce] = useState(0);
 
@@ -442,23 +510,6 @@ export function CadViewer3D({
     <div className={`glass stage relative touch-none overflow-hidden ${heightClass}`}>
       <div className="stage-grid pointer-events-none absolute inset-0" />
 
-      {/* Top Left Status Pod */}
-      <div className="pointer-events-none absolute left-3 top-3 z-10 flex flex-wrap items-center gap-2">
-        <span className="pod rounded-full px-3 py-1 text-[10px] mono uppercase tracking-wider text-[var(--st-on)]">
-          3D CAD · {config.standard}
-        </span>
-        {crossSection && (
-          <span className="status" style={{ '--tone': 'var(--st-amber)' } as React.CSSProperties}>
-            Section Cut Z=0 Active
-          </span>
-        )}
-        {explodeAmount > 0.05 && (
-          <span className="status" style={{ '--tone': 'var(--st-cyan)' } as React.CSSProperties}>
-            Exploded {Math.round(explodeAmount * 100)}%
-          </span>
-        )}
-      </div>
-
       {/* Top Right Camera Presets */}
       <div className="pod absolute right-3 top-3 z-10 flex flex-wrap items-center gap-1 rounded-full p-1">
         {(['iso', 'front', 'side', 'top'] as CameraPreset[]).map((p) => (
@@ -468,7 +519,7 @@ export function CadViewer3D({
             onClick={() => applyPreset(p)}
             className={`cursor-pointer rounded-full px-2.5 py-1 text-[10px] mono uppercase transition ${
               cameraPreset === p
-                ? 'bg-[var(--st-on)] font-semibold text-[var(--st-0)]'
+                ? 'bg-[#3C6E96] font-semibold text-white'
                 : 'text-[var(--st-on-var)] hover:text-[var(--st-on)]'
             }`}
           >
@@ -507,7 +558,7 @@ export function CadViewer3D({
           >
             <AssemblyScene
               config={config}
-              selectedPartId={selectedPart.id}
+              selectedPartId={selectedPart?.id ?? null}
               onSelectPart={onSelectPart}
               hiddenPartIds={hiddenPartIds}
               explodeAmount={explodeAmount}
@@ -531,7 +582,7 @@ export function CadViewer3D({
                 onClick={() => setExplodeAmount((v) => (v > 0.5 ? 0 : 1))}
                 className={`cursor-pointer inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] transition ${
                   explodeAmount > 0.05
-                    ? 'bg-[var(--st-lime)] font-semibold text-[#07090e]'
+                    ? 'bg-[#3C6E96] font-semibold text-white'
                     : 'bg-[var(--st-3)] text-[var(--st-on)] hover:bg-[var(--st-4)]'
                 }`}
               >
@@ -548,7 +599,7 @@ export function CadViewer3D({
                   step={0.02}
                   value={explodeAmount}
                   onChange={(e) => setExplodeAmount(Number(e.target.value))}
-                  className="w-20 accent-[var(--st-lime)]"
+                  className="w-20 accent-[#3C6E96]"
                   aria-label="Exploded view separation amount"
                 />
               </label>
@@ -561,7 +612,7 @@ export function CadViewer3D({
               onClick={() => setCrossSection((s) => !s)}
               className={`cursor-pointer inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] transition ${
                 crossSection
-                  ? 'bg-[var(--st-amber)] font-semibold text-[#07090e]'
+                  ? 'bg-[#3C6E96] font-semibold text-white'
                   : 'bg-[var(--st-3)] text-[var(--st-on)] hover:bg-[var(--st-4)]'
               }`}
             >
@@ -575,7 +626,7 @@ export function CadViewer3D({
             onClick={() => setShowLabels((l) => !l)}
             className={`cursor-pointer inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] transition ${
               showLabels
-                ? 'bg-[var(--st-on)] font-medium text-[var(--st-0)]'
+                ? 'bg-[#3C6E96] font-semibold text-white'
                 : 'bg-[var(--st-3)] text-[var(--st-on-var)] hover:text-[var(--st-on)]'
             }`}
           >
@@ -585,7 +636,7 @@ export function CadViewer3D({
         </div>
 
         <div className="pod pointer-events-auto hidden items-center gap-2 rounded-full px-3 py-1.5 text-[10px] text-[var(--st-on-var)] sm:flex">
-          <Maximize2 className="size-3 text-[var(--st-cyan)]" />
+          <Maximize2 className="size-3 text-[#4F7FA6]" />
           <span>Drag to orbit · Scroll to zoom · Right-drag to pan · Click part to inspect</span>
         </div>
       </div>

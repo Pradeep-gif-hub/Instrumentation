@@ -55,7 +55,7 @@ export const SIGNAL_CONDITIONING_TOPICS: InstrumentTopic[] = [
       xUnit: '%',
       yUnit: 'V/V',
       series: [
-        { name: 'Full-Bridge (4 Active)', color: '#c5f467', points: [{ x: 0, y: 0 }, { x: 5, y: 0.05 }, { x: 10, y: 0.10 }, { x: 15, y: 0.15 }, { x: 20, y: 0.20 }] },
+        { name: 'Full-Bridge (4 Active)', color: '#7FB3DE', points: [{ x: 0, y: 0 }, { x: 5, y: 0.05 }, { x: 10, y: 0.10 }, { x: 15, y: 0.15 }, { x: 20, y: 0.20 }] },
         { name: 'Half-Bridge (2 Active)', color: '#cdbdff', points: [{ x: 0, y: 0 }, { x: 5, y: 0.025 }, { x: 10, y: 0.05 }, { x: 15, y: 0.075 }, { x: 20, y: 0.10 }] },
         { name: 'Quarter-Bridge (Nonlinear)', color: '#ff9100', points: [{ x: 0, y: 0 }, { x: 5, y: 0.0122 }, { x: 10, y: 0.0238 }, { x: 15, y: 0.0349 }, { x: 20, y: 0.0455 }] },
       ],
@@ -132,7 +132,7 @@ export const SIGNAL_CONDITIONING_TOPICS: InstrumentTopic[] = [
       xUnit: 'Hz',
       yUnit: 'dB',
       series: [
-        { name: 'Gain = 100 (AD8421)', color: '#c5f467', points: [{ x: 10, y: 130 }, { x: 100, y: 128 }, { x: 1000, y: 118 }, { x: 10000, y: 98 }, { x: 100000, y: 78 }] },
+        { name: 'Gain = 100 (AD8421)', color: '#7FB3DE', points: [{ x: 10, y: 130 }, { x: 100, y: 128 }, { x: 1000, y: 118 }, { x: 10000, y: 98 }, { x: 100000, y: 78 }] },
         { name: 'Gain = 1', color: '#cdbdff', points: [{ x: 10, y: 94 }, { x: 100, y: 94 }, { x: 1000, y: 88 }, { x: 10000, y: 72 }, { x: 100000, y: 52 }] },
       ],
     },
@@ -212,7 +212,7 @@ export const SIGNAL_CONDITIONING_TOPICS: InstrumentTopic[] = [
       yUnit: 'dB',
       series: [
         { name: 'Open-Loop Gain (1 MHz GBWP)', color: '#cdbdff', points: [{ x: 10, y: 100 }, { x: 100, y: 80 }, { x: 1000, y: 60 }, { x: 10000, y: 40 }, { x: 100000, y: 20 }, { x: 1000000, y: 0 }] },
-        { name: 'Closed-Loop G = 100 (40 dB)', color: '#c5f467', points: [{ x: 10, y: 40 }, { x: 100, y: 40 }, { x: 1000, y: 40 }, { x: 10000, y: 37 }, { x: 100000, y: 20 }] },
+        { name: 'Closed-Loop G = 100 (40 dB)', color: '#7FB3DE', points: [{ x: 10, y: 40 }, { x: 100, y: 40 }, { x: 1000, y: 40 }, { x: 10000, y: 37 }, { x: 100000, y: 20 }] },
       ],
     },
     specifications: [
@@ -289,7 +289,7 @@ export const SIGNAL_CONDITIONING_TOPICS: InstrumentTopic[] = [
       xUnit: '×f_c',
       yUnit: 'dB',
       series: [
-        { name: 'Butterworth (Flat)', color: '#c5f467', points: [{ x: 0.2, y: 0 }, { x: 0.5, y: -0.3 }, { x: 1, y: -3.0 }, { x: 2, y: -12.3 }, { x: 5, y: -28.0 }] },
+        { name: 'Butterworth (Flat)', color: '#7FB3DE', points: [{ x: 0.2, y: 0 }, { x: 0.5, y: -0.3 }, { x: 1, y: -3.0 }, { x: 2, y: -12.3 }, { x: 5, y: -28.0 }] },
         { name: 'Chebyshev 1 dB (Steep)', color: '#ff9100', points: [{ x: 0.2, y: -0.5 }, { x: 0.5, y: -0.1 }, { x: 1, y: -3.0 }, { x: 2, y: -17.5 }, { x: 5, y: -34.0 }] },
         { name: 'Bessel (Linear Phase)', color: '#cdbdff', points: [{ x: 0.2, y: -0.1 }, { x: 0.5, y: -0.8 }, { x: 1, y: -3.0 }, { x: 2, y: -10.2 }, { x: 5, y: -25.1 }] },
       ],
@@ -368,7 +368,7 @@ export const SIGNAL_CONDITIONING_TOPICS: InstrumentTopic[] = [
       yLabel: 'Output Error Shift',
       xUnit: 'Vrms',
       yUnit: '% FS',
-      series: [{ name: 'Galvanic Isolator (5 kV Rated)', color: '#c5f467', points: [{ x: 0, y: 0 }, { x: 250, y: 0.01 }, { x: 500, y: 0.02 }, { x: 1000, y: 0.03 }, { x: 1500, y: 0.04 }] }],
+      series: [{ name: 'Galvanic Isolator (5 kV Rated)', color: '#7FB3DE', points: [{ x: 0, y: 0 }, { x: 250, y: 0.01 }, { x: 500, y: 0.02 }, { x: 1000, y: 0.03 }, { x: 1500, y: 0.04 }] }],
     },
     specifications: [
       { parameter: 'Isolation Working Voltage', value: '1.5 kV – 5.0 kVrms surge (IEC 60747-17)', standardOrNote: 'Check creepage/clearance distance!' },
@@ -445,7 +445,7 @@ export const SIGNAL_CONDITIONING_TOPICS: InstrumentTopic[] = [
       yLabel: 'Ideal Dynamic Range',
       xUnit: 'bits',
       yUnit: 'dB',
-      series: [{ name: 'Ideal SNR (6.02N + 1.76)', color: '#c5f467', points: [{ x: 8, y: 49.9 }, { x: 10, y: 62.0 }, { x: 12, y: 74.0 }, { x: 16, y: 98.1 }, { x: 20, y: 122.2 }, { x: 24, y: 146.2 }] }],
+      series: [{ name: 'Ideal SNR (6.02N + 1.76)', color: '#7FB3DE', points: [{ x: 8, y: 49.9 }, { x: 10, y: 62.0 }, { x: 12, y: 74.0 }, { x: 16, y: 98.1 }, { x: 20, y: 122.2 }, { x: 24, y: 146.2 }] }],
     },
     specifications: [
       { parameter: '12-bit PLC Card Counts', value: '0–4095 counts (0.0244% span/count)', standardOrNote: 'Often scaled 0–27648 in Siemens S7!' },
@@ -521,7 +521,7 @@ export const SIGNAL_CONDITIONING_TOPICS: InstrumentTopic[] = [
       yLabel: 'Loop Current',
       xUnit: '% Span',
       yUnit: 'mA',
-      series: [{ name: '4–20 mA Linear Transfer', color: '#c5f467', points: [{ x: -1.25, y: 3.8 }, { x: 0, y: 4.0 }, { x: 25, y: 8.0 }, { x: 50, y: 12.0 }, { x: 75, y: 16.0 }, { x: 100, y: 20.0 }, { x: 103.1, y: 20.5 }] }],
+      series: [{ name: '4–20 mA Linear Transfer', color: '#7FB3DE', points: [{ x: -1.25, y: 3.8 }, { x: 0, y: 4.0 }, { x: 25, y: 8.0 }, { x: 50, y: 12.0 }, { x: 75, y: 16.0 }, { x: 100, y: 20.0 }, { x: 103.1, y: 20.5 }] }],
     },
     specifications: [
       { parameter: 'Live Zero (0%) / Full Scale (100%)', value: '4.00 mA / 20.00 mA (1.00–5.00 V across 250 Ω)', standardOrNote: '0 mA = cut wire / power loss!' },
@@ -597,7 +597,7 @@ export const SIGNAL_CONDITIONING_TOPICS: InstrumentTopic[] = [
       yLabel: 'Loop Current',
       xUnit: 'ms',
       yUnit: 'mA',
-      series: [{ name: '12 mA DC + ±0.5 mA FSK', color: '#c5f467', points: [{ x: 0, y: 12.0 }, { x: 0.21, y: 12.5 }, { x: 0.42, y: 12.0 }, { x: 0.63, y: 11.5 }, { x: 0.83, y: 12.0 }, { x: 1.04, y: 12.5 }, { x: 1.25, y: 12.0 }] }],
+      series: [{ name: '12 mA DC + ±0.5 mA FSK', color: '#7FB3DE', points: [{ x: 0, y: 12.0 }, { x: 0.21, y: 12.5 }, { x: 0.42, y: 12.0 }, { x: 0.63, y: 11.5 }, { x: 0.83, y: 12.0 }, { x: 1.04, y: 12.5 }, { x: 1.25, y: 12.0 }] }],
     },
     specifications: [
       { parameter: 'Data Rate & Carrier', value: '1200 bps half-duplex Bell 202 FSK (1200/2200 Hz)', standardOrNote: '2–3 master-slave polls per second' },

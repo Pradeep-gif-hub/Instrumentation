@@ -1,6 +1,8 @@
 import { useFrame } from '@react-three/fiber';
 import { createContext, type ReactNode, useContext, useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { HIGHLIGHT_EMISSIVE } from '@/3d/palette';
+import { getFinishProfile, type InstrumentFinishProfile } from '@/3d/instrumentFinish';
 import { CAD_CLIP_PLANE } from './materials';
 
 export interface CadSimState {
@@ -29,6 +31,14 @@ export const CadRuntimeContext = createContext<CadRuntimeCtxValue>({
 
 export function useCadSim() {
   return useContext(CadRuntimeContext).simState;
+}
+
+const DEFAULT_FINISH_PROFILE = getFinishProfile();
+
+export const InstrumentFinishContext = createContext<InstrumentFinishProfile>(DEFAULT_FINISH_PROFILE);
+
+export function useInstrumentFinish() {
+  return useContext(InstrumentFinishContext);
 }
 
 interface CadPartGroupProps {
@@ -69,23 +79,40 @@ export function CadPartGroup({
         const mesh = obj as THREE.Mesh;
         mesh.castShadow = true;
         mesh.receiveShadow = true;
+        // Clone shared material references once per part mesh so part highlighting/clipping
+        // never mutates sibling parts.
+        if (!mesh.userData._partCloned) {
+          if (Array.isArray(mesh.material)) {
+            mesh.material = mesh.material.map((m) => m.clone());
+          } else if (mesh.material) {
+            mesh.material = mesh.material.clone();
+          }
+          mesh.userData._partCloned = true;
+        }
         const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
         for (const m of mats) {
           if (!m) continue;
           const std = m as THREE.MeshStandardMaterial;
           if ('emissive' in std) {
-            // Preserve intentional glowing filaments/lasers marked with userData.selfEmissive
-            if (!mesh.userData?.selfEmissive) {
-              if (isSelected) {
-                std.emissive.set('#9fd138');
-                std.emissiveIntensity = 0.3;
-              } else if (isHovered) {
-                std.emissive.set('#c5f467');
-                std.emissiveIntensity = 0.14;
-              } else {
-                std.emissive.set('#000000');
-                std.emissiveIntensity = 0;
+            const savedHex = std.userData?._savedColorHex as string | undefined;
+            if (isSelected || isHovered) {
+              const baseHex = savedHex ?? `#${std.color.getHexString()}`;
+              if (!savedHex) std.userData._savedColorHex = baseHex;
+              const lerpFactor = isSelected
+                ? HIGHLIGHT_EMISSIVE.selectedColorLerp
+                : HIGHLIGHT_EMISSIVE.hoveredColorLerp;
+              std.color
+                .set(baseHex)
+                .lerp(new THREE.Color(HIGHLIGHT_EMISSIVE.selectedHex), lerpFactor);
+              std.emissive.set('#000000');
+              std.emissiveIntensity = 0;
+            } else {
+              if (savedHex) {
+                std.color.set(savedHex);
+                delete std.userData._savedColorHex;
               }
+              std.emissive.set('#000000');
+              std.emissiveIntensity = 0;
             }
           }
           std.clippingPlanes = crossSection && isCutawayShell ? [CAD_CLIP_PLANE] : [];

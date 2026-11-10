@@ -63,7 +63,7 @@ export const PRESSURE_TOPICS: InstrumentTopic[] = [
       yUnit: 'mA',
       series: [
         { name: 'Linear Mode (Level / ΔP)', color: '#cdbdff', points: [{ x: 0, y: 4 }, { x: 25, y: 8 }, { x: 50, y: 12 }, { x: 75, y: 16 }, { x: 100, y: 20 }] },
-        { name: 'Square-Root Mode (Flow)', color: '#c5f467', points: [{ x: 0, y: 4 }, { x: 6.25, y: 8 }, { x: 25, y: 12 }, { x: 56.25, y: 16 }, { x: 100, y: 20 }] },
+        { name: 'Square-Root Mode (Flow)', color: '#7FB3DE', points: [{ x: 0, y: 4 }, { x: 6.25, y: 8 }, { x: 25, y: 12 }, { x: 56.25, y: 16 }, { x: 100, y: 20 }] },
       ],
     },
     specifications: [
@@ -147,7 +147,7 @@ export const PRESSURE_TOPICS: InstrumentTopic[] = [
       yLabel: 'Dial Angle',
       xUnit: 'bar',
       yUnit: 'deg',
-      series: [{ name: 'Class 1.0 Dial Gauge', color: '#c5f467', points: [{ x: 0, y: 0 }, { x: 2.5, y: 67.5 }, { x: 5, y: 135 }, { x: 7.5, y: 202.5 }, { x: 10, y: 270 }] }],
+      series: [{ name: 'Class 1.0 Dial Gauge', color: '#7FB3DE', points: [{ x: 0, y: 0 }, { x: 2.5, y: 67.5 }, { x: 5, y: 135 }, { x: 7.5, y: 202.5 }, { x: 10, y: 270 }] }],
     },
     specifications: [
       { parameter: 'Accuracy Grade (ASME B40.100)', value: 'Grade 3A (±0.25% Test), 2A (±0.5%), 1A (±1%), B (±2–3%)', standardOrNote: 'Select operating pressure at 25–75% FS' },
@@ -200,7 +200,7 @@ export const PRESSURE_TOPICS: InstrumentTopic[] = [
       xUnit: '% Span',
       yUnit: '% Stroke',
       series: [
-        { name: 'Corrugated Diaphragm', color: '#c5f467', points: [{ x: 0, y: 0 }, { x: 25, y: 25 }, { x: 50, y: 50 }, { x: 75, y: 75 }, { x: 100, y: 100 }] },
+        { name: 'Corrugated Diaphragm', color: '#7FB3DE', points: [{ x: 0, y: 0 }, { x: 25, y: 25 }, { x: 50, y: 50 }, { x: 75, y: 75 }, { x: 100, y: 100 }] },
         { name: 'Un-corrugated Flat Plate', color: '#ff9100', points: [{ x: 0, y: 0 }, { x: 25, y: 24 }, { x: 50, y: 45 }, { x: 75, y: 63 }, { x: 100, y: 78 }] },
       ],
     },
@@ -254,7 +254,7 @@ export const PRESSURE_TOPICS: InstrumentTopic[] = [
       yLabel: 'Axial Displacement',
       xUnit: 'kPa',
       yUnit: 'mm',
-      series: [{ name: 'Spring-Loaded Bellows', color: '#c5f467', points: [{ x: 0, y: 0 }, { x: 50, y: 1.8 }, { x: 100, y: 3.6 }, { x: 150, y: 5.4 }, { x: 200, y: 7.2 }] }],
+      series: [{ name: 'Spring-Loaded Bellows', color: '#7FB3DE', points: [{ x: 0, y: 0 }, { x: 50, y: 1.8 }, { x: 100, y: 3.6 }, { x: 150, y: 5.4 }, { x: 200, y: 7.2 }] }],
     },
     specifications: [
       { parameter: 'Wall Thickness', value: '0.1 – 0.3 mm hydroformed/welded', standardOrNote: 'Thin wall limits max pressure vs Bourdon' },
@@ -318,7 +318,7 @@ export const PRESSURE_TOPICS: InstrumentTopic[] = [
       xUnit: '% Span',
       yUnit: 'mV @ 10V',
       series: [
-        { name: 'Silicon Piezoresistive (10 mV/V)', color: '#c5f467', points: [{ x: 0, y: 0 }, { x: 25, y: 25 }, { x: 50, y: 50 }, { x: 75, y: 75 }, { x: 100, y: 100 }] },
+        { name: 'Silicon Piezoresistive (10 mV/V)', color: '#7FB3DE', points: [{ x: 0, y: 0 }, { x: 25, y: 25 }, { x: 50, y: 50 }, { x: 75, y: 75 }, { x: 100, y: 100 }] },
         { name: 'Metallic Foil (2 mV/V)', color: '#cdbdff', points: [{ x: 0, y: 0 }, { x: 25, y: 5 }, { x: 50, y: 10 }, { x: 75, y: 15 }, { x: 100, y: 20 }] },
       ],
     },
@@ -374,7 +374,7 @@ export const PRESSURE_TOPICS: InstrumentTopic[] = [
       xUnit: '—',
       yUnit: 'pF / Ratio',
       series: [
-        { name: 'Normalized Diff Ratio (C₁−C₂)/(C₁+C₂)', color: '#c5f467', points: [{ x: 0, y: 0 }, { x: 0.1, y: 0.1 }, { x: 0.2, y: 0.2 }, { x: 0.3, y: 0.3 }, { x: 0.4, y: 0.4 }] },
+        { name: 'Normalized Diff Ratio (C₁−C₂)/(C₁+C₂)', color: '#7FB3DE', points: [{ x: 0, y: 0 }, { x: 0.1, y: 0.1 }, { x: 0.2, y: 0.2 }, { x: 0.3, y: 0.3 }, { x: 0.4, y: 0.4 }] },
         { name: 'Single Plate C/C₀ = 1/(1−Δd/d₀) − 1', color: '#ff9100', points: [{ x: 0, y: 0 }, { x: 0.1, y: 0.111 }, { x: 0.2, y: 0.25 }, { x: 0.3, y: 0.429 }, { x: 0.4, y: 0.667 }] },
       ],
     },
@@ -439,7 +439,7 @@ export const PRESSURE_TOPICS: InstrumentTopic[] = [
       yLabel: 'Normalized Gain',
       xUnit: 'Hz',
       yUnit: 'dB',
-      series: [{ name: 'IEPE Sensor (τ = 1 s)', color: '#c5f467', points: [{ x: 0.1, y: -5 }, { x: 1, y: 0 }, { x: 100, y: 0 }, { x: 10000, y: 0 }, { x: 50000, y: 3 }] }],
+      series: [{ name: 'IEPE Sensor (τ = 1 s)', color: '#7FB3DE', points: [{ x: 0.1, y: -5 }, { x: 1, y: 0 }, { x: 100, y: 0 }, { x: 10000, y: 0 }, { x: 50000, y: 3 }] }],
     },
     specifications: [
       { parameter: 'Resonant Frequency', value: '50 kHz – 500 kHz', standardOrNote: 'Ultra-rigid crystal moves almost negligibly' },
@@ -492,7 +492,7 @@ export const PRESSURE_TOPICS: InstrumentTopic[] = [
       xUnit: 'kPa',
       yUnit: 'kPa',
       series: [
-        { name: 'Absolute Transmitter (True 20 kPa)', color: '#c5f467', points: [{ x: 98, y: 20 }, { x: 100, y: 20 }, { x: 102, y: 20 }, { x: 104, y: 20 }] },
+        { name: 'Absolute Transmitter (True 20 kPa)', color: '#7FB3DE', points: [{ x: 98, y: 20 }, { x: 100, y: 20 }, { x: 102, y: 20 }, { x: 104, y: 20 }] },
         { name: 'Gauge Transmitter (−81.3 kPa nominal)', color: '#ff9100', points: [{ x: 98, y: -78 }, { x: 100, y: -80 }, { x: 102, y: -82 }, { x: 104, y: -84 }] },
       ],
     },
@@ -546,7 +546,7 @@ export const PRESSURE_TOPICS: InstrumentTopic[] = [
       xUnit: 'kPa abs',
       yUnit: 'kPa',
       series: [
-        { name: 'Gauge Reading (kPa g)', color: '#c5f467', points: [{ x: 101.3, y: 0 }, { x: 201.3, y: 100 }, { x: 401.3, y: 300 }, { x: 601.3, y: 500 }] },
+        { name: 'Gauge Reading (kPa g)', color: '#7FB3DE', points: [{ x: 101.3, y: 0 }, { x: 201.3, y: 100 }, { x: 401.3, y: 300 }, { x: 601.3, y: 500 }] },
         { name: 'Absolute Reading (kPa a)', color: '#cdbdff', points: [{ x: 101.3, y: 101.3 }, { x: 201.3, y: 201.3 }, { x: 401.3, y: 401.3 }, { x: 601.3, y: 601.3 }] },
       ],
     },
@@ -599,7 +599,7 @@ export const PRESSURE_TOPICS: InstrumentTopic[] = [
       yLabel: 'Tray ΔP',
       xUnit: '% Design',
       yUnit: 'kPa',
-      series: [{ name: 'Column Differential Pressure', color: '#c5f467', points: [{ x: 30, y: 1.4 }, { x: 60, y: 4.5 }, { x: 90, y: 9.8 }, { x: 105, y: 15.2 }, { x: 115, y: 26.5 }] }],
+      series: [{ name: 'Column Differential Pressure', color: '#7FB3DE', points: [{ x: 30, y: 1.4 }, { x: 60, y: 4.5 }, { x: 90, y: 9.8 }, { x: 105, y: 15.2 }, { x: 115, y: 26.5 }] }],
     },
     specifications: [
       { parameter: 'Static Line Pressure Rating', value: '160 bar / 250 bar / 420 bar', standardOrNote: 'Must exceed pipe MAWP' },

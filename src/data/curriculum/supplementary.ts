@@ -366,5 +366,37 @@ export const CROSS_SEMESTER_PATHWAYS: CrossSemesterPathway[] = [
     interviewQuestion: 'Why does microcontroller firmware prefer 4th-Order Runge-Kutta (RK4) or trapezoidal integration over Forward Euler when simulating stiff/underdamped control loops?',
     interviewAnswer: 'Forward Euler has O(h) global error and easily turns numerically unstable (false oscillation blowup) unless tiny step sizes are used; RK4 achieves O(h⁴) accuracy with generous stability margin without needing symbolic higher derivatives.',
   },
+  {
+    id: 'path-signal-processing-pipeline',
+    title: '7. Analog Op-Amp / ADC -> Digital Sampling & FFT -> FIR/IIR Filtering -> Smart Analyzers',
+    chain: [
+      { semesterLabel: 'Sem III', subjectId: 'nitj-sem3-ade', subjectName: 'Analog & Digital Electronics (ECDC0213)', concept: 'Sallen-Key anti-aliasing & SAR/Flash ADC quantization' },
+      { semesterLabel: 'Sem IV', subjectId: 'nitj-sem4-sp', subjectName: 'Signal Processing (ICDC0204)', concept: 'Nyquist sampling, Radix-2 FFT, Z-plane & FIR/IIR filters' },
+      { semesterLabel: 'Sem V', subjectId: 'nitj-sem5-aoi', subjectName: 'Analytical & Optical (ICDC0305)', concept: 'FTIR interferogram FFT inversion & lock-in SNR recovery' },
+      { semesterLabel: 'Sem V', subjectId: 'nitj-sem5-mpes', subjectName: 'Microprocessors & Embedded (ICDC0301)', concept: 'Timer interrupts, DMA streaming & hardware MAC DSP execution' },
+    ],
+    prerequisiteConcept: 'Nyquist rate f_s > 2 f_max, linear-phase impulse symmetry vs Z-plane poles inside unit circle |z| < 1.',
+    introducedIn: 'Sem III · ECDC0213 Op-Amp & ADC Circuits',
+    developedIn: 'Sem IV · ICDC0204 Signal Processing -> Sem V · ICDC0305 FTIR Spectroscopy & ICDC0301 Embedded DMA',
+    industrialApplication: 'Converting continuous interferograms inside process FTIR gas benches or vibration accelerometers via 24-bit Sigma-Delta ADCs into real-time Radix-2 FFT spectra on Harvard MAC silicon.',
+    interviewQuestion: 'Why must an analog anti-aliasing low-pass filter ALWAYS sit ahead of the ADC even if the DSP runs a 128-tap digital FIR low-pass filter right afterward?',
+    interviewAnswer: 'Once high-frequency noise folds below f_s/2 during impulse sampling, its aliased replica becomes mathematically indistinguishable from low-frequency signal — digital filters cannot un-alias corrupted samples!',
+  },
+  {
+    id: 'path-microprocessor-to-plc',
+    title: '8. Digital Logic -> 8085/8086 Microprocessors -> 8051 & Embedded Interfacing -> Industrial SCADA',
+    chain: [
+      { semesterLabel: 'Sem II', subjectId: 'nitj-sem2-drive', subjectName: 'Basic Electronics & Python', concept: 'Semiconductors, switching transistors & structured logic' },
+      { semesterLabel: 'Sem III', subjectId: 'nitj-sem3-ade', subjectName: 'Analog & Digital Electronics (ECDC0213)', concept: 'Flip-flops, counters, muxes, ADC/DAC conversion' },
+      { semesterLabel: 'Sem V', subjectId: 'nitj-sem5-mpes', subjectName: 'Microprocessors & Embedded (ICDC0301)', concept: '8085/8086 buses, 8255/8253/8251, 8051 timers & Arduino/RPi' },
+      { semesterLabel: 'Sem VI', subjectId: 'nitj-sem5-pdc', subjectName: 'Process Control & Industrial PLC/SCADA', concept: 'Cyclic scan determinism, Modbus RTU & IIoT gateways' },
+    ],
+    prerequisiteConcept: 'Boolean gates, latched tri-state buses, multiplexed hardware polling vs vectored interrupts, and deterministic scan execution.',
+    introducedIn: 'Sem III · Combinational & Sequential Logic (ECDC0213)',
+    developedIn: 'Sem V · Microprocessors & Embedded Systems (ICDC0301) -> Sem V/VI Industrial Control & SCADA',
+    industrialApplication: 'Understanding how field smart transmitters run ADC → Harvard MCU linearization → UART/HART serial framing alongside how rugged industrial PLCs scan I/O deterministically.',
+    interviewQuestion: 'What core architectural limitation makes a vanilla Linux Raspberry Pi unsuitable alone for microsecond servo/PWM timing compared to an Arduino or 8051 MCU?',
+    interviewAnswer: 'Linux runs preemptive multitasking virtual memory that pauses user tasks for milliseconds during kernel interrupts, whereas bare-metal 8051/Arduino firmware owns hardware timers deterministically down to single clock cycles!',
+  },
 ];
 

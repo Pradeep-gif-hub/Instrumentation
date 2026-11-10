@@ -91,7 +91,7 @@ function InventoryDirectoryView() {
     <div className="mx-auto flex max-w-[1440px] flex-col gap-5">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="eyebrow text-[var(--st-cyan)]">
+          <p className="eyebrow text-[var(--st-accent-text)]">
             CURRICULUM INSTRUMENT INVENTORY · 3D &amp; SIMULATION COVERAGE
           </p>
           <h1 className="text-2xl font-semibold tracking-tight text-[var(--st-on)]">
@@ -119,12 +119,12 @@ function InventoryDirectoryView() {
         </div>
         <div className="glass p-4">
           <p className="eyebrow">Dedicated 3D Models</p>
-          <p className="mt-1.5 text-2xl font-semibold text-[var(--st-cyan)]">{stats.dedicated3DModels}</p>
+          <p className="mt-1.5 text-2xl font-semibold text-[var(--st-accent-text)]">{stats.dedicated3DModels}</p>
           <p className="muted mt-0.5 text-[11px]">4 GLB + {stats.dedicated3DModels - 4} bespoke procedural assemblies</p>
         </div>
         <div className="glass p-4">
           <p className="eyebrow">Interactive Simulations</p>
-          <p className="mt-1.5 text-2xl font-semibold text-[var(--st-lime)]">{stats.simulationsCompleted}</p>
+          <p className="mt-1.5 text-2xl font-semibold text-[var(--st-accent-text)]">{stats.simulationsCompleted}</p>
           <p className="muted mt-0.5 text-[11px]">{stats.educationalApproximations} educational approx models</p>
         </div>
         <div className="glass p-4">
@@ -184,17 +184,17 @@ function InventoryDirectoryView() {
           <article key={inst.id} className="ui-card flex flex-col justify-between gap-3 p-4">
             <div className="space-y-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="eyebrow text-[var(--st-cyan)]">{inst.categoryLabel}</span>
+                <span className="eyebrow text-[var(--st-accent-text)]">{inst.categoryLabel}</span>
                 <div className="flex items-center gap-1.5">
                   {inst.hasDedicated3D ? (
-                    <span className="status" style={{ '--tone': 'var(--st-cyan)' } as React.CSSProperties}>
+                    <span className="status" style={{ '--tone': 'var(--st-accent)' } as React.CSSProperties}>
                       3D CAD
                     </span>
                   ) : (
                     <span className="pill mono text-[10px]">Concept Standard</span>
                   )}
                   {inst.hasSimulation && (
-                    <span className="pill mono text-[10px] text-[var(--st-lime)]!">Sim</span>
+                    <span className="pill mono text-[10px] text-[var(--st-accent-text)]!">Sim</span>
                   )}
                 </div>
               </div>
@@ -207,7 +207,7 @@ function InventoryDirectoryView() {
               <div className="flex flex-wrap items-center justify-between gap-1 text-[11px]">
                 <span className="mono text-[var(--st-outline)]">{inst.standardRef}</span>
                 {inst.curriculumLinks.length > 0 && (
-                  <span className="mono text-[10px] text-[var(--st-lime)]">
+                  <span className="mono text-[10px] text-[var(--st-accent-text)]">
                     {inst.curriculumLinks.length} curriculum link{inst.curriculumLinks.length > 1 ? 's' : ''}
                   </span>
                 )}
@@ -246,7 +246,7 @@ function SingleInstrumentLabView({
   const { isBookmarked, toggleBookmark } = useApp();
   const simRef = useRef<HTMLDivElement>(null);
 
-  const [selectedPartId, setSelectedPartId] = useState<string>(entry.parts[0]?.id ?? '');
+  const [selectedPartId, setSelectedPartId] = useState<string>('');
   const [hiddenPartIds, setHiddenPartIds] = useState<Set<string>>(() => new Set());
   const [openViva, setOpenViva] = useState<Record<number, boolean>>({ 0: true });
 
@@ -319,10 +319,10 @@ function SingleInstrumentLabView({
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="eyebrow text-[var(--st-cyan)]">{entry.categoryLabel}</span>
+            <span className="eyebrow text-[var(--st-accent-text)]">{entry.categoryLabel}</span>
             <span className="pill mono text-[10px]">{entry.standardRef}</span>
             {entry.hasDedicated3D && (
-              <span className="status" style={{ '--tone': 'var(--st-cyan)' } as React.CSSProperties}>
+              <span className="status" style={{ '--tone': 'var(--st-accent)' } as React.CSSProperties}>
                 Interactive 3D Virtual Lab
               </span>
             )}
@@ -378,7 +378,7 @@ function SingleInstrumentLabView({
                   <button
                     type="button"
                     onClick={() => setHiddenPartIds(new Set())}
-                    className="mono cursor-pointer text-[10px] text-[var(--st-cyan)] hover:underline"
+                    className="mono cursor-pointer text-[10px] text-[var(--st-accent-text)] hover:underline"
                   >
                     Show All
                   </button>
@@ -395,11 +395,11 @@ function SingleInstrumentLabView({
                         onClick={() => setSelectedPartId(part.id)}
                         className={`flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-xl px-2.5 py-1.5 text-left text-[11px] transition ${
                           active
-                            ? 'bg-[var(--st-3)] font-medium text-[var(--st-on)] ring-1 ring-[var(--st-cyan)]/40'
+                            ? 'bg-[var(--st-3)] font-medium text-[var(--st-on)] ring-1 ring-[var(--st-accent)]/40'
                             : 'text-[var(--st-on-var)] hover:bg-[var(--st-2)]'
                         }`}
                       >
-                        <span className="mono shrink-0 text-[10px] text-[var(--st-cyan)]">
+                        <span className="mono shrink-0 text-[10px] text-[var(--st-accent-text)]">
                           {part.code}
                         </span>
                         <span className={`truncate ${isHidden ? 'line-through opacity-50' : ''}`}>
@@ -434,12 +434,12 @@ function SingleInstrumentLabView({
                     to={`/lab/${peer.id}`}
                     className={`flex items-center justify-between gap-2 rounded-xl px-2.5 py-1.5 text-xs transition ${
                       active
-                        ? 'bg-[var(--st-3)] font-semibold text-[var(--st-cyan)]'
+                        ? 'bg-[var(--st-3)] font-semibold text-[var(--st-accent-text)]'
                         : 'text-[var(--st-on-var)] hover:bg-[var(--st-2)] hover:text-[var(--st-on)]'
                     }`}
                   >
                     <span className="truncate">{peer.abbreviation ?? peer.name}</span>
-                    <span className="mono text-[9px] text-[var(--st-cyan)]">3D</span>
+                    <span className="mono text-[9px] text-[var(--st-accent-text)]">3D</span>
                   </Link>
                 );
               })}
@@ -453,7 +453,7 @@ function SingleInstrumentLabView({
             <>
               <CadViewer3D
                 config={cadConfig}
-                selectedPart={selectedPart}
+                selectedPart={selectedPartId ? selectedPart : null}
                 onSelectPart={setSelectedPartId}
                 hiddenPartIds={hiddenPartIds}
                 simState={
@@ -469,7 +469,7 @@ function SingleInstrumentLabView({
                 heightClass="h-[520px]"
               />
               <div className="sub flex items-center gap-2.5 px-4 py-2.5 text-[11px] text-[var(--st-on-var)]">
-                <Info className="size-4 shrink-0 text-[var(--st-cyan)]" />
+                <Info className="size-4 shrink-0 text-[var(--st-accent-text)]" />
                 <span>{entry.disclosure}</span>
               </div>
             </>
@@ -509,7 +509,7 @@ function SingleInstrumentLabView({
           {selectedPart && (
             <div className="glass space-y-3 p-5">
               <div>
-                <span className="eyebrow text-[var(--st-cyan)]">
+                <span className="eyebrow text-[var(--st-accent-text)]">
                   SELECTED COMPONENT · #{selectedPart.code}
                 </span>
                 <h2 className="mt-1 text-lg font-semibold text-[var(--st-on)]">
@@ -526,7 +526,7 @@ function SingleInstrumentLabView({
                 </div>
                 <div className="border-t border-[var(--st-line)] pt-2">
                   <span className="eyebrow">MATERIAL</span>
-                  <p className="mono mt-0.5 text-[11px] text-[var(--st-cyan)]">
+                  <p className="mono mt-0.5 text-[11px] text-[var(--st-accent-text)]">
                     {selectedPart.material}
                   </p>
                 </div>
@@ -540,7 +540,7 @@ function SingleInstrumentLabView({
 
           {/* Performance Envelope */}
           <div className="glass space-y-2.5 p-5">
-            <p className="eyebrow text-[var(--st-cyan)]">MEASUREMENT ENVELOPE</p>
+            <p className="eyebrow text-[var(--st-accent-text)]">MEASUREMENT ENVELOPE</p>
             <div className="sub space-y-1.5 p-3 text-xs">
               <div className="kv">
                 <span>Measurand</span>
@@ -552,7 +552,7 @@ function SingleInstrumentLabView({
               </div>
               <div className="kv">
                 <span>Output</span>
-                <span className="text-right text-[var(--st-cyan)]">{entry.inputOutput.output}</span>
+                <span className="text-right text-[var(--st-accent-text)]">{entry.inputOutput.output}</span>
               </div>
               {Object.entries(entry.performance).map(([k, v]) =>
                 v ? (
@@ -569,8 +569,8 @@ function SingleInstrumentLabView({
           {entry.curriculumLinks.length > 0 && (
             <div className="glass space-y-2.5 p-5">
               <div className="flex items-center gap-2">
-                <GraduationCap className="size-4 text-[var(--st-lime)]" />
-                <p className="eyebrow text-[var(--st-lime)]">
+                <GraduationCap className="size-4 text-[var(--st-accent-text)]" />
+                <p className="eyebrow text-[var(--st-accent-text)]">
                   CURRICULUM TOPICS ({entry.curriculumLinks.length})
                 </p>
               </div>
@@ -579,9 +579,9 @@ function SingleInstrumentLabView({
                   <Link
                     key={`${cl.subjectId}:${cl.conceptId}`}
                     to={`/roadmap?subject=${encodeURIComponent(cl.subjectId)}&unit=${cl.unitNumber}&concept=${encodeURIComponent(cl.conceptId)}`}
-                    className="block rounded-xl border border-[var(--st-line)] bg-[var(--st-1)] p-2.5 text-xs transition hover:border-[var(--st-lime)]"
+                    className="block rounded-xl border border-[var(--st-line)] bg-[var(--st-1)] p-2.5 text-xs transition hover:border-[var(--st-accent)]"
                   >
-                    <p className="mono text-[10px] text-[var(--st-cyan)]">
+                    <p className="mono text-[10px] text-[var(--st-accent-text)]">
                       {cl.semesterLabel} · {cl.subjectCode} · Unit {cl.unitNumber}
                     </p>
                     <p className="mt-0.5 font-medium text-[var(--st-on)]">{cl.conceptTitle}</p>
@@ -596,15 +596,15 @@ function SingleInstrumentLabView({
       {/* SECTION 7: STANDARDIZED INSTRUMENT DETAIL PANEL */}
       <div className="grid gap-4 lg:grid-cols-2">
         <section className="glass space-y-3 p-6">
-          <p className="eyebrow text-[var(--st-cyan)]">WORKING PRINCIPLE &amp; CONSTRUCTION</p>
+          <p className="eyebrow text-[var(--st-accent-text)]">WORKING PRINCIPLE &amp; CONSTRUCTION</p>
           <p className="text-sm text-[var(--st-on)]">
-            <strong className="text-[var(--st-cyan)]">Phenomenon: </strong>
+            <strong className="text-[var(--st-accent-text)]">Phenomenon: </strong>
             {entry.physicalPhenomenon}
           </p>
           <ol className="space-y-2">
             {entry.workingPrincipleSteps.map((st, idx) => (
               <li key={idx} className="sub flex items-start gap-3 p-3 text-xs">
-                <span className="mono font-semibold text-[var(--st-cyan)]">0{idx + 1}</span>
+                <span className="mono font-semibold text-[var(--st-accent-text)]">0{idx + 1}</span>
                 <span className="text-[var(--st-on)]">{st}</span>
               </li>
             ))}
@@ -622,10 +622,10 @@ function SingleInstrumentLabView({
           </div>
           <div className="grid gap-3 sm:grid-cols-2 text-xs">
             <div className="sub p-3 space-y-1">
-              <p className="eyebrow text-[var(--st-lime)]">ADVANTAGES</p>
+              <p className="eyebrow text-[var(--st-accent-text)]">ADVANTAGES</p>
               {entry.practical.advantages.map((a) => (
                 <p key={a} className="flex items-start gap-1.5 text-[var(--st-on-var)]">
-                  <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-[var(--st-lime)]" />
+                  <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-[var(--st-accent-text)]" />
                   <span>{a}</span>
                 </p>
               ))}
@@ -650,7 +650,7 @@ function SingleInstrumentLabView({
             </p>
           </div>
           <div className="sub p-3 text-xs">
-            <p className="eyebrow text-[var(--st-cyan)]">CALIBRATION &amp; CARE</p>
+            <p className="eyebrow text-[var(--st-accent-text)]">CALIBRATION &amp; CARE</p>
             <p className="mt-1 text-[var(--st-on-var)]">{entry.practical.calibrationAndMaintenance}</p>
           </div>
         </section>
@@ -660,8 +660,8 @@ function SingleInstrumentLabView({
       <section className="glass space-y-4 p-6">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <HelpCircle className="size-4 text-[var(--st-cyan)]" />
-            <p className="eyebrow text-[var(--st-cyan)]">EQUATIONS, VIVA QUESTIONS &amp; RELATED INSTRUMENTS</p>
+            <HelpCircle className="size-4 text-[var(--st-accent-text)]" />
+            <p className="eyebrow text-[var(--st-accent-text)]">EQUATIONS, VIVA QUESTIONS &amp; RELATED INSTRUMENTS</p>
           </div>
         </div>
 
@@ -708,7 +708,7 @@ function SingleInstrumentLabView({
                     </button>
                   </div>
                   {isOpen && (
-                    <p className="mt-2 border-t border-[var(--st-line)] pt-2 text-[var(--st-lime)]">
+                    <p className="mt-2 border-t border-[var(--st-line)] pt-2 text-[var(--st-accent-text)]">
                       {vq.a}
                     </p>
                   )}

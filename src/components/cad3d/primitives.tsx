@@ -1,17 +1,29 @@
 import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
-import { MAT_PRESETS, type MatKey } from './materials';
+import { PRESET_TO_ROLE, type PartRole } from '@/3d/instrumentFinish';
+import { useInstrumentFinish } from './CadPart';
+import { type MatKey } from './materials';
 
-export function PbrMat({ preset, colorOverride }: { preset: MatKey; colorOverride?: string }) {
-  const m = MAT_PRESETS[preset];
+export function PbrMat({
+  preset,
+  role,
+  colorOverride,
+}: {
+  preset: MatKey;
+  role?: PartRole;
+  colorOverride?: string;
+}) {
+  const finish = useInstrumentFinish();
+  const resolvedRole = role ?? PRESET_TO_ROLE[preset];
+  const m = finish.roles[resolvedRole];
   return (
     <meshStandardMaterial
       color={colorOverride ?? m.color}
       metalness={m.metalness}
       roughness={m.roughness}
-      transparent={'transparent' in m ? m.transparent : false}
-      opacity={'opacity' in m ? m.opacity : 1}
-      depthWrite={'depthWrite' in m ? m.depthWrite : true}
+      transparent={Boolean(m.transparent)}
+      opacity={m.opacity ?? 1}
+      depthWrite={m.depthWrite ?? true}
     />
   );
 }
@@ -21,7 +33,7 @@ export function FlangeWithBolts({
   innerR = 0.24,
   thickness = 0.08,
   boltCount = 8,
-  preset = 'ss316',
+  preset = 'brass',
   position = [0, 0, 0],
   rotation = [0, 0, 0],
 }: {
@@ -73,7 +85,7 @@ export function FlangeWithBolts({
       {bolts.map(([bx, bz], i) => (
         <mesh key={i} position={[bx, 0, bz]}>
           <cylinderGeometry args={[outerR * 0.075, outerR * 0.075, thickness * 1.45, 6]} />
-          <PbrMat preset="ssDark" />
+          <PbrMat preset="brass" />
         </mesh>
       ))}
     </group>
@@ -126,13 +138,15 @@ export function DialPointer({
   angleRad,
   length = 0.52,
   centerOffset = [0, 0, 0.04],
-  color = '#dc2626',
+  color,
 }: {
   angleRad: number;
   length?: number;
   centerOffset?: [number, number, number];
   color?: string;
 }) {
+  const finish = useInstrumentFinish();
+  const pointerColor = color ?? finish.roles.sensing.color;
   return (
     <group position={centerOffset} rotation={[0, 0, angleRad]}>
       <mesh position={[0, 0, 0]} rotation={[Math.PI / 2, 0, 0]}>
@@ -141,7 +155,7 @@ export function DialPointer({
       </mesh>
       <mesh position={[length * 0.42, 0, 0]} rotation={[0, 0, -Math.PI / 2]}>
         <coneGeometry args={[0.022, length, 4]} />
-        <meshStandardMaterial color={color} metalness={0.2} roughness={0.35} />
+        <meshStandardMaterial color={pointerColor} metalness={0.2} roughness={0.45} />
       </mesh>
     </group>
   );

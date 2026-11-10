@@ -21,7 +21,7 @@ export function MathBlock({ latex, displayMode = true, className = '' }: MathBlo
   }, [latex, displayMode]);
 
   if (!html) {
-    return <code className={`mono text-xs ${className}`}>{latex}</code>;
+    return <code className={`code-mono text-[14px] ${className}`}>{latex}</code>;
   }
 
   return (

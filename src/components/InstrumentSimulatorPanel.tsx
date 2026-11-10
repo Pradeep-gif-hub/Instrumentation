@@ -1,4 +1,5 @@
-import { Activity, Info, RotateCcw } from 'lucide-react';
+import { ChevronDown, ChevronRight, RotateCcw } from 'lucide-react';
+import { useState } from 'react';
 import {
   CartesianGrid,
   Line,
@@ -33,13 +34,15 @@ export function InstrumentSimulatorPanel({
   onReset,
 }: InstrumentSimulatorPanelProps) {
   const { theme } = useApp();
+  const [showGraph, setShowGraph] = useState(false);
+  const [showEquation, setShowEquation] = useState(false);
 
   const gridStroke = theme === 'light' ? 'rgba(20,20,20,0.09)' : 'rgba(255,255,255,0.08)';
   const axisTick = theme === 'light' ? '#525252' : '#a6a6a6';
-  const lineMain = theme === 'light' ? '#0284c7' : '#38bdf8';
-  const lineIdeal = theme === 'light' ? '#65a30d' : '#a3e635';
+  const lineMain = theme === 'light' ? '#2F5F8A' : '#7FB3DE';
+  const lineIdeal = theme === 'light' ? '#64748B' : '#9AA8B4';
   const dotFill = '#f97316';
-  const tooltipBg = theme === 'light' ? '#ffffff' : '#161b22';
+  const tooltipBg = theme === 'light' ? '#ffffff' : '#2b2b2b';
   const tooltipBorder = theme === 'light' ? 'rgba(20,20,20,0.16)' : 'rgba(255,255,255,0.16)';
 
   const chartData = evalResult.curve.map((pt, i) => ({
@@ -54,229 +57,237 @@ export function InstrumentSimulatorPanel({
   };
 
   return (
-    <section className="glass space-y-4 p-5" aria-label="Interactive Instrument Simulation">
-      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[var(--st-line)] pb-3">
-        <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Activity className="size-4 text-[var(--st-cyan)]" />
-            <p className="eyebrow text-[var(--st-cyan)]">OPERATING PRINCIPLE SIMULATION</p>
-            {simConfig.isEducationalApproximation && (
-              <span className="mono rounded-full border border-[var(--st-amber)]/40 bg-[var(--st-amber)]/10 px-2.5 py-0.5 text-[10px] text-[var(--st-amber)]">
-                Educational Approximation
-              </span>
-            )}
-          </div>
-          <h3 className="mt-1 text-base font-semibold text-[var(--st-on)]">{simConfig.title}</h3>
+    <section className="glass space-y-5 p-5 sm:p-6" aria-label="Interactive Instrument Simulation">
+      {/* Header */}
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[var(--st-line)] pb-4">
+        <div className="space-y-2">
+          <h2>{simConfig.title}</h2>
+          {simConfig.isEducationalApproximation && (
+            <span
+              className="status"
+              style={{ '--tone': 'var(--st-amber)' } as React.CSSProperties}
+            >
+              Educational approximation
+            </span>
+          )}
         </div>
 
-        <button type="button" onClick={onReset} className="btn py-1! text-xs!">
-          <RotateCcw className="size-3.5" />
+        <button type="button" onClick={onReset} className="btn">
+          <RotateCcw className="size-4" />
           Reset
         </button>
       </div>
 
-      {/* Controls + Live Readout */}
-      <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">
-        <div className="sub space-y-3 p-4">
-          <div>
-            <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
-              <label className="text-xs font-medium text-[var(--st-on)]" htmlFor="sim-primary-input">
-                {simConfig.primaryParam.label}{' '}
-                <span className="mono text-[11px] text-[var(--st-outline)]">
-                  ({simConfig.primaryParam.min} to {simConfig.primaryParam.max} {simConfig.primaryParam.unit})
-                </span>
+      {/* Primary Control + Live Result FIRST */}
+      <div className="sub space-y-5 p-5">
+        {/* Slider & Number */}
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <label
+              className="text-[16px] font-semibold text-[var(--st-on)]"
+              htmlFor="sim-primary-input"
+            >
+              {simConfig.primaryParam.label}{' '}
+              <span className="text-[14px] font-normal text-[var(--st-on-var)]">
+                ({simConfig.primaryParam.min} to {simConfig.primaryParam.max}{' '}
+                {simConfig.primaryParam.unit})
+              </span>
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                id="sim-primary-input"
+                type="number"
+                min={simConfig.primaryParam.min}
+                max={simConfig.primaryParam.max}
+                step={simConfig.primaryParam.step}
+                value={primaryValue}
+                onChange={(e) =>
+                  onChangePrimary(
+                    clampParam(
+                      Number(e.target.value),
+                      simConfig.primaryParam.min,
+                      simConfig.primaryParam.max,
+                    ),
+                  )
+                }
+                className="field-rect code-mono w-28 text-right"
+              />
+              <span className="code-mono text-[14px] font-semibold text-[var(--st-accent-text)]">
+                {simConfig.primaryParam.unit}
+              </span>
+            </div>
+          </div>
+
+          <input
+            type="range"
+            min={simConfig.primaryParam.min}
+            max={simConfig.primaryParam.max}
+            step={simConfig.primaryParam.step}
+            value={primaryValue}
+            onChange={(e) => onChangePrimary(Number(e.target.value))}
+            aria-label={simConfig.primaryParam.label}
+            className="w-full accent-[var(--st-accent)]"
+          />
+        </div>
+
+        {simConfig.secondaryParam && (
+          <div className="space-y-2 border-t border-[var(--st-line)] pt-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <label
+                className="text-[16px] font-semibold text-[var(--st-on)]"
+                htmlFor="sim-sec-input"
+              >
+                {simConfig.secondaryParam.label}
               </label>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 <input
-                  id="sim-primary-input"
+                  id="sim-sec-input"
                   type="number"
-                  min={simConfig.primaryParam.min}
-                  max={simConfig.primaryParam.max}
-                  step={simConfig.primaryParam.step}
-                  value={primaryValue}
+                  min={simConfig.secondaryParam.min}
+                  max={simConfig.secondaryParam.max}
+                  step={simConfig.secondaryParam.step}
+                  value={secondaryValue}
                   onChange={(e) =>
-                    onChangePrimary(
+                    onChangeSecondary(
                       clampParam(
                         Number(e.target.value),
-                        simConfig.primaryParam.min,
-                        simConfig.primaryParam.max,
+                        simConfig.secondaryParam!.min,
+                        simConfig.secondaryParam!.max,
                       ),
                     )
                   }
-                  className="field-rect w-24 py-1! text-right mono text-xs!"
+                  className="field-rect code-mono w-28 text-right"
                 />
-                <span className="mono text-xs text-[var(--st-cyan)]">
-                  {simConfig.primaryParam.unit}
-                </span>
+                {simConfig.secondaryParam.unit && (
+                  <span className="code-mono text-[14px] text-[var(--st-on-var)]">
+                    {simConfig.secondaryParam.unit}
+                  </span>
+                )}
               </div>
             </div>
             <input
               type="range"
-              min={simConfig.primaryParam.min}
-              max={simConfig.primaryParam.max}
-              step={simConfig.primaryParam.step}
-              value={primaryValue}
-              onChange={(e) => onChangePrimary(Number(e.target.value))}
-              aria-label={simConfig.primaryParam.label}
-              className="w-full accent-[var(--st-cyan)]"
+              min={simConfig.secondaryParam.min}
+              max={simConfig.secondaryParam.max}
+              step={simConfig.secondaryParam.step}
+              value={secondaryValue}
+              onChange={(e) => onChangeSecondary(Number(e.target.value))}
+              aria-label={simConfig.secondaryParam.label}
+              className="w-full accent-[var(--st-accent)]"
             />
           </div>
+        )}
 
-          {simConfig.secondaryParam && (
-            <div className="border-t border-[var(--st-line)] pt-3">
-              <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
-                <label className="text-xs font-medium text-[var(--st-on)]" htmlFor="sim-sec-input">
-                  {simConfig.secondaryParam.label}
-                </label>
-                <div className="flex items-center gap-1.5">
-                  <input
-                    id="sim-sec-input"
-                    type="number"
-                    min={simConfig.secondaryParam.min}
-                    max={simConfig.secondaryParam.max}
-                    step={simConfig.secondaryParam.step}
-                    value={secondaryValue}
-                    onChange={(e) =>
-                      onChangeSecondary(
-                        clampParam(
-                          Number(e.target.value),
-                          simConfig.secondaryParam!.min,
-                          simConfig.secondaryParam!.max,
-                        ),
-                      )
-                    }
-                    className="field-rect w-24 py-1! text-right mono text-xs!"
-                  />
-                  {simConfig.secondaryParam.unit && (
-                    <span className="mono text-xs text-[var(--st-on-var)]">
-                      {simConfig.secondaryParam.unit}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <input
-                type="range"
-                min={simConfig.secondaryParam.min}
-                max={simConfig.secondaryParam.max}
-                step={simConfig.secondaryParam.step}
-                value={secondaryValue}
-                onChange={(e) => onChangeSecondary(Number(e.target.value))}
-                aria-label={simConfig.secondaryParam.label}
-                className="w-full accent-[var(--st-lime)]"
-              />
-            </div>
+        {/* Prominent Result */}
+        <div className="border-t border-[var(--st-line)] pt-4">
+          <p className="text-[14px] font-semibold text-[var(--st-on-var)]">Result</p>
+          <p className="code-mono mt-1 text-[28px] font-semibold leading-tight text-[var(--st-accent-text)]">
+            {evalResult.outputValue}
+          </p>
+          {evalResult.secondaryOutput && (
+            <p className="code-mono mt-2 text-[14px] text-[var(--st-on)]">
+              {evalResult.secondaryOutput}
+            </p>
           )}
-
-          <p className="border-t border-[var(--st-line)] pt-2.5 text-xs leading-relaxed text-[var(--st-on-var)]">
-            <span className="mono mr-1 font-semibold text-[var(--st-lime)]">Observation:</span>
+          <p className="prose-measure mt-3 text-[16px] text-[var(--st-on-var)]">
             {evalResult.observation}
           </p>
         </div>
-
-        {/* Prominent Simulated Output Telemetry */}
-        <div className="sub flex flex-col justify-between space-y-3 p-4">
-          <div>
-            <p className="eyebrow">SIMULATED INSTRUMENT OUTPUT</p>
-            <p className="mono mt-2 text-2xl font-semibold tracking-tight text-[var(--st-cyan)] sm:text-3xl">
-              {evalResult.outputValue}
-            </p>
-            <p className="mono mt-0.5 text-[11px] text-[var(--st-outline)]">
-              Unit: {evalResult.outputUnit}
-            </p>
-            {evalResult.secondaryOutput && (
-              <p className="mt-2 rounded-xl border border-[var(--st-line)] bg-[var(--st-1)] px-3 py-2 text-xs text-[var(--st-on)]">
-                {evalResult.secondaryOutput}
-              </p>
-            )}
-          </div>
-
-          <div className="border-t border-[var(--st-line)] pt-2">
-            <p className="eyebrow mb-1">GOVERNING RELATIONSHIP</p>
-            <div className="overflow-x-auto text-[var(--st-on)]">
-              <MathBlock latex={simConfig.governingFormulaLatex} displayMode />
-            </div>
-          </div>
-        </div>
       </div>
 
-      {/* Input-Output Curve */}
-      <div className="sub p-4">
-        <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs">
-          <span className="font-medium text-[var(--st-on)]">
-            Characteristic Response: {evalResult.yLabel} ({evalResult.yUnit}) vs {evalResult.xLabel} ({evalResult.xUnit})
-          </span>
-          <div className="flex items-center gap-3 text-[11px]">
-            <span className="mono flex items-center gap-1.5 text-[var(--st-cyan)]">
-              <span className="inline-block size-2 rounded-full bg-[var(--st-cyan)]" /> Physical Curve
-            </span>
-            {evalResult.idealCurve && (
-              <span className="mono flex items-center gap-1.5 text-[var(--st-lime)]">
-                <span className="inline-block size-2 rounded-full bg-[var(--st-lime)]" /> Linear Ref
-              </span>
-            )}
-            <span className="mono flex items-center gap-1.5 text-[#f97316]">
-              <span className="inline-block size-2.5 rounded-full bg-[#f97316]" /> Operating Point
-            </span>
-          </div>
-        </div>
+      {/* Collapsible Graph & Equation Toggles */}
+      <div className="flex flex-wrap gap-3">
+        <button
+          type="button"
+          aria-expanded={showGraph}
+          onClick={() => setShowGraph((v) => !v)}
+          className={`btn ${showGraph ? 'primary' : ''}`}
+        >
+          {showGraph ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
+          Show graph
+        </button>
 
-        <div className="h-52 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 10, right: 20, left: 4, bottom: 8 }}>
-              <CartesianGrid stroke={gridStroke} strokeDasharray="3 3" />
-              <XAxis
-                dataKey="x"
-                type="number"
-                domain={['dataMin', 'dataMax']}
-                stroke={axisTick}
-                tick={{ fontSize: 11, fill: axisTick }}
-              />
-              <YAxis stroke={axisTick} tick={{ fontSize: 11, fill: axisTick }} width={56} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: tooltipBg,
-                  borderColor: tooltipBorder,
-                  borderRadius: '12px',
-                  fontSize: '12px',
-                }}
-              />
-              <Line
-                type="monotone"
-                dataKey="y"
-                name={evalResult.yLabel}
-                stroke={lineMain}
-                strokeWidth={2.5}
-                dot={false}
-              />
-              {evalResult.idealCurve && (
+        <button
+          type="button"
+          aria-expanded={showEquation}
+          onClick={() => setShowEquation((v) => !v)}
+          className={`btn ${showEquation ? 'primary' : ''}`}
+        >
+          {showEquation ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
+          Show equation
+        </button>
+      </div>
+
+      {showGraph && (
+        <div className="sub space-y-3 p-5">
+          <p className="text-[14px] font-semibold text-[var(--st-on)]">
+            {evalResult.yLabel} ({evalResult.yUnit}) vs {evalResult.xLabel} ({evalResult.xUnit})
+          </p>
+
+          <div className="h-60 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData} margin={{ top: 10, right: 20, left: 4, bottom: 8 }}>
+                <CartesianGrid stroke={gridStroke} strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="x"
+                  type="number"
+                  domain={['dataMin', 'dataMax']}
+                  stroke={axisTick}
+                  tick={{ fontSize: 14, fill: axisTick }}
+                />
+                <YAxis stroke={axisTick} tick={{ fontSize: 14, fill: axisTick }} width={64} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: tooltipBg,
+                    borderColor: tooltipBorder,
+                    borderRadius: '12px',
+                    fontSize: '14px',
+                  }}
+                />
                 <Line
                   type="monotone"
-                  dataKey="ideal"
-                  name="Ideal Linear Ref"
-                  stroke={lineIdeal}
-                  strokeWidth={1.6}
-                  strokeDasharray="5 4"
+                  dataKey="y"
+                  name={evalResult.yLabel}
+                  stroke={lineMain}
+                  strokeWidth={2.5}
                   dot={false}
                 />
-              )}
-              <ReferenceDot
-                x={Number(primaryValue.toFixed(3))}
-                y={evalResult.outputNumeric}
-                r={5.5}
-                fill={dotFill}
-                stroke="#ffffff"
-                strokeWidth={1.5}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+                {evalResult.idealCurve && (
+                  <Line
+                    type="monotone"
+                    dataKey="ideal"
+                    name="Linear reference"
+                    stroke={lineIdeal}
+                    strokeWidth={1.6}
+                    strokeDasharray="5 4"
+                    dot={false}
+                  />
+                )}
+                <ReferenceDot
+                  x={Number(primaryValue.toFixed(3))}
+                  y={evalResult.outputNumeric}
+                  r={6}
+                  fill={dotFill}
+                  stroke="#ffffff"
+                  strokeWidth={1.5}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
 
-        <div className="mt-2 flex items-start gap-2 text-[11px] text-[var(--st-outline)]">
-          <Info className="mt-0.5 size-3.5 shrink-0 text-[var(--st-cyan)]" />
-          <span>{simConfig.assumptions}</span>
+          <p className="text-[14px] text-[var(--st-on-var)]">{simConfig.assumptions}</p>
         </div>
-      </div>
+      )}
+
+      {showEquation && (
+        <div className="sub space-y-2 p-5">
+          <p className="text-[14px] font-semibold text-[var(--st-on-var)]">Equation</p>
+          <div className="overflow-x-auto text-[var(--st-on)]">
+            <MathBlock latex={simConfig.governingFormulaLatex} displayMode />
+          </div>
+          <p className="text-[14px] text-[var(--st-on-var)]">{simConfig.assumptions}</p>
+        </div>
+      )}
     </section>
   );
 }
-

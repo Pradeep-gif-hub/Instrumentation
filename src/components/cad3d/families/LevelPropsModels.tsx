@@ -47,7 +47,7 @@ export function FloatMlgAssembly() {
           return (
             <mesh key={i} position={[0, y, 0.02]} rotation={[submerged ? 0 : Math.PI, 0, 0]}>
               <boxGeometry args={[0.26, 0.09, 0.05]} />
-              <meshStandardMaterial color={submerged ? '#ef4444' : '#f8fafc'} roughness={0.35} />
+              <PbrMat preset={submerged ? 'alnicoRed' : 'alumina'} />
             </mesh>
           );
         })}
@@ -218,9 +218,9 @@ export function UltrasonicLevelAssembly() {
       </CadPartGroup>
 
       <CadPartGroup partId="ul_echo" basePos={[0, 0, 0]} explodeOffset={[0, 0, 0.5]}>
-        <mesh ref={ringRef} rotation={[Math.PI / 2, 0, 0]} userData={{ selfEmissive: true }}>
+        <mesh ref={ringRef} rotation={[Math.PI / 2, 0, 0]}>
           <torusGeometry args={[0.25, 0.02, 12, 28]} />
-          <meshStandardMaterial color="#38bdf8" emissive="#0284c7" emissiveIntensity={0.8} />
+          <PbrMat preset="blueHousing" />
         </mesh>
       </CadPartGroup>
 
@@ -256,9 +256,9 @@ export function RadarLevelAssembly() {
       </CadPartGroup>
 
       <CadPartGroup partId="rd_beam" basePos={[0, 0.05, 0]} explodeOffset={[0, 0, 0.55]}>
-        <mesh userData={{ selfEmissive: true }}>
+        <mesh>
           <cylinderGeometry args={[0.04, 0.45, 1.45, 24]} />
-          <meshStandardMaterial color="#c084fc" emissive="#9333ea" emissiveIntensity={0.45} transparent opacity={0.35} />
+          <PbrMat preset="quartz" />
         </mesh>
       </CadPartGroup>
 
@@ -298,9 +298,9 @@ export function GwrLevelAssembly() {
       </CadPartGroup>
 
       <CadPartGroup partId="gw_tdr_pulse" basePos={[0, pulseY, 0]} explodeOffset={[0.6, 0, 0.4]}>
-        <mesh userData={{ selfEmissive: true }}>
+        <mesh>
           <torusGeometry args={[0.14, 0.035, 12, 24]} />
-          <meshStandardMaterial color="#a3e635" emissive="#65a30d" emissiveIntensity={1.0} />
+          <PbrMat preset="alnicoRed" />
         </mesh>
       </CadPartGroup>
 
@@ -378,7 +378,7 @@ export function HumiditySensorAssembly() {
       <CadPartGroup partId="hm_chilled_mirror" basePos={[0.18, -0.5, 0]} explodeOffset={[0.65, -0.2, 0.4]}>
         <mesh rotation={[0.3, 0, 0]}>
           <cylinderGeometry args={[0.14, 0.14, 0.05, 24]} />
-          <meshStandardMaterial color="#e2e8f0" metalness={0.95} roughness={0.05 + sim.primaryNorm * 0.45} />
+          <PbrMat preset="chrome" />
         </mesh>
       </CadPartGroup>
 
@@ -432,7 +432,7 @@ export function ViscometerAssembly() {
         </mesh>
         <mesh position={[0, -0.1, 0]}>
           <cylinderGeometry args={[0.58, 0.58, 0.68, 30]} />
-          <PbrMat preset="blueLiquid" colorOverride="#d97706" />
+          <PbrMat preset="kapton" />
         </mesh>
       </CadPartGroup>
     </group>

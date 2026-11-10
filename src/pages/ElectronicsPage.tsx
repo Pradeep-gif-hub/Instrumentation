@@ -1,7 +1,9 @@
 import { Activity, ArrowRight, Calculator, Cpu, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { MermaidDiagram } from '@/components/MermaidDiagram';
+import { findCanonicalForTopic } from '@/data/instrumentRegistry';
 import { INSTRUMENTS_BY_CATEGORY } from '@/data/instruments';
+import { getCanonicalInstrumentUrl } from '@/data/navigationTree';
 
 const SIGNAL_CHAIN_DIAGRAM = `flowchart LR
   S["Primary Transducer\\n(RTD / TC / Strain / pH)"] --> B["Wheatstone Bridge\\n& Bias Return"]
@@ -18,12 +20,12 @@ export function ElectronicsPage() {
     <div className="mx-auto flex max-w-[1440px] flex-col gap-5">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="eyebrow text-[var(--st-cyan)]">ANALOG &amp; MIXED-SIGNAL INSTRUMENTATION ELECTRONICS</p>
-          <h1 className="text-2xl font-semibold tracking-tight text-[var(--st-on)]">
+          <p className="eyebrow">Signal conditioning electronics</p>
+          <h1 className="text-[28px] font-semibold text-[var(--st-on)]">
             Electronics &amp; Sensor Signal Conditioning Chain
           </h1>
-          <p className="muted mt-1 max-w-3xl text-sm">
-            End-to-end engineering architecture taking microvolt/milli-ohm physical transducers cleanly through Wheatstone bridges, precision instrumentation amplifiers, anti-aliasing filters, galvanic isolators, ADC/DACs, and 4–20 mA / HART transmitters.
+          <p className="muted mt-1 prose-measure text-[16px]">
+            End-to-end engineering architecture taking small physical signals through Wheatstone bridges, precision amplifiers, anti-aliasing filters, galvanic isolators, ADCs, and loop transmitters.
           </p>
         </div>
 
@@ -41,69 +43,72 @@ export function ElectronicsPage() {
 
       <section className="glass p-5">
         <MermaidDiagram
-          title="Complete Smart Transmitter Signal Conditioning Front-End"
+          title="Smart Transmitter Signal Conditioning Front-End"
           code={SIGNAL_CHAIN_DIAGRAM}
         />
       </section>
 
       <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        {sigTopics.map((topic, idx) => (
+        {sigTopics.map((topic, idx) => {
+          const canonical = findCanonicalForTopic('signal-conditioning', topic.slug);
+          const route = canonical ? getCanonicalInstrumentUrl(canonical.id) : `/instrumentation/signal-conditioning/${topic.slug}`;
+          return (
           <Link
             key={topic.id}
-            to={`/instrumentation/signal-conditioning/${topic.slug}`}
+            to={route}
             className="ui-card flex flex-col justify-between gap-3 p-5"
           >
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="mono rounded-full bg-[var(--st-3)] px-2.5 py-0.5 text-[10px] text-[var(--st-cyan)]">
-                  STAGE 0{idx + 1}
+                <span className="pill text-[14px]">
+                  Stage {idx + 1}
                 </span>
                 <Activity className="size-4 text-[var(--st-iris)]" />
               </div>
-              <h2 className="text-base font-semibold text-[var(--st-on)]">{topic.title}</h2>
-              <p className="muted text-xs leading-relaxed">{topic.subtitle}</p>
+              <h2 className="text-[20px] font-semibold text-[var(--st-on)]">{topic.title}</h2>
+              <p className="muted text-[14px] leading-relaxed">{topic.subtitle}</p>
             </div>
 
-            <div className="flex items-center justify-between border-t border-[var(--st-line)] pt-2.5 text-xs">
-              <span className="mono text-[10px] text-[var(--st-outline)]">{topic.standardRef}</span>
-              <span className="inline-flex items-center gap-1 text-[var(--st-cyan)]">
-                Inspect <ArrowRight className="size-3.5" />
+            <div className="flex items-center justify-end border-t border-[var(--st-line)] pt-2.5 text-[14px]">
+              <span className="inline-flex items-center gap-1 font-semibold text-[var(--st-accent-text)]">
+                Open <ArrowRight className="size-3.5" />
               </span>
             </div>
           </Link>
-        ))}
+          );
+        })}
       </section>
 
       {/* High-Yield Engineering Rules Summary */}
       <section className="glass grid gap-4 p-6 md:grid-cols-3">
-        <div className="sub space-y-1.5 p-4 text-xs">
-          <div className="flex items-center gap-2 text-[var(--st-cyan)]">
+        <div className="sub space-y-1.5 p-4 text-[14px]">
+          <div className="flex items-center gap-2 text-[var(--st-accent-text)]">
             <Zap className="size-4" />
-            <p className="eyebrow text-[var(--st-cyan)]">GROUND LOOPS &amp; ISOLATION</p>
+            <p className="eyebrow">Ground loops and isolation</p>
           </div>
-          <p className="text-[var(--st-on)] font-medium">Never ground a cable shield at both ends</p>
+          <p className="text-[var(--st-on)] font-semibold">Never ground a cable shield at both ends</p>
           <p className="text-[var(--st-on-var)]">
-            Bond instrumentation twisted-pair drain shields strictly at the control room marshalling earth bar—avoiding 50/60 Hz ground potential circulating currents.
+            Bond instrumentation twisted-pair drain shields strictly at the control room marshalling earth bar to prevent circulating 50/60 Hz currents.
           </p>
         </div>
 
-        <div className="sub space-y-1.5 p-4 text-xs">
-          <div className="flex items-center gap-2 text-[var(--st-phosphor)]">
+        <div className="sub space-y-1.5 p-4 text-[14px]">
+          <div className="flex items-center gap-2 text-[var(--st-accent-text)]">
             <Activity className="size-4" />
-            <p className="eyebrow text-[var(--st-phosphor)]">ANTI-ALIASING BEFORE SAMPLING</p>
+            <p className="eyebrow">Anti-aliasing before sampling</p>
           </div>
-          <p className="text-[var(--st-on)] font-medium">Analog filter sits ahead of ADC sampler</p>
+          <p className="text-[var(--st-on)] font-semibold">Analog filter sits ahead of ADC sampler</p>
           <p className="text-[var(--st-on-var)]">
             Digital moving averages cannot cure frequencies already aliased below f_s / 2. Place a C0G/NP0 analog RC/Sallen-Key pole before conversion.
           </p>
         </div>
 
-        <div className="sub space-y-1.5 p-4 text-xs">
+        <div className="sub space-y-1.5 p-4 text-[14px]">
           <div className="flex items-center gap-2 text-[var(--st-amber)]">
             <Cpu className="size-4" />
-            <p className="eyebrow text-[var(--st-amber)]">RATIOMETRIC BRIDGES &amp; HART</p>
+            <p className="eyebrow">Ratiometric bridges and HART</p>
           </div>
-          <p className="text-[var(--st-on)] font-medium">Power bridge &amp; V_ref identically; ≥250 Ω for HART</p>
+          <p className="text-[var(--st-on)] font-semibold">Power bridge &amp; V_ref identically; ≥250 Ω for HART</p>
           <p className="text-[var(--st-on-var)]">
             Ratiometric excitation cancels V_ref thermal drift cleanly; HART FSK communication strictly requires ≥250 Ω series resistance against PSU output caps.
           </p>

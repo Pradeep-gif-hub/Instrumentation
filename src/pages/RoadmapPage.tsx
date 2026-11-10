@@ -1,9 +1,7 @@
 import {
-  Activity,
   AlertCircle,
   ArrowUpRight,
   BookOpen,
-  Box,
   CheckCircle2,
   ChevronDown,
   ChevronRight,
@@ -29,7 +27,6 @@ import {
   NITJ_SUBJECT_MAP,
   NITJ_SYLLABUS_BANNER,
 } from '@/data/curriculum';
-import { getRegistryCoverageStats } from '@/data/instrumentRegistry';
 import type { ConceptDetail, CurriculumUnitDetail } from '@/types/curriculum';
 import type { AcademicSubject } from '@/types/engineering';
 
@@ -193,21 +190,19 @@ export function RoadmapPage() {
       : 'Custom SQLite Allocation';
   };
 
-  const coverageStats = useMemo(() => getRegistryCoverageStats(), []);
-
   return (
     <div className="mx-auto flex max-w-[1440px] flex-col gap-5">
       {/* Header */}
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="eyebrow text-[var(--st-cyan)]">
-            DR. B. R. AMBEDKAR NIT JALANDHAR · B.TECH. ICE CURRICULUM TREE
+          <p className="eyebrow">
+            NIT Jalandhar · B.Tech ICE full syllabus notes
           </p>
-          <h1 className="text-2xl font-semibold tracking-tight text-[var(--st-on)]">
-            Instrumentation &amp; Control Syllabus Knowledge System
+          <h1 className="text-[28px] font-semibold text-[var(--st-on)]">
+            Instrumentation &amp; Control Syllabus Notes
           </h1>
-          <p className="muted mt-1 text-sm">
-            Progressive hierarchy: Semester → Subject → Unit → Subtopic → Concept + Equations + Real-World Use + Interviews.
+          <p className="muted mt-1 prose-measure text-[16px]">
+            Full reference notes organized by semester, subject, unit, and topic.
           </p>
         </div>
 
@@ -269,36 +264,9 @@ export function RoadmapPage() {
       </header>
 
       {/* Curriculum Verification & Attribution Banner */}
-      <div className="sub flex items-start gap-3 border-[color-mix(in_srgb,var(--st-cyan)_35%,transparent)] px-4 py-3 text-xs">
-        <AlertCircle className="mt-0.5 size-4 shrink-0 text-[var(--st-cyan)]" />
+      <div className="sub flex items-start gap-3 border-[color-mix(in_srgb,var(--st-accent)_35%,transparent)] px-4 py-3 text-[14px]">
+        <AlertCircle className="mt-0.5 size-4 shrink-0 text-[var(--st-accent-text)]" />
         <p className="text-[var(--st-on-var)]">{NITJ_SYLLABUS_BANNER}</p>
-      </div>
-
-      {/* Curriculum 3D Hardware & Simulation Coverage Indicator */}
-      <div className="sub flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 text-xs">
-        <div className="flex flex-wrap items-center gap-3">
-          <span className="inline-flex items-center gap-1.5 font-semibold text-[var(--st-on)]">
-            <Box className="size-3.5 text-[var(--st-cyan)]" />
-            3D Hardware &amp; Simulation Coverage:
-          </span>
-          <span className="pill mono text-[10px]">
-            {coverageStats.dedicated3DModels}/{coverageStats.physicalHardwareCount} Physical Assemblies in 3D
-          </span>
-          <span className="pill mono text-[10px]">
-            <Activity className="mr-1 inline size-3 text-[var(--st-lime)]" />
-            {coverageStats.simulationsCompleted} Interactive Physics Sims
-          </span>
-          <span className="pill mono text-[10px]">
-            {coverageStats.conceptsLinkedCount} Syllabus Concepts Linked
-          </span>
-          <span className="pill mono text-[10px]">
-            Pending Hardware: {coverageStats.pendingHardwareModels}
-          </span>
-        </div>
-        <Link to="/lab" className="btn py-1! text-[11px]">
-          Open Virtual 3D Instrument Lab
-          <ArrowUpRight className="size-3.5 text-[var(--st-cyan)]" />
-        </Link>
       </div>
 
       {/* Mode 2: Cross-Semester Knowledge Graph */}
@@ -383,11 +351,11 @@ export function RoadmapPage() {
                 const rich = NITJ_SUBJECT_MAP.get(subj.id);
                 const statusColor =
                   rich?.syllabusStatus === 'official-core'
-                    ? 'var(--st-lime)'
+                    ? 'var(--st-accent)'
                     : rich?.syllabusStatus === 'core-code-verify' ||
                         rich?.syllabusStatus === 'supplementary-elective'
                       ? 'var(--st-amber)'
-                      : 'var(--st-cyan)';
+                      : 'var(--st-accent)';
 
                 return (
                   <div
@@ -408,22 +376,22 @@ export function RoadmapPage() {
                       className="w-full cursor-pointer text-left"
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <span className="mono text-[11px] font-semibold text-[var(--st-cyan)]">
+                        <span className="text-[14px] font-semibold text-[var(--st-accent-text)]">
                           {subj.code}
                         </span>
                         <div className="flex items-center gap-1.5">
-                          <span className="pill mono text-[10px]">{subj.credits} Cr</span>
+                          <span className="pill text-[14px]">{subj.credits} Cr</span>
                           {subj.completed && (
-                            <CheckCircle2 className="size-4 text-[var(--st-phosphor)]" />
+                            <CheckCircle2 className="size-4 text-[var(--st-accent-text)]" />
                           )}
                         </div>
                       </div>
-                      <p className="mt-1.5 text-sm font-medium text-[var(--st-on)]">
+                      <p className="mt-1.5 text-[16px] font-semibold text-[var(--st-on)]">
                         {subj.name}
                       </p>
-                      <div className="mt-2 flex flex-wrap items-center justify-between gap-1 text-[10px]">
+                      <div className="mt-2 flex flex-wrap items-center justify-between gap-1 text-[14px]">
                         <span
-                          className="mono rounded-full border px-2 py-0.5"
+                          className="rounded-full border px-2 py-0.5"
                           style={{
                             borderColor: `color-mix(in srgb, ${statusColor} 40%, transparent)`,
                             color: statusColor,
@@ -432,7 +400,7 @@ export function RoadmapPage() {
                           {rich ? rich.syllabusBadge.split('·')[0].trim() : subj.category}
                         </span>
                         <span className="muted">
-                          {rich ? rich.units.length : subj.units.length} Units · Click to open
+                          {rich ? rich.units.length : subj.units.length} Units
                         </span>
                       </div>
                     </button>
@@ -442,21 +410,21 @@ export function RoadmapPage() {
 
               {/* Drive Companion Subjects Info when browsing Additional */}
               {selectedTab === 'additional' && (
-                <div className="sub mt-3 space-y-2 p-3 text-xs">
-                  <p className="eyebrow text-[var(--st-cyan)]">Uploaded Drive Companion Folders</p>
+                <div className="sub mt-3 space-y-2 p-3 text-[14px]">
+                  <p className="eyebrow">Companion course folders</p>
                   {DRIVE_COMPANION_COURSES.map((dc) => (
                     <div key={dc.name} className="border-t border-[var(--st-line)] pt-2">
-                      <p className="mono text-[10px] text-[var(--st-outline)]">{dc.sem}</p>
-                      <p className="font-medium text-[var(--st-on)]">{dc.name}</p>
-                      <p className="text-[11px] text-[var(--st-on-var)]">{dc.note}</p>
+                      <p className="text-[14px] text-[var(--st-outline)]">{dc.sem}</p>
+                      <p className="font-semibold text-[var(--st-on)]">{dc.name}</p>
+                      <p className="text-[14px] text-[var(--st-on-var)]">{dc.note}</p>
                     </div>
                   ))}
                   <div className="flex flex-wrap gap-1.5 border-t border-[var(--st-line)] pt-2">
-                    <Link to="/applications" className="btn py-1! text-[11px]!">
-                      Industrial Apps <ArrowUpRight className="size-3" />
+                    <Link to="/applications" className="btn py-1! text-[14px]!">
+                      Plant diagrams <ArrowUpRight className="size-3.5" />
                     </Link>
-                    <Link to="/interview" className="btn py-1! text-[11px]!">
-                      Interview Prep <ArrowUpRight className="size-3" />
+                    <Link to="/interview" className="btn py-1! text-[14px]!">
+                      Interview Prep <ArrowUpRight className="size-3.5" />
                     </Link>
                   </div>
                 </div>
@@ -472,24 +440,24 @@ export function RoadmapPage() {
                       <div className="flex flex-wrap items-center gap-2">
                         <span
                           className="status"
-                          style={{ '--tone': 'var(--st-cyan)' } as React.CSSProperties}
+                          style={{ '--tone': 'var(--st-accent)' } as React.CSSProperties}
                         >
                           {selectedTab === 'additional'
-                            ? 'SUPPLEMENTARY ELECTIVE'
-                            : `SEMESTER ${activeSubject.semester}`}{' '}
+                            ? 'Supplementary elective'
+                            : `Semester ${activeSubject.semester}`}{' '}
                           · {activeSubject.code}
                         </span>
-                        <span className="pill mono text-[11px]">
+                        <span className="pill text-[14px]">
                           {syllabusBadgeFor(activeSubject.id)}
                         </span>
-                        <span className="pill mono text-[11px]">
+                        <span className="pill text-[14px]">
                           {activeSubject.credits} Credits
                         </span>
                       </div>
-                      <h2 className="text-xl font-semibold text-[var(--st-on)]">
+                      <h2 className="text-[20px] font-semibold text-[var(--st-on)]">
                         {activeSubject.name}
                       </h2>
-                      <p className="muted max-w-3xl text-sm">
+                      <p className="muted prose-measure text-[16px]">
                         {richDetail ? richDetail.overview : activeSubject.overview}
                       </p>
                     </div>
@@ -574,7 +542,7 @@ export function RoadmapPage() {
                               setExpandedUnits(all);
                             }
                           }}
-                          className="btn py-1! text-xs!"
+                          className="btn py-1! text-[14px]!"
                         >
                           {Object.values(expandedUnits).some(Boolean)
                             ? 'Collapse All Units'
@@ -597,20 +565,20 @@ export function RoadmapPage() {
                               className="flex w-full cursor-pointer items-center justify-between gap-3 px-4 py-3 text-left transition hover:bg-[var(--st-3)]"
                             >
                               <div className="flex flex-wrap items-center gap-2.5">
-                                <span className="mono rounded-full bg-[var(--st-3)] px-2.5 py-0.5 text-[11px] font-semibold text-[var(--st-cyan)]">
-                                  UNIT {unit.unitNumber}
+                                <span className="rounded-full bg-[var(--st-3)] px-2.5 py-0.5 text-[14px] font-semibold text-[var(--st-accent-text)]">
+                                  Unit {unit.unitNumber}
                                 </span>
-                                <span className="text-sm font-medium text-[var(--st-on)]">
+                                <span className="text-[16px] font-semibold text-[var(--st-on)]">
                                   {unit.title}
                                 </span>
                                 {unit.isExtension && (
-                                  <span className="mono rounded-full border border-[var(--st-lime)]/40 bg-[var(--st-lime)]/10 px-2 py-0.5 text-[10px] text-[var(--st-lime)]">
+                                  <span className="rounded-full border border-[var(--st-accent)]/40 bg-[var(--st-accent)]/10 px-2 py-0.5 text-[14px] text-[var(--st-accent-text)]">
                                     Additional Extension
                                   </span>
                                 )}
                               </div>
                               <div className="flex shrink-0 items-center gap-2">
-                                <span className="muted mono text-xs">
+                                <span className="muted text-[14px]">
                                   {unit.topics.length} topic{unit.topics.length > 1 ? 's' : ''} · {unit.hours}h
                                 </span>
                                 {isOpen ? (
@@ -623,7 +591,7 @@ export function RoadmapPage() {
 
                             {isOpen && (
                               <div className="space-y-3 border-t border-[var(--st-line)] p-4">
-                                <p className="text-xs text-[var(--st-on-var)]">{unit.summary}</p>
+                                <p className="text-[14px] text-[var(--st-on-var)]">{unit.summary}</p>
                                 <div className="grid gap-2.5 md:grid-cols-2">
                                   {unit.topics.map((topic) => {
                                     const activeTopic = selectedConceptId === topic.id;
@@ -642,19 +610,19 @@ export function RoadmapPage() {
                                         }}
                                         className={`cursor-pointer rounded-2xl border p-3.5 text-left transition ${
                                           activeTopic
-                                            ? 'border-[var(--st-cyan)] bg-[var(--st-3)]'
-                                            : 'border-[var(--st-line)] bg-[var(--st-1)] hover:border-[var(--st-cyan)]/50'
+                                            ? 'border-[var(--st-accent)] bg-[var(--st-3)]'
+                                            : 'border-[var(--st-line)] bg-[var(--st-1)] hover:border-[var(--st-accent)]/50'
                                         }`}
                                       >
                                         <div className="flex items-start justify-between gap-2">
-                                          <h4 className="text-sm font-semibold text-[var(--st-on)]">
+                                          <h4 className="text-[16px] font-semibold text-[var(--st-on)]">
                                             {topic.title}
                                           </h4>
-                                          <span className="mono shrink-0 text-[10px] text-[var(--st-cyan)]">
+                                          <span className="shrink-0 text-[14px] text-[var(--st-accent-text)]">
                                             {activeTopic ? 'Inspecting' : 'Inspect →'}
                                           </span>
                                         </div>
-                                        <p className="mt-1.5 text-xs leading-relaxed text-[var(--st-on-var)]">
+                                        <p className="mt-1.5 text-[14px] leading-relaxed text-[var(--st-on-var)]">
                                           {topic.summary}
                                         </p>
                                       </button>
@@ -671,7 +639,7 @@ export function RoadmapPage() {
                     /* Fallback for custom user subjects or Sem 6 capstone summary (collapsed by default!) */
                     <div className="space-y-3">
                       <p className="eyebrow">
-                        SYLLABUS STRUCTURE ({activeSubject.units.length} UNITS · EXPAND TO INSPECT)
+                        Syllabus structure ({activeSubject.units.length} units)
                       </p>
                       {activeSubject.units.map((unit) => {
                         const isOpen = expandedUnits[unit.unitNumber] ?? false;
@@ -688,15 +656,15 @@ export function RoadmapPage() {
                               className="flex w-full cursor-pointer items-center justify-between px-4 py-3 text-left transition hover:bg-[var(--st-3)]"
                             >
                               <div className="flex items-center gap-3">
-                                <span className="mono rounded-full bg-[var(--st-3)] px-2.5 py-0.5 text-[11px] font-semibold text-[var(--st-cyan)]">
-                                  UNIT {unit.unitNumber}
+                                <span className="rounded-full bg-[var(--st-3)] px-2.5 py-0.5 text-[14px] font-semibold text-[var(--st-accent-text)]">
+                                  Unit {unit.unitNumber}
                                 </span>
-                                <span className="text-sm font-medium text-[var(--st-on)]">
+                                <span className="text-[16px] font-semibold text-[var(--st-on)]">
                                   {unit.title}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="muted mono text-xs">{unit.hours} hrs</span>
+                                <span className="muted text-[14px]">{unit.hours} hrs</span>
                                 {isOpen ? (
                                   <ChevronDown className="size-4 text-[var(--st-outline)]" />
                                 ) : (
@@ -713,22 +681,22 @@ export function RoadmapPage() {
                                     className="rounded-2xl border border-[var(--st-line)] bg-[var(--st-1)] p-3.5"
                                   >
                                     <div className="flex items-start justify-between gap-2">
-                                      <h4 className="text-sm font-semibold text-[var(--st-on)]">
+                                      <h4 className="text-[16px] font-semibold text-[var(--st-on)]">
                                         {topic.name}
                                       </h4>
                                       {topic.linkedRoute && (
                                         <Link
                                           to={topic.linkedRoute}
-                                          className="mono inline-flex shrink-0 items-center gap-1 rounded-full bg-[var(--st-3)] px-2.5 py-0.5 text-[10px] text-[var(--st-cyan)] hover:bg-[var(--st-4)]"
+                                          className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[var(--st-3)] px-2.5 py-0.5 text-[14px] text-[var(--st-accent-text)] hover:bg-[var(--st-4)]"
                                         >
-                                          Module <ExternalLink className="size-2.5" />
+                                          Open <ExternalLink className="size-3" />
                                         </Link>
                                       )}
                                     </div>
-                                    <ul className="mt-2 space-y-1 text-xs text-[var(--st-on-var)]">
+                                    <ul className="mt-2 space-y-1 text-[14px] text-[var(--st-on-var)]">
                                       {topic.subtopics.map((sub) => (
                                         <li key={sub} className="flex items-start gap-2">
-                                          <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-[var(--st-cyan)]" />
+                                          <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-[var(--st-accent)]" />
                                           <span>{sub}</span>
                                         </li>
                                       ))}

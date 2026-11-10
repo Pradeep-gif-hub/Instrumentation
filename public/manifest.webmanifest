@@ -1,0 +1,22 @@
+{
+  "name": "Instrument-AI · Instrumentation & Control Engineering",
+  "short_name": "Instrument-AI",
+  "description": "Learn instrumentation and control engineering with 3D instruments, simulations and interview practice.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#121A24",
+  "theme_color": "#121A24",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
+

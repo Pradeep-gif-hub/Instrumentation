@@ -50,7 +50,7 @@ export function SubjectInterviewSimulator({ initialSubjectId }: SubjectInterview
               setChosenAnswers({});
               setRevealedFollowUps({});
             }}
-            className="btn py-1! text-xs!"
+            className="btn py-1! text-[14px]!"
           >
             <RotateCcw className="size-3.5" />
             Reset Responses
@@ -68,13 +68,13 @@ export function SubjectInterviewSimulator({ initialSubjectId }: SubjectInterview
                   setSelectedSubjectId(s.id);
                   setLevelFilter('ALL');
                 }}
-                className={`cursor-pointer rounded-full border px-3 py-1.5 text-xs transition ${
+                className={`cursor-pointer rounded-full border px-3 py-1.5 text-[14px] transition ${
                   active
-                    ? 'border-[var(--st-lime)] bg-[var(--st-lime)]/15 font-semibold text-[var(--st-on)]'
+                    ? 'border-[var(--st-accent)] bg-[var(--st-accent)]/15 font-semibold text-[var(--st-on)]'
                     : 'border-[var(--st-line)] bg-[var(--st-1)] text-[var(--st-on-var)] hover:bg-[var(--st-2)]'
                 }`}
               >
-                <span className="mono mr-1.5 text-[10px] text-[var(--st-cyan)]">{s.code}</span>
+                <span className="mr-1.5 text-[14px] text-[var(--st-accent-text)]">{s.code}</span>
                 {s.shortName}
               </button>
             );
@@ -86,9 +86,9 @@ export function SubjectInterviewSimulator({ initialSubjectId }: SubjectInterview
       {activeSubject.comparisons.length > 0 && (
         <section className="glass space-y-4 p-5">
           <div className="flex items-center gap-2">
-            <GitCompare className="size-4 text-[var(--st-cyan)]" />
+            <GitCompare className="size-4 text-[var(--st-accent-text)]" />
             <h4 className="eyebrow">
-              KEY INTERVIEW COMPARISONS ({activeSubject.code})
+              Key interview comparisons ({activeSubject.code})
             </h4>
           </div>
 
@@ -96,15 +96,15 @@ export function SubjectInterviewSimulator({ initialSubjectId }: SubjectInterview
             {activeSubject.comparisons.map((cmp) => (
               <div key={cmp.title} className="sub overflow-hidden rounded-2xl">
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--st-line)] px-4 py-3">
-                  <p className="text-sm font-semibold text-[var(--st-on)]">{cmp.title}</p>
+                  <p className="text-[16px] font-semibold text-[var(--st-on)]">{cmp.title}</p>
                   {cmp.isEnrichment && (
-                    <span className="mono rounded-full border border-[var(--st-amber)]/40 bg-[var(--st-amber)]/10 px-2.5 py-0.5 text-[10px] text-[var(--st-amber)]">
+                    <span className="rounded-full border border-[var(--st-amber)]/40 bg-[var(--st-amber)]/10 px-2.5 py-0.5 text-[14px] text-[var(--st-amber)]">
                       Additional Signal Processing Enrichment
                     </span>
                   )}
                 </div>
                 <div className="overflow-x-auto">
-                  <table className="tech-table w-full text-left text-xs">
+                  <table className="tech-table w-full text-left text-[14px]">
                     <thead>
                       <tr>
                         <th className="w-1/4">Criterion</th>
@@ -133,9 +133,9 @@ export function SubjectInterviewSimulator({ initialSubjectId }: SubjectInterview
       <section className="glass space-y-4 p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <HelpCircle className="size-4 text-[var(--st-lime)]" />
+            <HelpCircle className="size-4 text-[var(--st-accent-text)]" />
             <h4 className="eyebrow">
-              INTERACTIVE PANEL ROUND · {activeSubject.name}
+              Interactive practice round · {activeSubject.name}
             </h4>
           </div>
           <div className="seg" role="group" aria-label="Filter difficulty">
@@ -145,7 +145,7 @@ export function SubjectInterviewSimulator({ initialSubjectId }: SubjectInterview
                 type="button"
                 aria-selected={levelFilter === lvl}
                 onClick={() => setLevelFilter(lvl)}
-                className="text-xs!"
+                className="text-[14px]!"
               >
                 {lvl === 'ALL' ? 'All Levels' : lvl}
               </button>
@@ -155,7 +155,7 @@ export function SubjectInterviewSimulator({ initialSubjectId }: SubjectInterview
 
         <div className="space-y-4">
           {questions.length === 0 ? (
-            <p className="muted text-xs">
+            <p className="muted text-[14px]">
               No questions at "{levelFilter}" level in this subject — choose "All Levels" above.
             </p>
           ) : (
@@ -170,14 +170,14 @@ export function SubjectInterviewSimulator({ initialSubjectId }: SubjectInterview
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <span className="pill">Q{qIdx + 1}</span>
-                      <span className="mono text-[11px] text-[var(--st-cyan)]">{q.level}</span>
-                      <span className="mono text-[11px] text-[var(--st-outline)]">· {q.topic}</span>
+                      <span className="text-[14px] text-[var(--st-accent-text)]">{q.level}</span>
+                      <span className="text-[14px] text-[var(--st-outline)]">· {q.topic}</span>
                     </div>
                     {isAnswered && (
                       <span
-                        className={`mono inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
+                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[14px] font-semibold ${
                           isCorrect
-                            ? 'bg-[var(--st-lime)]/15 text-[var(--st-lime)]'
+                            ? 'bg-[var(--st-accent)]/15 text-[var(--st-accent-text)]'
                             : 'bg-[var(--st-amber)]/15 text-[var(--st-amber)]'
                         }`}
                       >
@@ -194,7 +194,7 @@ export function SubjectInterviewSimulator({ initialSubjectId }: SubjectInterview
                     )}
                   </div>
 
-                  <p className="text-sm font-medium text-[var(--st-on)]">{q.question}</p>
+                  <p className="text-[16px] font-semibold text-[var(--st-on)]">{q.question}</p>
 
                   {q.options && (
                     <div className="space-y-2">
@@ -204,12 +204,12 @@ export function SubjectInterviewSimulator({ initialSubjectId }: SubjectInterview
                         let borderClass = 'border-[var(--st-line)] bg-[var(--st-1)]';
                         if (isAnswered) {
                           if (rightOpt) {
-                            borderClass = 'border-[var(--st-lime)] bg-[var(--st-lime)]/10';
+                            borderClass = 'border-[var(--st-accent)] bg-[var(--st-accent)]/10';
                           } else if (selected && !rightOpt) {
                             borderClass = 'border-[var(--st-amber)] bg-[var(--st-amber)]/10';
                           }
                         } else if (selected) {
-                          borderClass = 'border-[var(--st-cyan)] bg-[var(--st-3)]';
+                          borderClass = 'border-[var(--st-accent)] bg-[var(--st-3)]';
                         }
 
                         return (
@@ -219,10 +219,10 @@ export function SubjectInterviewSimulator({ initialSubjectId }: SubjectInterview
                             onClick={() =>
                               setChosenAnswers((prev) => ({ ...prev, [q.id]: optIdx }))
                             }
-                            className={`flex w-full cursor-pointer items-center justify-between rounded-xl border px-3.5 py-2.5 text-left text-xs transition ${borderClass}`}
+                            className={`flex w-full cursor-pointer items-center justify-between rounded-xl border px-3.5 py-2.5 text-left text-[14px] transition ${borderClass}`}
                           >
                             <span className="text-[var(--st-on)]">
-                              <span className="mono mr-2 text-[var(--st-outline)]">
+                              <span className="mr-2 text-[var(--st-outline)]">
                                 {String.fromCharCode(65 + optIdx)}.
                               </span>
                               {opt}
@@ -235,22 +235,22 @@ export function SubjectInterviewSimulator({ initialSubjectId }: SubjectInterview
 
                   {isAnswered && (
                     <div className="space-y-3 border-t border-[var(--st-line)] pt-3">
-                      <div className="rounded-xl border border-[var(--st-line)] bg-[var(--st-1)] p-3 text-xs">
+                      <div className="rounded-xl border border-[var(--st-line)] bg-[var(--st-1)] p-3 text-[14px]">
                         <p className="font-semibold text-[var(--st-on)]">Answer: {q.answer}</p>
                         <p className="mt-1 leading-relaxed text-[var(--st-on-var)]">
-                          <span className="mono text-[var(--st-cyan)]">Core Principle: </span>
+                          <span className="font-semibold text-[var(--st-accent-text)]">Why it works: </span>
                           {q.principle}
                         </p>
                       </div>
 
                       {/* Dynamic Follow-Up Question triggered by performance */}
-                      <div className="rounded-xl border border-[var(--st-cyan)]/35 bg-[var(--st-1)] p-3 text-xs">
+                      <div className="rounded-xl border border-[var(--st-accent)]/35 bg-[var(--st-1)] p-3 text-[14px]">
                         <div className="flex flex-wrap items-center justify-between gap-2">
-                          <span className="mono inline-flex items-center gap-1.5 text-[11px] font-semibold text-[var(--st-cyan)]">
+                          <span className="inline-flex items-center gap-1.5 text-[14px] font-semibold text-[var(--st-accent-text)]">
                             <MessageSquare className="size-3.5" />
                             {isCorrect
-                              ? 'Panel Follow-Up (Deeper Probe):'
-                              : 'Panel Coaching Prompt:'}
+                              ? 'Follow-up question:'
+                              : 'Coaching prompt:'}
                           </span>
                           <button
                             type="button"
@@ -260,16 +260,16 @@ export function SubjectInterviewSimulator({ initialSubjectId }: SubjectInterview
                                 [q.id]: !showFollowAns,
                               }))
                             }
-                            className="btn py-0.5! text-[11px]!"
+                            className="btn py-1! text-[14px]!"
                           >
                             {showFollowAns ? 'Hide Follow-Up Key' : 'Show Follow-Up Key'}
                           </button>
                         </div>
-                        <p className="mt-1.5 text-sm font-medium text-[var(--st-on)]">
+                        <p className="mt-1.5 text-[16px] font-semibold text-[var(--st-on)]">
                           {isCorrect ? q.followUpIfCorrect : q.followUpIfReview}
                         </p>
                         {showFollowAns && (
-                          <p className="mt-2 border-t border-[var(--st-line)] pt-2 text-[var(--st-lime)]">
+                          <p className="mt-2 border-t border-[var(--st-line)] pt-2 text-[var(--st-accent-text)]">
                             {q.followUpAnswer}
                           </p>
                         )}

@@ -31,3 +31,15 @@ CREATE TABLE IF NOT EXISTS question_attempts (
   answered_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS suggestions (
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  family TEXT NOT NULL,
+  reason TEXT NOT NULL,
+  link TEXT NOT NULL DEFAULT '',
+  contact_name TEXT NOT NULL DEFAULT '',
+  contact_email TEXT NOT NULL DEFAULT '',
+  status TEXT NOT NULL DEFAULT 'new',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+

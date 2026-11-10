@@ -36,7 +36,10 @@ export function CharacteristicChart({ curve }: { curve: CharacteristicCurveData 
   const tooltipBorder = theme === 'light' ? 'rgba(20,20,20,0.16)' : 'rgba(255,255,255,0.16)';
 
   const resolveColor = (raw: string) => {
-    if (theme === 'light' && raw.toLowerCase() === '#c5f467') return '#4a7300';
+    const low = raw.toLowerCase();
+    if (low === '#7fb3de' || low === '#7FB3DE') {
+      return theme === 'light' ? '#2F5F8A' : '#7FB3DE';
+    }
     return raw;
   };
 
