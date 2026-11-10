@@ -5,7 +5,7 @@ import {
   validateOtpCode,
   validateSuggestionPayload,
   type CleanSuggestionData,
-} from '../src/shared/suggestionValidation';
+} from '../src/shared/suggestionValidation.ts';
 
 const DEFAULT_SUGGESTION_RECEIVER_EMAIL = 'pradeep240818@gmail.com';
 const DEFAULT_RESEND_FROM = 'Instrument-AI <onboarding@resend.dev>';
