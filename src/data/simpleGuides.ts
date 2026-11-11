@@ -373,11 +373,21 @@ function cleanBracketTerm(entry: CanonicalInstrumentEntry): string {
 }
 
 function stripStandardTokens(text: string): string {
-  return text
-    .replace(/\(\s*(?:IEC|ISA|ASME|ISO|DIN|ANSI|ASTM)[^)]*\)/gi, '')
-    .replace(/\b(IEC|ISA|ASME|ISO|DIN|ANSI|ASTM)[-\s/]*[A-Z0-9.]*\b/gi, '')
+  // Drop citation codes such as "(IEC 60751)" or "ISO 5167-1".
+  // Keep form-factor words (DIN rail, 1/4 DIN, DIN Form-B, ASME Long-Radius).
+  let next = text.replace(/\(\s*(?:IEC|ISA|ASME|ISO|DIN|ANSI|ASTM)[^)]*\)/gi, ' ');
+  next = next.replace(
+    /\b(IEC|ISA|ASME|ISO|DIN|ANSI|ASTM)([-\s/]+)([A-Za-z0-9./-]+)/gi,
+    (full, _org: string, _sep: string, code: string) => {
+      const designation = code.replace(/[./-]/g, '');
+      const looksLikeStandardCode = /\d/.test(designation) && !/[a-z]/.test(designation);
+      return looksLikeStandardCode ? ' ' : full;
+    },
+  );
+  return next
+    .replace(/\(\s*\)/g, '')
     .replace(/\s{2,}/g, ' ')
-    .replace(/\s+([.,])/g, '$1')
+    .replace(/\s+([.,;:])/g, '$1')
     .trim();
 }
 

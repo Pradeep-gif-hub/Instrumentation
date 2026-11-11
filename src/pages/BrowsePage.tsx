@@ -47,20 +47,23 @@ export function BrowsePage() {
     }
   }, [searchParams]);
 
-  const hasFilter = query.trim().length > 0 || selectedFamily !== null;
+  const activeFamilyLabel = [...PRIMARY_BROWSE_FAMILIES, ...MORE_BROWSE_FAMILIES].find(
+    (family) => family.key === selectedFamily,
+  )?.label;
 
   const matched = useMemo(() => {
-    if (!hasFilter) return [];
     const q = query.trim().toLowerCase();
     return CANONICAL_INSTRUMENTS.filter((entry) => {
       const path = resolveCanonicalPath(entry.id);
       if (selectedFamily && path?.family.key !== selectedFamily) return false;
       if (!q) return true;
-      return `${entry.name} ${entry.abbreviation ?? ''} ${path?.family.label ?? ''} ${entry.overview}`
+      return `${entry.name} ${entry.abbreviation ?? ''} ${path?.family.label ?? ''} ${entry.overview} ${entry.measurementQuantity}`
         .toLowerCase()
         .includes(q);
-    });
-  }, [hasFilter, query, selectedFamily]);
+    })
+      .slice()
+      .sort((a, b) => getPlainDisplayName(a).localeCompare(getPlainDisplayName(b)));
+  }, [query, selectedFamily]);
 
   const visible = matched.slice(0, limit);
 
@@ -77,11 +80,11 @@ export function BrowsePage() {
   };
 
   return (
-    <div className="mx-auto flex max-w-[70ch] flex-col gap-6">
+    <div className="mx-auto flex max-w-[860px] flex-col gap-6">
       <div className="space-y-2">
         <h1>Look up an instrument</h1>
         <p className="text-[16px] text-[var(--st-on-var)]">
-          Search by name or choose a group below.
+          The catalog is loaded below. Search by name, or narrow it by measured variable.
         </p>
       </div>
 
@@ -140,19 +143,16 @@ export function BrowsePage() {
         )}
       </div>
 
-      {/* Empty Initial State vs Plain List (max 10 + Show more) */}
-      {!hasFilter ? (
-        <div className="glass p-6">
-          <p className="text-[16px] text-[var(--st-on-var)]">
-            Type a name or pick a group.
-          </p>
-        </div>
-      ) : matched.length === 0 ? (
+      {matched.length === 0 ? (
         <div className="glass p-6">
           <p className="text-[16px] text-[var(--st-on)]">No instruments match your search.</p>
         </div>
       ) : (
         <div className="space-y-3">
+          <div className="flex items-baseline justify-between gap-3">
+            <h2>{activeFamilyLabel ?? (query.trim() ? 'Matching instruments' : 'Instrument catalog')}</h2>
+            <p className="text-[14px] text-[var(--st-on-var)]">{matched.length} loaded</p>
+          </div>
           <div className="space-y-2">
             {visible.map((entry) => (
               <Link

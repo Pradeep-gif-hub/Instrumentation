@@ -18,6 +18,8 @@ import { InstrumentSimulatorPanel } from '@/components/InstrumentSimulatorPanel'
 import { MathBlock } from '@/components/MathBlock';
 import { useApp } from '@/context/AppContext';
 import { getCanonicalInstrument } from '@/data/instrumentRegistry';
+import type { CanonicalInstrumentEntry } from '@/types/cad';
+import type { InstrumentTopic } from '@/types/engineering';
 import { getInstrumentTopic } from '@/data/instruments';
 import { CAD_MODELS } from '@/data/models3d';
 import {
@@ -67,9 +69,44 @@ function parseTabParam(raw: string | null, focusRaw: string | null): InstrumentT
   return 'simple';
 }
 
+function InstrumentNameplate({
+  entry,
+  topic,
+}: {
+  entry: CanonicalInstrumentEntry;
+  topic?: InstrumentTopic;
+}) {
+  const range = entry.performance.range || topic?.measurementRange.typicalSpan;
+  const accuracy = entry.performance.accuracy || topic?.accuracyAndSensitivity.accuracyClass;
+  const response = entry.performance.responseTime || topic?.accuracyAndSensitivity.responseTime;
+  const cells = [
+    { label: 'Measured variable', value: entry.measurementQuantity },
+    { label: 'Sensing principle', value: entry.physicalPhenomenon },
+    { label: 'Process input', value: entry.inputOutput.input },
+    { label: 'Output signal', value: entry.inputOutput.output },
+    range ? { label: 'Typical range', value: range } : null,
+    accuracy ? { label: 'Accuracy', value: accuracy } : null,
+    response ? { label: 'Response', value: response } : null,
+    entry.standardRef ? { label: 'Reference', value: entry.standardRef } : null,
+  ].filter((cell): cell is { label: string; value: string } => Boolean(cell && cell.value));
+
+  if (cells.length === 0) return null;
+
+  return (
+    <section aria-label="Instrument nameplate" className="spec-grid">
+      {cells.map((cell) => (
+        <div key={cell.label} className="spec-cell">
+          <span className="spec-k">{cell.label}</span>
+          <span className="spec-v">{cell.value}</span>
+        </div>
+      ))}
+    </section>
+  );
+}
+
 function ExpandableText({
   text,
-  limit = 260,
+  limit = 480,
   className = 'prose-measure text-[var(--st-on)]',
 }: {
   text: string;
@@ -170,7 +207,7 @@ export function InstrumentPage() {
 
   const [selectedPartId, setSelectedPartId] = useState<string>('');
   const [hiddenPartIds, setHiddenPartIds] = useState<Set<string>>(() => new Set());
-  const [openTheory, setOpenTheory] = useState<Record<string, boolean>>({});
+  const [openTheory, setOpenTheory] = useState<Record<string, boolean>>({ def: true, ov: true });
   const [showSchematic, setShowSchematic] = useState(false);
 
   // Interview one-question-at-a-time state
@@ -181,7 +218,7 @@ export function InstrumentPage() {
     if (entry) {
       setSelectedPartId('');
       setHiddenPartIds(new Set());
-      setOpenTheory({});
+      setOpenTheory({ def: true, ov: true });
       setShowSchematic(false);
       setQuestionIdx(0);
       setShowAnswer(false);
@@ -351,6 +388,8 @@ export function InstrumentPage() {
         </div>
       </header>
 
+      <InstrumentNameplate entry={entry} topic={topic} />
+
       {/* ==================== TAB 1: SIMPLE ==================== */}
       {activeTab === 'simple' && (
         <section aria-label="Simple overview" className="glass space-y-6 p-6">
@@ -364,6 +403,25 @@ export function InstrumentPage() {
             <h2>Everyday analogy</h2>
             <p className="prose-measure text-[var(--st-on-var)]">{simpleGuide.analogy}</p>
           </div>
+
+          <div className="space-y-1">
+            <h2>Role in the control loop</h2>
+            <p className="prose-measure text-[var(--st-on-var)]">{simpleGuide.plantRole}</p>
+          </div>
+
+          {entry.workingPrincipleSteps.length > 0 && (
+            <div className="space-y-2">
+              <h2>How the reading is formed</h2>
+              <ol className="space-y-2">
+                {entry.workingPrincipleSteps.slice(0, 4).map((step, index) => (
+                  <li key={step} className="sub p-4 text-[16px] text-[var(--st-on)]">
+                    <span className="font-semibold text-[var(--st-accent-text)]">{index + 1}. </span>
+                    {step}
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
 
           <div className="space-y-1">
             <h2>Where you&apos;ll see it</h2>

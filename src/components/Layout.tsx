@@ -18,7 +18,7 @@ import {
   Sun,
   X,
 } from 'lucide-react';
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, matchPath, useLocation, useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { resolveCanonicalPath } from '@/data/navigationTree';
@@ -50,42 +50,14 @@ function readStoredSidebarWidth(): number {
 }
 
 function BrandMark({ size = 32 }: { size?: number }) {
-  const uid = useId().replace(/:/g, '');
-  const gradId = `inst-ai-bg-${uid}`;
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 64 64"
+    <img
+      src="/favicon.svg"
       width={size}
       height={size}
-      aria-hidden="true"
-      className="shrink-0 rounded-[7px]"
-    >
-      <defs>
-        <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#1F2D3D" />
-          <stop offset="1" stopColor="#121A24" />
-        </linearGradient>
-      </defs>
-      <rect width="64" height="64" rx="16" fill={`url(#${gradId})`} />
-      <path
-        d="M17.9 46.1 A20 20 0 1 1 46.1 46.1"
-        fill="none"
-        stroke="#7FB3DE"
-        strokeWidth="4.5"
-        strokeLinecap="round"
-      />
-      <line
-        x1="32"
-        y1="32"
-        x2="42"
-        y2="23"
-        stroke="#E06A4F"
-        strokeWidth="4"
-        strokeLinecap="round"
-      />
-      <circle cx="32" cy="32" r="3.5" fill="#E8F1F8" />
-    </svg>
+      alt=""
+      className="shrink-0"
+    />
   );
 }
 
@@ -218,7 +190,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <Link
               to="/"
               onClick={onNavigate}
-              className="flex min-w-0 items-center gap-2.5 text-[20px] font-semibold tracking-normal text-[var(--st-on)]"
+              className="flex min-w-0 items-center gap-2.5 font-[family-name:var(--font-display)] text-[20px] font-semibold tracking-[-0.03em] text-[var(--st-on)]"
             >
               <BrandMark size={32} />
               <span className="truncate">Instrument-AI</span>
