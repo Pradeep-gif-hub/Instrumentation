@@ -246,8 +246,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   onClick={onNavigate}
                   aria-current={active ? 'page' : undefined}
                   className={`flex items-center gap-2.5 rounded-xl border px-2.5 py-2.5 text-[16px] transition ${active
-                      ? 'border-[var(--st-accent)]/60 bg-[var(--st-3)] font-semibold text-[var(--st-on)]'
-                      : 'border-transparent font-normal text-[var(--st-on-var)] hover:bg-[var(--st-2)] hover:text-[var(--st-on)]'
+                    ? 'border-[var(--st-accent)]/60 bg-[var(--st-3)] font-semibold text-[var(--st-on)]'
+                    : 'border-transparent font-normal text-[var(--st-on-var)] hover:bg-[var(--st-2)] hover:text-[var(--st-on)]'
                     }`}
                 >
                   <Icon
@@ -375,8 +375,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         >
           <span
             className={`h-full w-[2px] transition-colors ${isResizing
-                ? 'bg-[var(--st-accent)]'
-                : 'bg-transparent group-hover:bg-[var(--st-accent)] group-focus-visible:bg-[var(--st-accent)]'
+              ? 'bg-[var(--st-accent)]'
+              : 'bg-transparent group-hover:bg-[var(--st-accent)] group-focus-visible:bg-[var(--st-accent)]'
               }`}
           />
         </div>
@@ -464,7 +464,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <main className="min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8">{children}</main>
 
         <footer className="flex min-h-[48px] flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t border-[var(--st-line)] px-4 py-2.5 text-[14px] text-[var(--st-on-var)] sm:px-8">
-          <span className="min-w-0">Meet the Developer - Pradeep </span>
+          <span className="min-w-0">Meet the Developer - Pradeep Awasthi</span>
           <div className="flex shrink-0 items-center gap-4 whitespace-nowrap">
             <a
               href={SITE_LINKS.githubUrl}

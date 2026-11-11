@@ -315,3 +315,4 @@ export function CursorDotField({ theme }: { theme: ThemeMode }) {
     />
   );
 }
+
