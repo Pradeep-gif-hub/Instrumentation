@@ -114,7 +114,7 @@ export function BimetallicAssembly() {
         </mesh>
       </CadPartGroup>
 
-      <CadPartGroup partId="bm_dial_pointer" basePos={[0, 0.72, 0.15]} explodeOffset={[0, 0.35, 0.75]}>
+      <CadPartGroup partId="bm_dial_pointer" basePos={[0, 0.72, 0.15]} explodeOffset={[0, 0.35, 0.75]} isCutawayShell>
         <mesh rotation={[Math.PI / 2, 0, 0]}>
           <cylinderGeometry args={[0.76, 0.76, 0.02, 40]} />
           <meshStandardMaterial map={dialTex} roughness={0.5} metalness={0.05} />
@@ -197,7 +197,7 @@ export function FilledSystemAssembly() {
         </mesh>
       </CadPartGroup>
 
-      <CadPartGroup partId="fs_dial_pointer" basePos={[0, 0.72, 0.12]} explodeOffset={[0, 0.45, 0.75]}>
+      <CadPartGroup partId="fs_dial_pointer" basePos={[0, 0.72, 0.12]} explodeOffset={[0, 0.45, 0.75]} isCutawayShell>
         <mesh rotation={[Math.PI / 2, 0, 0]}>
           <cylinderGeometry args={[0.72, 0.72, 0.02, 36]} />
           <meshStandardMaterial map={dialTex} roughness={0.5} />
@@ -464,7 +464,7 @@ export function TempTransmitterAssembly() {
         ))}
       </CadPartGroup>
 
-      <CadPartGroup partId="tt_lcd_module" basePos={[0, 0.32, 0.12]} explodeOffset={[0, 0.95, 0]}>
+      <CadPartGroup partId="tt_lcd_module" basePos={[0, 0.32, 0.12]} explodeOffset={[0, 0.95, 0]} isCutawayShell>
         <mesh>
           <boxGeometry args={[0.82, 0.14, 0.46]} />
           <PbrMat preset="anodizedDark" />

@@ -44,6 +44,7 @@ const OUTER_CUTAWAY_IDS = new Set([
   'tc_compression_fitting',
   'tc_inconel_sheath',
   'dpt_housing',
+  'dpt_lcd_module',
   'dpt_sensor_module',
   'dpt_process_flanges',
   'orf_upstream_pipe',
@@ -485,21 +486,21 @@ export function CadViewer3D({
   simState = DEFAULT_SIM_STATE,
   heightClass = 'h-[560px]',
 }: CadViewer3DProps) {
+  const supportsExplode = config.supportsExplode ?? true;
+  const supportsCutaway = config.supportsCutaway ?? true;
+
   const [explodeAmount, setExplodeAmount] = useState(0);
-  const [crossSection, setCrossSection] = useState(false);
+  const [crossSection, setCrossSection] = useState(supportsCutaway);
   const [showLabels, setShowLabels] = useState(false);
   const [cameraPreset, setCameraPreset] = useState<CameraPreset>('iso');
   const [presetNonce, setPresetNonce] = useState(0);
 
-  const supportsExplode = config.supportsExplode ?? true;
-  const supportsCutaway = config.supportsCutaway ?? true;
-
   useEffect(() => {
     setExplodeAmount(0);
-    setCrossSection(false);
+    setCrossSection(supportsCutaway);
     setCameraPreset('iso');
     setPresetNonce((n) => n + 1);
-  }, [config.id]);
+  }, [config.id, supportsCutaway]);
 
   const applyPreset = (preset: CameraPreset) => {
     setCameraPreset(preset);
@@ -531,7 +532,7 @@ export function CadViewer3D({
           title="Reset camera & view"
           onClick={() => {
             setExplodeAmount(0);
-            setCrossSection(false);
+            setCrossSection(supportsCutaway);
             applyPreset('iso');
           }}
           className="cursor-pointer rounded-full p-1.5 text-[var(--st-on-var)] hover:bg-[var(--st-3)] hover:text-[var(--st-on)]"
