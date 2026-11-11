@@ -36,6 +36,7 @@ const TOOLBOX_SEARCH_ITEMS = [
   { id: 'wheatstone-bridge', title: 'Wheatstone Bridge Calculator', path: 'Toolbox › Bridges' },
   { id: 'measurement-error', title: 'Measurement Error Calculator', path: 'Toolbox › Calibration' },
   { id: 'pid-tuning', title: 'PID Tuning & Step Simulator', path: 'Toolbox › Control' },
+  { id: 'valve-sizing', title: 'Control Valve Cv / Kv Sizing Calculator', path: 'Toolbox › Final Control' },
 ];
 
 type SearchKind = 'Instrument' | 'Topic group' | 'Subject' | 'Concept' | 'Question' | 'Toolbox' | 'Simulator';

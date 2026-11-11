@@ -478,6 +478,62 @@ export function TempTransmitterAssembly() {
   );
 }
 
+export function DryWellCalibratorAssembly() {
+  const sim = useCadSim();
+  const tempC = (50 + sim.primaryNorm * 550).toFixed(1);
+  const lcdTex = useMemo(
+    () => buildLcdDisplayTexture('DRY-WELL CALIBRATOR', `${tempC} °C`, 'STABILITY ±0.03 °C'),
+    [tempC],
+  );
+  useEffect(() => () => lcdTex.dispose(), [lcdTex]);
+
+  return (
+    <group>
+      <CadPartGroup partId="dw_enclosure" basePos={[0, -0.15, 0]} explodeOffset={[0, -0.45, 0]} isCutawayShell>
+        <mesh>
+          <boxGeometry args={[1.45, 1.55, 1.12]} />
+          <PbrMat preset="blueHousing" />
+        </mesh>
+        <mesh position={[0, -0.35, 0.58]}>
+          <boxGeometry args={[1.15, 0.58, 0.08]} />
+          <PbrMat preset="anodizedDark" />
+        </mesh>
+        <mesh position={[0, -0.35, 0.63]}>
+          <planeGeometry args={[0.96, 0.42]} />
+          <meshStandardMaterial map={lcdTex} />
+        </mesh>
+      </CadPartGroup>
+
+      <CadPartGroup partId="dw_heater_block" basePos={[0, 0.25, 0]} explodeOffset={[0.65, 0.35, 0]}>
+        <mesh>
+          <cylinderGeometry args={[0.38, 0.38, 1.1, 28]} />
+          <PbrMat preset="brass" />
+        </mesh>
+        <HelicalTube position={[0, -0.1, 0]} radius={0.42} height={0.85} turns={6} tubeRadius={0.025} preset="copper" />
+        <mesh position={[0, 0.58, 0]}>
+          <cylinderGeometry args={[0.34, 0.34, 0.12, 24]} />
+          <PbrMat preset="alumina" />
+        </mesh>
+      </CadPartGroup>
+
+      <CadPartGroup partId="dw_uut_probe" basePos={[-0.08, 1.05, 0]} explodeOffset={[-0.45, 0.85, 0]}>
+        <mesh position={[0, -0.25, 0]}>
+          <cylinderGeometry args={[0.045, 0.045, 1.15, 18]} />
+          <PbrMat preset="ss316" />
+        </mesh>
+        <mesh position={[0, 0.42, 0]}>
+          <cylinderGeometry args={[0.14, 0.12, 0.28, 20]} />
+          <PbrMat preset="anodizedDark" />
+        </mesh>
+        <mesh position={[0.16, 0.35, 0]}>
+          <cylinderGeometry args={[0.04, 0.04, 0.72, 16]} />
+          <PbrMat preset="chrome" />
+        </mesh>
+      </CadPartGroup>
+    </group>
+  );
+}
+
 export function renderTemperatureModel(key: string) {
   switch (key) {
     case 'thermistor':
@@ -496,6 +552,8 @@ export function renderTemperatureModel(key: string) {
       return <ThermowellAssembly />;
     case 'temp-transmitter':
       return <TempTransmitterAssembly />;
+    case 'dry-well-calibrator':
+      return <DryWellCalibratorAssembly />;
     default:
       return null;
   }

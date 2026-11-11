@@ -3083,5 +3083,157 @@ export const INSTRUMENT_SIMULATIONS: Record<string, InstrumentSimulationConfig> 
       };
     },
   },
+  'vibrating-fork-level': {
+    id: 'vibrating-fork-level',
+    title: 'Vibrating Tuning Fork Point Level Switch',
+    governingFormulaLatex: 'f_{\\text{res}} = \\frac{f_0}{\\sqrt{1 + m_{\\text{fluid}} / m_{\\text{tine}}}}',
+    assumptions: 'Symmetric 316L tuning fork excited by PZT stack; density threshold ≥0.5 g/cm³.',
+    isEducationalApproximation: false,
+    primaryParam: { key: 'primary', label: 'Liquid Immersion', unit: '%', min: 0, max: 100, step: 5, defaultValue: 20 },
+    secondaryParam: { key: 'secondary', label: 'Liquid Density ρ', unit: 'kg/m³', min: 500, max: 1800, step: 50, defaultValue: 1000 },
+    evaluate: (immersionPct, rho) => {
+      const wet = immersionPct >= 50;
+      const wetMassRatio = (immersionPct / 100) * (rho / 1000) * 0.45;
+      const f0 = 1200;
+      const fres = f0 / Math.sqrt(1 + wetMassRatio);
+      const namurMa = wet ? 16 : 8;
+      return {
+        outputValue: `${fres.toFixed(1)} Hz`,
+        outputNumeric: Number(fres.toFixed(1)),
+        outputUnit: wet ? 'TRIPPED (WET)' : 'CLEAR (DRY)',
+        secondaryOutput: `Resonance shift Δf = ${(fres - f0).toFixed(1)} Hz · Output = ${namurMa} mA / Relay`,
+        normalizedPrimary: normOf(immersionPct, 0, 100),
+        normalizedSecondary: normOf(rho, 500, 1800),
+        observation: wet
+          ? `Liquid (ρ = ${rho} kg/m³) mass-loads the piezoelectric tines, pulling natural frequency down by ${(f0 - fres).toFixed(1)} Hz to trigger the high-level switch.`
+          : `Tines oscillate freely in vapor near ${f0} Hz; switch stays in normal dry state.`,
+        curve: sweepCurve(0, 100, (pct) => f0 / Math.sqrt(1 + (pct / 100) * (rho / 1000) * 0.45)),
+        xLabel: 'Tine Immersion',
+        xUnit: '%',
+        yLabel: 'Frequency',
+        yUnit: 'Hz',
+      };
+    },
+  },
+  'mass-flow-controller': {
+    id: 'mass-flow-controller',
+    title: 'Thermal Mass Flow Controller (MFC)',
+    governingFormulaLatex: '\\dot{m}_{\\text{actual}} = K_{\\text{gas}} \\cdot \\dot{m}_{N_2}, \\quad \\Delta T = \\text{const}',
+    assumptions: 'Laminar bypass capillary bridge heated cleanly with downstream T₂−T₁ ΔT proportional to mass flow.',
+    isEducationalApproximation: false,
+    primaryParam: { key: 'primary', label: 'Mass Flow Setpoint', unit: 'sccm', min: 0, max: 500, step: 10, defaultValue: 200 },
+    secondaryParam: { key: 'secondary', label: 'Gas K-Factor', unit: 'K_g', min: 0.3, max: 1.5, step: 0.05, defaultValue: 1.0 },
+    evaluate: (sccm, kGas) => {
+      const corrected = sccm * kGas;
+      const valvePct = Math.min(100, (sccm / 500) * 100);
+      const ma = 4 + (sccm / 500) * 16;
+      return {
+        outputValue: `${corrected.toFixed(1)} sccm`,
+        outputNumeric: Number(corrected.toFixed(1)),
+        outputUnit: 'True Mass Flow',
+        secondaryOutput: `Piezo valve = ${valvePct.toFixed(1)}% open · Feedback = ${ma.toFixed(2)} mA`,
+        normalizedPrimary: normOf(sccm, 0, 500),
+        normalizedSecondary: normOf(kGas, 0.3, 1.5),
+        observation: `Closed-loop PID modulates the integral piezo/solenoid valve to hold gas mass flow at ${sccm} sccm (N₂ eq.) × ${kGas.toFixed(2)} K-factor = ${corrected.toFixed(1)} sccm true gas flow.`,
+        curve: sweepCurve(0, 500, (q) => q * kGas),
+        xLabel: 'N₂ Command',
+        xUnit: 'sccm',
+        yLabel: 'True Flow',
+        yUnit: 'sccm',
+      };
+    },
+  },
+  'variable-frequency-drive': {
+    id: 'variable-frequency-drive',
+    title: 'Variable Frequency Drive (PWM VFD)',
+    governingFormulaLatex: 'N_s = \\frac{120\\,f}{P}, \\quad \\frac{P_2}{P_1} = \\left(\\frac{N_2}{N_1}\\right)^3',
+    assumptions: '400 V AC constant V/f scalar flux up to 50 Hz base speed driving centrifugal variable-torque load.',
+    isEducationalApproximation: false,
+    primaryParam: { key: 'primary', label: 'Output Frequency f', unit: 'Hz', min: 10, max: 60, step: 1, defaultValue: 40 },
+    secondaryParam: { key: 'secondary', label: 'Pole Count P', unit: 'poles', min: 2, max: 6, step: 2, defaultValue: 4 },
+    evaluate: (freq, poles) => {
+      const syncRpm = (120 * freq) / poles;
+      const ratedPowerPct = Math.pow(freq / 50, 3) * 100;
+      const volts = Math.min(400, (freq / 50) * 400);
+      return {
+        outputValue: `${syncRpm.toFixed(0)} RPM`,
+        outputNumeric: Number(syncRpm.toFixed(0)),
+        outputUnit: `${volts.toFixed(0)} V AC (V/f)`,
+        secondaryOutput: `Centrifugal Affinity Power = ${ratedPowerPct.toFixed(1)}% · V/f = ${(volts / freq).toFixed(2)} V/Hz`,
+        normalizedPrimary: normOf(freq, 10, 60),
+        normalizedSecondary: normOf(poles, 2, 6),
+        observation: `Maintaining constant V/f flux up to 50 Hz yields ${syncRpm.toFixed(0)} RPM synchronous speed while cutting centrifugal fan/pump power to ${ratedPowerPct.toFixed(1)}% by the cube law.`,
+        curve: sweepCurve(10, 60, (f) => Math.pow(f / 50, 3) * 100),
+        xLabel: 'Drive Frequency',
+        xUnit: 'Hz',
+        yLabel: 'Affinity Power',
+        yUnit: '% rated',
+      };
+    },
+  },
+  'dry-well-calibrator': {
+    id: 'dry-well-calibrator',
+    title: 'Dry-Well Temperature Block Calibrator',
+    governingFormulaLatex: 'T_{\\text{UUT}} = T_{\\text{set}} - \\Delta T_{\\text{stem}}(L_{\\text{imm}})',
+    assumptions: 'High-conductivity brass equalizer sleeve with <0.5 mm clearance; minimum depth L ≥ 15 × probe OD.',
+    isEducationalApproximation: true,
+    primaryParam: { key: 'primary', label: 'Block Setpoint', unit: '°C', min: 50, max: 600, step: 10, defaultValue: 250 },
+    secondaryParam: { key: 'secondary', label: 'Immersion Depth', unit: 'mm', min: 40, max: 160, step: 10, defaultValue: 130 },
+    evaluate: (setC, depthMm) => {
+      const stemLoss = ((160 - depthMm) / 120) * (setC - 25) * 0.008;
+      const uutC = setC - stemLoss;
+      const waitMin = 4 + Math.abs(setC - 50) * 0.025;
+      return {
+        outputValue: `${uutC.toFixed(2)} °C`,
+        outputNumeric: Number(uutC.toFixed(2)),
+        outputUnit: 'UUT Probe Temp',
+        secondaryOutput: `Stem conduction error = −${stemLoss.toFixed(2)} °C · Soak time ≈ ${waitMin.toFixed(0)} min`,
+        normalizedPrimary: normOf(setC, 50, 600),
+        normalizedSecondary: normOf(depthMm, 40, 160),
+        observation:
+          depthMm < 100
+            ? `Shallow ${depthMm} mm immersion leaves −${stemLoss.toFixed(2)} °C stem conduction error; seat the UUT fully to bottom of the equalizer insert.`
+            : `Full ${depthMm} mm immersion keeps stem error to −${stemLoss.toFixed(2)} °C after thermal soak stabilization.`,
+        curve: sweepCurve(40, 160, (d) => setC - ((160 - d) / 120) * (setC - 25) * 0.008),
+        xLabel: 'Immersion Depth',
+        xUnit: 'mm',
+        yLabel: 'UUT Reading',
+        yUnit: '°C',
+      };
+    },
+  },
+  'process-loop-calibrator': {
+    id: 'process-loop-calibrator',
+    title: 'Multifunction 4–20 mA & HART Process Loop Calibrator',
+    governingFormulaLatex: 'I = 4 + 16\\left(\\frac{\\text{Span}\\%}{100}\\right), \\quad V_{\\text{tx}} = V_{\\text{sup}} - I \\cdot R_{\\text{loop}}',
+    assumptions: '24 VDC nominal loop supply; ≥250 Ω resistance required for HART FSK and ≥12 V left at transmitter terminals.',
+    isEducationalApproximation: false,
+    primaryParam: { key: 'primary', label: 'Sourced Current', unit: 'mA', min: 4, max: 20, step: 0.5, defaultValue: 12 },
+    secondaryParam: { key: 'secondary', label: 'Loop Load R', unit: 'Ω', min: 100, max: 800, step: 50, defaultValue: 250 },
+    evaluate: (ma, rLoop) => {
+      const spanPct = ((ma - 4) / 16) * 100;
+      const dropV = (ma / 1000) * rLoop;
+      const hartMargin = 24 - dropV;
+      const hartReady = rLoop >= 250 && hartMargin >= 12;
+      return {
+        outputValue: `${spanPct.toFixed(1)} %`,
+        outputNumeric: Number(spanPct.toFixed(1)),
+        outputUnit: `${dropV.toFixed(2)} V drop`,
+        secondaryOutput: hartReady
+          ? `HART OK (${hartMargin.toFixed(1)} V headroom ≥ 12 V, R ≥ 250 Ω)`
+          : rLoop < 250
+            ? `HART BLOCKED: R = ${rLoop} Ω < 250 Ω min`
+            : `COMPLIANCE LOW: only ${hartMargin.toFixed(1)} V left at tx`,
+        normalizedPrimary: normOf(ma, 4, 20),
+        normalizedSecondary: normOf(rLoop, 100, 800),
+        observation: `Sourcing ${ma.toFixed(1)} mA (${spanPct.toFixed(1)}% span) across ${rLoop} Ω drops ${dropV.toFixed(2)} V, leaving ${hartMargin.toFixed(2)} V on a 24 VDC loop.`,
+        curve: sweepCurve(4, 20, (i) => ((i - 4) / 16) * 100),
+        xLabel: 'Loop Current',
+        xUnit: 'mA',
+        yLabel: 'Process Span',
+        yUnit: '%',
+      };
+    },
+  },
 };
 

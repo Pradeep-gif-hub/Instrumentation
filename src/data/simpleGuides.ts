@@ -313,6 +313,56 @@ const HANDCRAFTED_SIMPLE_GUIDES: Record<string, SimpleGuideContent> = {
     analogy: 'Like an assembly line built strictly to stamp bottle caps ten times faster than a general handyman doing one chore after another.',
     typicalUse: 'Real-time digital filtering, spectral vibration diagnostics, and smart sensor electronics.',
   },
+  'vibrating-fork-level': {
+    sentences: [
+      'A twin-prong metal tuning fork buzzes silently at a steady pitch inside a tank wall using a tiny vibrating crystal [piezoelectric fork].',
+      'As soon as rising liquid touches the prongs, its weight slows the buzz noticeably—just like dipping a ringing fork into water.',
+      'Electronics spot that sudden pitch drop instantly and flip a safety switch so pumps stop or overfill alarms sound.',
+    ],
+    plantRole: 'Acts as an independent high-high safety backup preventing dangerous tank spills and pump dry-runs.',
+    analogy: 'Like tapping a metal dinner fork and dipping it into water: the bright ringing tone drops dead in an instant.',
+    typicalUse: 'Liquid high/low alarm switches on chemical tanks, storage silos, and pump suction lines.',
+  },
+  'mass-flow-controller': {
+    sentences: [
+      'An all-in-one miniature gas regulator that weighs passing gas molecules and adjusts its own valve simultaneously [MFC].',
+      'A tiny heated pipe beside the main path senses how much cooling the gas carries away to find true mass flow.',
+      'Its built-in valve pinches open or shut in milliseconds to keep exact gas delivery even if cylinder supply pressure drops.',
+    ],
+    plantRole: 'Meters ultra-precise specialty gases into semiconductor reactors, biopharma fermenters, and gas analyzers.',
+    analogy: 'Like a cruise-control driver watching wind resistance constantly and adjusting the throttle to hold one exact speed.',
+    typicalUse: 'Precision sccm/slpm gas dosing in labs, cleanrooms, fermenters, and fuel-cell rigs.',
+  },
+  'variable-frequency-drive': {
+    sentences: [
+      'An electronic speed controller that turns fixed grid AC power into adjustable voltage and frequency for big motors [PWM VFD].',
+      'Slowing a pump motor slightly with this drive saves massive electricity compared to fighting full motor speed with a pinched valve.',
+      'Fast power switches inside sculpt smooth waves so heavy blowers start gently without tripping breakers.',
+    ],
+    plantRole: 'Replaces energy-wasting throttling valves on large centrifugal pumps, cooling fans, and conveyors.',
+    analogy: 'Like pedaling your bicycle gently at the exact speed needed instead of pedaling flat-out with the brakes dragged half shut.',
+    typicalUse: 'Energy-saving pump/fan speed modulation and soft-starting across water, HVAC, and process plants.',
+  },
+  'dry-well-calibrator': {
+    sentences: [
+      'A portable precision heater-chiller block with snug drilled holes used to test factory temperature probes cleanly [dry-block].',
+      'You slide a plant RTD beside a master reference probe into the heated brass sleeve and command exact reference temperatures.',
+      'Once both probes settle together at a steady number, any error in the plant probe stands out immediately without hot oil baths.',
+    ],
+    plantRole: 'Let maintenance teams certify field RTDs, thermocouples, and trip switches directly beside process racks.',
+    analogy: 'Like a precision digital waffle iron holding two thermometers side-by-side at one exact oven temperature.',
+    typicalUse: 'Annual ISO calibration and turnaround loop checks for RTDs, thermocouples, and thermal switches.',
+  },
+  'process-loop-calibrator': {
+    sentences: [
+      'The instrument technician’s Swiss-army pocket meter built specifically for 4–20 mA factory signal loops [loop calibrator].',
+      'It can impersonate a missing transmitter by injecting exact mA into a control panel, or supply 24 V power to test a sensor alone.',
+      'Flipping one internal switch adds the 250-ohm resistor required so digital HART communicators can talk on the bench.',
+    ],
+    plantRole: 'Pinpoints in seconds whether a bad plant reading comes from the field sensor, the cable, or the control-room PLC card.',
+    analogy: 'Like an electrician’s signal tester that can either pretend to be the sensor or power the sensor on a kitchen table.',
+    typicalUse: 'Control valve stroking, 5-point transmitter loop checks, and commissioning PLC/DCS analog inputs.',
+  },
 };
 
 function cleanBracketTerm(entry: CanonicalInstrumentEntry): string {

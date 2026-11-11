@@ -475,6 +475,74 @@ export function DensityMeterAssembly() {
   );
 }
 
+export function VibratingForkAssembly() {
+  const sim = useCadSim();
+  const tinesRef = useRef<THREE.Group>(null);
+  const wet = sim.primaryNorm >= 0.5;
+
+  useFrame((state) => {
+    if (!tinesRef.current) return;
+    const freq = wet ? 14 : 30;
+    const amp = wet ? 0.004 : 0.014;
+    tinesRef.current.rotation.z = Math.sin(state.clock.elapsedTime * freq) * amp;
+  });
+
+  return (
+    <group>
+      <CadPartGroup partId="vf_housing" basePos={[0, 0.92, 0]} explodeOffset={[0, 0.75, 0]}>
+        <mesh>
+          <cylinderGeometry args={[0.42, 0.4, 0.68, 28]} />
+          <PbrMat preset="blueHousing" />
+        </mesh>
+        <mesh position={[0, 0.36, 0]}>
+          <cylinderGeometry args={[0.38, 0.42, 0.1, 28]} />
+          <PbrMat preset="anodizedDark" />
+        </mesh>
+        <mesh position={[0.48, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.1, 0.1, 0.26, 16]} />
+          <PbrMat preset="brass" />
+        </mesh>
+        <mesh position={[0, 0.42, 0.18]}>
+          <sphereGeometry args={[0.06, 14, 14]} />
+          <PbrMat preset={wet ? 'alnicoRed' : 'blueLiquid'} />
+        </mesh>
+      </CadPartGroup>
+
+      <CadPartGroup partId="vf_process_boss" basePos={[0, 0.28, 0]} explodeOffset={[0, 0.15, 0]}>
+        <mesh position={[0, 0.14, 0]}>
+          <cylinderGeometry args={[0.28, 0.28, 0.22, 6]} />
+          <PbrMat preset="ss316" />
+        </mesh>
+        <mesh position={[0, -0.14, 0]}>
+          <cylinderGeometry args={[0.17, 0.17, 0.42, 24]} />
+          <PbrMat preset="ssDark" />
+        </mesh>
+        <mesh position={[0, -0.02, 0]}>
+          <cylinderGeometry args={[0.12, 0.12, 0.22, 20]} />
+          <PbrMat preset="alumina" />
+        </mesh>
+      </CadPartGroup>
+
+      <CadPartGroup partId="vf_tines" basePos={[0, -0.58, 0]} explodeOffset={[0, -0.75, 0]}>
+        <group ref={tinesRef}>
+          <mesh position={[0, 0.45, 0]}>
+            <cylinderGeometry args={[0.18, 0.16, 0.18, 24]} />
+            <PbrMat preset="ss316" />
+          </mesh>
+          <mesh position={[-0.14, -0.12, 0]}>
+            <boxGeometry args={[0.09, 1.05, 0.16]} />
+            <PbrMat preset="chrome" />
+          </mesh>
+          <mesh position={[0.14, -0.12, 0]}>
+            <boxGeometry args={[0.09, 1.05, 0.16]} />
+            <PbrMat preset="chrome" />
+          </mesh>
+        </group>
+      </CadPartGroup>
+    </group>
+  );
+}
+
 export function renderLevelPropsModel(key: string) {
   switch (key) {
     case 'float-mlg':
@@ -499,6 +567,8 @@ export function renderLevelPropsModel(key: string) {
       return <ViscometerAssembly />;
     case 'density-meter':
       return <DensityMeterAssembly />;
+    case 'vibrating-fork-level':
+      return <VibratingForkAssembly />;
     default:
       return null;
   }

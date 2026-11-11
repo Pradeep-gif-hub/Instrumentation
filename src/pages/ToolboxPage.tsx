@@ -24,7 +24,8 @@ type ToolId =
   | 'adc-resolution'
   | 'wheatstone-bridge'
   | 'measurement-error'
-  | 'pid-tuning';
+  | 'pid-tuning'
+  | 'valve-sizing';
 
 const TOOLS: { id: ToolId; short: string; title: string; formula: string }[] = [
   { id: 'rtd-resistance', short: 'RTD CVD', title: 'RTD Resistance & Callendar-Van Dusen Solver', formula: 'R(t) = R_0(1 + At + Bt^2 + C(t-100)t^3)' },
@@ -38,6 +39,7 @@ const TOOLS: { id: ToolId; short: string; title: string; formula: string }[] = [
   { id: 'wheatstone-bridge', short: 'Bridge', title: 'Wheatstone Bridge Unbalanced Voltage & Strain Sensitivity', formula: 'V_{\\text{out}} = V_{\\text{exc}}\\left(\\frac{R_3}{R_3+R_4} - \\frac{R_2}{R_1+R_2}\\right)' },
   { id: 'measurement-error', short: 'Error / TUR', title: 'Measurement Error, RSS Uncertainty & Test Uncertainty Ratio', formula: 'U_{\\text{RSS}} = \\sqrt{\\sum u_i^2}, \\quad \\text{TUR} = \\frac{\\text{UUT Tol}}{\\text{Ref Tol}}' },
   { id: 'pid-tuning', short: 'PID + Step', title: 'PID Tuning Rules (ZN / IMC) & Closed-Loop Step Simulator', formula: 'G_p(s) = \\frac{K e^{-\\theta s}}{\\tau s + 1}, \\quad G_c(s) = K_c\\left(1 + \\frac{1}{T_i s} + T_d s\\right)' },
+  { id: 'valve-sizing', short: 'Valve Cv', title: 'Control Valve Sizing (Cv / Kv) & Choked Flow Check', formula: 'C_v = 1.156\\,Q\\sqrt{\\frac{G_f}{\\Delta P_{\\text{eff}}}}, \\quad \\Delta P_{\\text{choked}} = F_L^2(P_1 - F_F P_v)' },
 ];
 
 // IEC 60584 / NIST ITS-90 lookup tables (t in °C, mV wrt 0 °C) for clean piecewise cubic/linear accuracy
@@ -238,6 +240,14 @@ export function ToolboxPage() {
   const [pidTheta, setPidTheta] = useState(3);
   const [pidRule, setPidRule] = useState<'zn' | 'imc'>('imc');
 
+  // 12. Control Valve Cv / Kv Sizing State (IEC 60534 Liquid)
+  const [valveQ, setValveQ] = useState(25);
+  const [valveSg, setValveSg] = useState(1.0);
+  const [valveP1Bar, setValveP1Bar] = useState(6.0);
+  const [valveP2Bar, setValveP2Bar] = useState(3.5);
+  const [valvePvBar, setValvePvBar] = useState(0.032);
+  const [valveFl, setValveFl] = useState(0.9);
+
   // Computed outputs for active tools
   const rtdCalc = useMemo(() => {
     const tClamped = Math.max(-200, Math.min(850, rtdTemp));
@@ -393,10 +403,39 @@ export function ToolboxPage() {
     return { kc, ti, td, series };
   }, [pidK, pidTau, pidTheta, pidRule]);
 
+  const valveCalc = useMemo(() => {
+    const dpActual = valveP1Bar - valveP2Bar;
+    if (valveQ <= 0 || valveSg <= 0 || dpActual <= 0 || valveP1Bar <= valvePvBar || valveFl <= 0) {
+      return { valid: false as const };
+    }
+    const ff = 0.96 - 0.28 * Math.sqrt(Math.max(0, valvePvBar) / 221.2);
+    const dpChoked = valveFl * valveFl * (valveP1Bar - ff * valvePvBar);
+    const choked = dpActual >= dpChoked;
+    const flashing = valveP2Bar <= valvePvBar;
+    const dpEff = Math.min(dpActual, Math.max(0.01, dpChoked));
+    const kvReq = valveQ * Math.sqrt(valveSg / dpEff);
+    const cvReq = kvReq * 1.156;
+    const ratedCvSuggested = cvReq / 0.75;
+    const regime = flashing ? 'FLASHING' : choked ? 'CHOKED / CAVITATING' : 'SUBCRITICAL';
+    return {
+      valid: true as const,
+      dpActual,
+      ff,
+      dpChoked,
+      choked,
+      flashing,
+      dpEff,
+      kvReq,
+      cvReq,
+      ratedCvSuggested,
+      regime,
+    };
+  }, [valveQ, valveSg, valveP1Bar, valveP2Bar, valvePvBar, valveFl]);
+
   return (
     <div className="mx-auto flex max-w-[1440px] flex-col gap-5">
       <header>
-        <p className="eyebrow">Engineering toolbox · 11 calculators</p>
+        <p className="eyebrow">Engineering toolbox · 12 calculators</p>
         <h1 className="text-[28px] font-semibold text-[var(--st-on)]">
           Instrumentation &amp; Control Engineering Calculators
         </h1>
@@ -925,6 +964,52 @@ export function ToolboxPage() {
                   </LineChart>
                 </ResponsiveContainer>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* 12. Control Valve Cv / Kv Sizing Calculator */}
+        {activeId === 'valve-sizing' && (
+          <div className="grid gap-5 lg:grid-cols-2">
+            <div className="sub grid gap-3 p-5 sm:grid-cols-2">
+              <label className="space-y-1">
+                <span className="label">Volumetric Flow Q (m³/h)</span>
+                <input type="number" min={0.1} step="0.5" value={valveQ} onChange={(e) => setValveQ(Number(e.target.value))} className="field-rect" />
+              </label>
+              <label className="space-y-1">
+                <span className="label">Specific Gravity G_f</span>
+                <input type="number" min={0.3} max={2.5} step="0.01" value={valveSg} onChange={(e) => setValveSg(Number(e.target.value))} className="field-rect" />
+              </label>
+              <label className="space-y-1">
+                <span className="label">Upstream Pressure P₁ (bar a)</span>
+                <input type="number" min={0.2} step="0.1" value={valveP1Bar} onChange={(e) => setValveP1Bar(Number(e.target.value))} className="field-rect" />
+              </label>
+              <label className="space-y-1">
+                <span className="label">Downstream Pressure P₂ (bar a)</span>
+                <input type="number" min={0.1} step="0.1" value={valveP2Bar} onChange={(e) => setValveP2Bar(Number(e.target.value))} className="field-rect" />
+              </label>
+              <label className="space-y-1">
+                <span className="label">Vapor Pressure P_v (bar a)</span>
+                <input type="number" min={0} step="0.01" value={valvePvBar} onChange={(e) => setValvePvBar(Number(e.target.value))} className="field-rect" />
+              </label>
+              <label className="space-y-1">
+                <span className="label">Recovery Factor F_L (Globe ≈ 0.9)</span>
+                <input type="number" min={0.4} max={0.98} step="0.02" value={valveFl} onChange={(e) => setValveFl(Number(e.target.value))} className="field-rect" />
+              </label>
+            </div>
+            <div className="sub space-y-2 p-5">
+              {!valveCalc.valid ? (
+                <p className="text-[14px] text-[var(--st-crimson)]">Invalid pressures: ensure Q &gt; 0, G_f &gt; 0, and P₁ &gt; P₂ with P₁ &gt; P_v.</p>
+              ) : (
+                <>
+                  <p className="eyebrow text-[var(--st-accent-text)]">IEC 60534 INCOMPRESSIBLE SIZING RESULT</p>
+                  <div className="kv"><span>Flow Regime</span><span className={valveCalc.flashing || valveCalc.choked ? 'text-[var(--st-amber)]' : 'text-[var(--st-mint)]'}>{valveCalc.regime}</span></div>
+                  <div className="kv"><span>Actual ΔP / Choked ΔP_max</span><span>{valveCalc.dpActual.toFixed(2)} bar / {valveCalc.dpChoked.toFixed(2)} bar</span></div>
+                  <div className="kv"><span>Required K_v</span><span className="text-[var(--st-accent-text)]">{valveCalc.kvReq.toFixed(2)} m³/h @ 1 bar</span></div>
+                  <div className="kv"><span>Required C_v</span><span className="text-base font-bold text-[var(--st-accent-text)]">{valveCalc.cvReq.toFixed(2)} GPM @ 1 psi</span></div>
+                  <div className="kv"><span>Target Rated C_v (@ ~75% open)</span><span>{valveCalc.ratedCvSuggested.toFixed(1)} Cv</span></div>
+                </>
+              )}
             </div>
           </div>
         )}

@@ -599,6 +599,73 @@ export function OvalGearPdAssembly() {
   );
 }
 
+export function MassFlowControllerAssembly() {
+  const sim = useCadSim();
+  const sccm = (sim.primaryNorm * 500).toFixed(1);
+  const lcdTex = useMemo(
+    () => buildLcdDisplayTexture('MFC · N2 MASS FLOW', `${sccm} sccm`, `VALVE ${(sim.primaryNorm * 100).toFixed(0)}%`),
+    [sccm, sim.primaryNorm],
+  );
+  useEffect(() => () => lcdTex.dispose(), [lcdTex]);
+
+  return (
+    <group>
+      <CadPartGroup partId="mfc_manifold" basePos={[0, -0.58, 0]} explodeOffset={[0, -0.65, 0]}>
+        <mesh>
+          <boxGeometry args={[1.68, 0.56, 0.64]} />
+          <PbrMat preset="ss316" />
+        </mesh>
+        <mesh position={[-1.02, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.16, 0.16, 0.42, 6]} />
+          <PbrMat preset="chrome" />
+        </mesh>
+        <mesh position={[1.02, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.16, 0.16, 0.42, 6]} />
+          <PbrMat preset="chrome" />
+        </mesh>
+        <mesh position={[-0.22, 0.02, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.13, 0.13, 0.55, 20]} />
+          <PbrMat preset="brass" />
+        </mesh>
+      </CadPartGroup>
+
+      <CadPartGroup partId="mfc_thermal_bridge" basePos={[-0.36, 0.15, 0]} explodeOffset={[-0.55, 0.45, 0.3]}>
+        <mesh rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.04, 0.04, 0.72, 16]} />
+          <PbrMat preset="chrome" />
+        </mesh>
+        <mesh position={[-0.14, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.075, 0.075, 0.16, 18]} />
+          <PbrMat preset="copper" />
+        </mesh>
+        <mesh position={[0.14, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.075, 0.075, 0.16, 18]} />
+          <PbrMat preset="copper" />
+        </mesh>
+      </CadPartGroup>
+
+      <CadPartGroup partId="mfc_piezo_valve" basePos={[0.38, 0.25, 0]} explodeOffset={[0.6, 0.5, 0]}>
+        <mesh position={[0, -0.25, 0]}>
+          <cylinderGeometry args={[0.24, 0.24, 0.52, 24]} />
+          <PbrMat preset="anodizedDark" />
+        </mesh>
+        <mesh position={[0, -0.52 + sim.primaryNorm * 0.09, 0]}>
+          <cylinderGeometry args={[0.08, 0.1, 0.24, 18]} />
+          <PbrMat preset="gold" />
+        </mesh>
+        <mesh position={[-0.38, 0.36, 0]}>
+          <boxGeometry args={[1.52, 0.58, 0.62]} />
+          <PbrMat preset="blueHousing" />
+        </mesh>
+        <mesh position={[-0.38, 0.38, 0.32]}>
+          <planeGeometry args={[1.08, 0.38]} />
+          <meshStandardMaterial map={lcdTex} />
+        </mesh>
+      </CadPartGroup>
+    </group>
+  );
+}
+
 export function renderFlowModel(key: string) {
   switch (key) {
     case 'venturi':
@@ -623,6 +690,8 @@ export function renderFlowModel(key: string) {
       return <PitotTubeAssembly />;
     case 'oval-gear-pd':
       return <OvalGearPdAssembly />;
+    case 'mass-flow-controller':
+      return <MassFlowControllerAssembly />;
     default:
       return null;
   }
