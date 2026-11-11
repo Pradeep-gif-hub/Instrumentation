@@ -58,7 +58,7 @@ interface AppContextValue {
 }
 
 const STORAGE_KEYS = {
-  theme: 'instrument-ai:theme',
+  theme: 'instrument-ai:theme-v2',
   bookmarks: 'instrumenta:bookmarks',
   subjects: 'instrumenta:subjects',
   attempts: 'instrumenta:attempts',
@@ -88,9 +88,9 @@ const AppContext = createContext<AppContextValue | null>(null);
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<ThemeMode>(() => {
     try {
-      return localStorage.getItem(STORAGE_KEYS.theme) === 'dark' ? 'dark' : 'light';
+      return localStorage.getItem(STORAGE_KEYS.theme) === 'light' ? 'light' : 'dark';
     } catch {
-      return 'light';
+      return 'dark';
     }
   });
 
@@ -120,14 +120,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [bookmarksOpen, setBookmarksOpen] = useState(false);
   const [apiConnected, setApiConnected] = useState(false);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.theme, theme);
-    } catch {
-      // ignore storage errors
-    }
-  }, [theme]);
 
   useEffect(() => {
     writeStorage(STORAGE_KEYS.bookmarks, bookmarks);
@@ -307,7 +299,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const toggleTheme = useCallback(() => {
-    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+    setTheme((prev) => {
+      const next: ThemeMode = prev === 'dark' ? 'light' : 'dark';
+      try {
+        localStorage.setItem(STORAGE_KEYS.theme, next);
+      } catch {
+        // ignore storage errors
+      }
+      return next;
+    });
   }, []);
 
   const isBookmarked = useCallback(

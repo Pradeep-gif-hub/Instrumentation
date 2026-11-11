@@ -589,7 +589,7 @@ export function OvalGearPdAssembly() {
         </mesh>
       </CadPartGroup>
 
-      <CadPartGroup partId="pd_cover" basePos={[0, 0, 0.26]} explodeOffset={[0, 0, 0.9]}>
+      <CadPartGroup partId="pd_cover" basePos={[0, 0, 0.26]} explodeOffset={[0, 0, 0.9]} isCutawayShell>
         <mesh>
           <boxGeometry args={[1.55, 1.05, 0.06]} />
           <PbrMat preset="glass" />
@@ -610,7 +610,7 @@ export function MassFlowControllerAssembly() {
 
   return (
     <group>
-      <CadPartGroup partId="mfc_manifold" basePos={[0, -0.58, 0]} explodeOffset={[0, -0.65, 0]}>
+      <CadPartGroup partId="mfc_manifold" basePos={[0, -0.58, 0]} explodeOffset={[0, -0.65, 0]} isCutawayShell>
         <mesh>
           <boxGeometry args={[1.68, 0.56, 0.64]} />
           <PbrMat preset="ss316" />
@@ -641,6 +641,15 @@ export function MassFlowControllerAssembly() {
         <mesh position={[0.14, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
           <cylinderGeometry args={[0.075, 0.075, 0.16, 18]} />
           <PbrMat preset="copper" />
+        </mesh>
+        {/* Internal laminar flow restrictor & bypass bore exposed inside mfc_manifold cutaway */}
+        <mesh position={[0.36, -0.73, -0.02]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.07, 0.07, 1.5, 18]} />
+          <PbrMat preset="copper" />
+        </mesh>
+        <mesh position={[0.14, -0.73, -0.02]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.125, 0.125, 0.48, 20]} />
+          <PbrMat preset="gold" />
         </mesh>
       </CadPartGroup>
 

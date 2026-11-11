@@ -282,7 +282,7 @@ export function LoopCalibratorAssembly() {
 
   return (
     <group>
-      <CadPartGroup partId="lc_handheld_body" basePos={[0, 0, 0]} explodeOffset={[0, 0, -0.45]}>
+      <CadPartGroup partId="lc_handheld_body" basePos={[0, 0, 0]} explodeOffset={[0, 0, -0.45]} isCutawayShell>
         <mesh>
           <boxGeometry args={[1.05, 1.88, 0.36]} />
           <PbrMat preset="yellowSafety" />
@@ -299,7 +299,7 @@ export function LoopCalibratorAssembly() {
         ))}
       </CadPartGroup>
 
-      <CadPartGroup partId="lc_lcd_screen" basePos={[0, 0.42, 0.22]} explodeOffset={[0, 0.35, 0.65]}>
+      <CadPartGroup partId="lc_lcd_screen" basePos={[0, 0.42, 0.22]} explodeOffset={[0, 0.35, 0.65]} isCutawayShell>
         <mesh>
           <boxGeometry args={[0.82, 0.6, 0.04]} />
           <PbrMat preset="ssDark" />
@@ -330,6 +330,15 @@ export function LoopCalibratorAssembly() {
         <mesh position={[0.28, -0.26, 0.14]}>
           <cylinderGeometry args={[0.032, 0.032, 0.44, 14]} />
           <PbrMat preset="rubber" />
+        </mesh>
+        {/* Internal precision 16-bit DAC PCB & 250 Ohm HART resistor exposed in cutaway */}
+        <mesh position={[0, 0.92, -0.15]}>
+          <boxGeometry args={[0.74, 1.32, 0.045]} />
+          <PbrMat preset="siliconWafer" />
+        </mesh>
+        <mesh position={[0, 0.56, -0.1]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.055, 0.055, 0.36, 16]} />
+          <PbrMat preset="copper" />
         </mesh>
       </CadPartGroup>
     </group>
