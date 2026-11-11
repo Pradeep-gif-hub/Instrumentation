@@ -58,7 +58,7 @@ interface AppContextValue {
 }
 
 const STORAGE_KEYS = {
-  theme: 'instrumenta:theme',
+  theme: 'instrument-ai:theme',
   bookmarks: 'instrumenta:bookmarks',
   subjects: 'instrumenta:subjects',
   attempts: 'instrumenta:attempts',
@@ -88,9 +88,9 @@ const AppContext = createContext<AppContextValue | null>(null);
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<ThemeMode>(() => {
     try {
-      return localStorage.getItem(STORAGE_KEYS.theme) === 'light' ? 'light' : 'dark';
+      return localStorage.getItem(STORAGE_KEYS.theme) === 'dark' ? 'dark' : 'light';
     } catch {
-      return 'dark';
+      return 'light';
     }
   });
 

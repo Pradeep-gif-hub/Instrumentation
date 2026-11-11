@@ -48,9 +48,6 @@ body,
   --st-crimson: #ff3d71;
   --st-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.25);
   --st-bg: var(--st-0);
-  --st-glow-color: rgba(127, 179, 222, 0.12);
-  --mx: 50vw;
-  --my: 35vh;
 
   position: relative;
   isolation: isolate;
@@ -87,44 +84,11 @@ body,
   --st-amber: #c96800;
   --st-crimson: #d4204f;
   --st-shadow: 0 12px 32px -8px rgba(16, 19, 26, 0.14), 0 2px 6px rgba(16, 19, 26, 0.06);
-  --st-bg: linear-gradient(180deg, #DCE9F5 0%, #C4DBEE 50%, #E9F2FA 100%);
-  --st-glow-color: rgba(127, 179, 222, 0.35);
+  --st-bg: linear-gradient(180deg, #DCE9F5 0%, #C4DBEE 55%, #E9F2FA 100%);
 
   background-color: #DCE9F5;
   background-image: var(--st-bg);
   background-attachment: fixed;
-}
-
-.studio .cursor-glow {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: -1;
-  overflow: hidden;
-}
-
-.studio .cursor-glow::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 480px;
-  height: 480px;
-  border-radius: 9999px;
-  background: radial-gradient(
-    circle at center,
-    var(--st-glow-color) 0%,
-    transparent 70%
-  );
-  transform: translate3d(calc(var(--mx, 50vw) - 240px), calc(var(--my, 35vh) - 240px), 0);
-  transition: transform 120ms ease-out;
-  will-change: transform;
-}
-
-@media (prefers-reduced-motion: reduce), (hover: none) and (pointer: coarse) {
-  .studio .cursor-glow {
-    display: none;
-  }
 }
 
 .studio :focus-visible {
@@ -175,11 +139,25 @@ body,
   border-right: 1px solid var(--st-line);
 }
 
+.studio.light .rail {
+  background: rgba(255, 255, 255, 0.45);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-right: 1px solid rgba(255, 255, 255, 0.6);
+}
+
 .studio .topbar {
   background: color-mix(in srgb, var(--st-0) 92%, transparent);
   -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--st-line);
+}
+
+.studio.light .topbar {
+  background: rgba(255, 255, 255, 0.45);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.6);
 }
 
 /* Cards & Sub-surfaces */
