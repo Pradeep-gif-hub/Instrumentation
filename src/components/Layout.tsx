@@ -132,9 +132,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [sidebarWidth, setSidebarWidth] = useState<number>(readStoredSidebarWidth);
   const [isResizing, setIsResizing] = useState(false);
 
+  const studioRef = useRef<HTMLDivElement | null>(null);
   const desktopSuggestBtnRef = useRef<HTMLButtonElement | null>(null);
   const mobileMenuBtnRef = useRef<HTMLButtonElement | null>(null);
   const activeSuggestTriggerRef = useRef<HTMLElement | null>(null);
+  const [glowEnabled, setGlowEnabled] = useState(true);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -182,6 +184,63 @@ export function Layout({ children }: { children: React.ReactNode }) {
     window.addEventListener('pointerup', onUp);
     window.addEventListener('pointercancel', onUp);
   };
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    const reducedMotionMq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const coarsePointerMq = window.matchMedia('(hover: none) and (pointer: coarse)');
+    const finePointerMq = window.matchMedia('(pointer: fine)');
+
+    const syncEnabled = () => {
+      const isTouchOnly =
+        coarsePointerMq.matches || (navigator.maxTouchPoints > 0 && !finePointerMq.matches);
+      setGlowEnabled(!reducedMotionMq.matches && !isTouchOnly);
+    };
+
+    syncEnabled();
+    reducedMotionMq.addEventListener('change', syncEnabled);
+    coarsePointerMq.addEventListener('change', syncEnabled);
+    finePointerMq.addEventListener('change', syncEnabled);
+
+    return () => {
+      reducedMotionMq.removeEventListener('change', syncEnabled);
+      coarsePointerMq.removeEventListener('change', syncEnabled);
+      finePointerMq.removeEventListener('change', syncEnabled);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!glowEnabled || typeof window === 'undefined') return undefined;
+
+    let rafId = 0;
+    let latestX = window.innerWidth * 0.5;
+    let latestY = window.innerHeight * 0.35;
+
+    const commitPosition = () => {
+      rafId = 0;
+      const el = studioRef.current;
+      if (!el) return;
+      el.style.setProperty('--mx', `${latestX}px`);
+      el.style.setProperty('--my', `${latestY}px`);
+    };
+
+    const onMouseMove = (e: MouseEvent) => {
+      latestX = e.clientX;
+      latestY = e.clientY;
+      if (rafId === 0) {
+        rafId = window.requestAnimationFrame(commitPosition);
+      }
+    };
+
+    window.addEventListener('mousemove', onMouseMove, { passive: true });
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      if (rafId !== 0) {
+        window.cancelAnimationFrame(rafId);
+      }
+    };
+  }, [glowEnabled]);
 
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -332,9 +391,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div
+      ref={studioRef}
       className={`studio ${theme === 'light' ? 'light' : ''}`}
       style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
     >
+      {glowEnabled && <div className="cursor-glow" aria-hidden="true" />}
       {/* ONE Sidebar (Desktop lg+) */}
       <aside
         aria-label="Sidebar navigation"
