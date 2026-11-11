@@ -489,7 +489,7 @@ export function VibratingForkAssembly() {
 
   return (
     <group>
-      <CadPartGroup partId="vf_housing" basePos={[0, 0.92, 0]} explodeOffset={[0, 0.75, 0]}>
+      <CadPartGroup partId="vf_housing" basePos={[0, 0.92, 0]} explodeOffset={[0, 0.75, 0]} isCutawayShell>
         <mesh>
           <cylinderGeometry args={[0.42, 0.4, 0.68, 28]} />
           <PbrMat preset="blueHousing" />
@@ -520,6 +520,15 @@ export function VibratingForkAssembly() {
         <mesh position={[0, -0.02, 0]}>
           <cylinderGeometry args={[0.12, 0.12, 0.22, 20]} />
           <PbrMat preset="alumina" />
+        </mesh>
+        {/* Internal piezo driver stack & oscillator PCB revealed inside vf_housing cutaway */}
+        <mesh position={[0, 0.62, -0.04]}>
+          <cylinderGeometry args={[0.16, 0.16, 0.46, 20]} />
+          <PbrMat preset="siliconWafer" />
+        </mesh>
+        <mesh position={[0, 0.38, -0.04]}>
+          <cylinderGeometry args={[0.13, 0.13, 0.16, 20]} />
+          <PbrMat preset="gold" />
         </mesh>
       </CadPartGroup>
 

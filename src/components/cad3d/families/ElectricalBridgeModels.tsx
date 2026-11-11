@@ -227,7 +227,7 @@ export function EnergyMeterAssembly() {
         </mesh>
       </CadPartGroup>
 
-      <CadPartGroup partId="em_register" basePos={[0, 0.8, 0.46]} explodeOffset={[0, 0.85, 0.65]}>
+      <CadPartGroup partId="em_register" basePos={[0, 0.8, 0.46]} explodeOffset={[0, 0.85, 0.65]} isCutawayShell>
         <mesh>
           <planeGeometry args={[0.92, 0.36]} />
           <meshStandardMaterial map={regTex} />
@@ -247,7 +247,7 @@ export function DmmAssembly() {
 
   return (
     <group>
-      <CadPartGroup partId="dm_body" basePos={[0, 0, 0]} explodeOffset={[0, 0, -0.55]}>
+      <CadPartGroup partId="dm_body" basePos={[0, 0, 0]} explodeOffset={[0, 0, -0.55]} isCutawayShell>
         <mesh>
           <boxGeometry args={[1.38, 2.25, 0.48]} />
           <PbrMat preset="yellowSafety" />
@@ -258,7 +258,7 @@ export function DmmAssembly() {
         </mesh>
       </CadPartGroup>
 
-      <CadPartGroup partId="dm_lcd" basePos={[0, 0.6, 0.29]} explodeOffset={[0, 0.55, 0.6]}>
+      <CadPartGroup partId="dm_lcd" basePos={[0, 0.6, 0.29]} explodeOffset={[0, 0.55, 0.6]} isCutawayShell>
         <mesh>
           <planeGeometry args={[0.96, 0.54]} />
           <meshStandardMaterial map={lcdTex} />
@@ -283,6 +283,19 @@ export function DmmAssembly() {
             <PbrMat preset={idx === 1 ? 'anodizedDark' : 'alnicoRed'} />
           </mesh>
         ))}
+        {/* Internal True-RMS PCB, ADC IC, and HRC fuse revealed when dm_body cuts away */}
+        <mesh position={[0, 0.85, -0.32]}>
+          <boxGeometry args={[0.96, 1.52, 0.05]} />
+          <PbrMat preset="siliconWafer" />
+        </mesh>
+        <mesh position={[0.08, 1.15, -0.27]}>
+          <boxGeometry args={[0.34, 0.34, 0.06]} />
+          <PbrMat preset="anodizedDark" />
+        </mesh>
+        <mesh position={[-0.28, 0.42, -0.26]}>
+          <cylinderGeometry args={[0.065, 0.065, 0.46, 16]} />
+          <PbrMat preset="brass" />
+        </mesh>
       </CadPartGroup>
     </group>
   );
@@ -341,7 +354,7 @@ export function CroCrtAssembly() {
         </mesh>
       </CadPartGroup>
 
-      <CadPartGroup partId="cr_phosphor_screen" basePos={[0, 0.08, 0.78]} explodeOffset={[0, 0, 0.9]}>
+      <CadPartGroup partId="cr_phosphor_screen" basePos={[0, 0.08, 0.78]} explodeOffset={[0, 0, 0.9]} isCutawayShell>
         <mesh>
           <planeGeometry args={[1.05, 0.8]} />
           <meshStandardMaterial map={crtTex} />
@@ -382,7 +395,7 @@ export function PhaseMeterAssembly() {
           <PbrMat preset="gold" />
         </mesh>
       </CadPartGroup>
-      <CadPartGroup partId="pf_scale" basePos={[0, 0.35, 0.2]} explodeOffset={[0, 0.5, 0.7]}>
+      <CadPartGroup partId="pf_scale" basePos={[0, 0.35, 0.2]} explodeOffset={[0, 0.5, 0.7]} isCutawayShell>
         <mesh rotation={[Math.PI / 2, 0, 0]}>
           <cylinderGeometry args={[0.68, 0.68, 0.03, 36]} />
           <meshStandardMaterial map={scaleTex} />
@@ -558,7 +571,7 @@ export function WheatstoneAssembly() {
 
   return (
     <group>
-      <CadPartGroup partId="wb_console" basePos={[0, -0.25, 0]} explodeOffset={[0, -0.5, 0]}>
+      <CadPartGroup partId="wb_console" basePos={[0, -0.25, 0]} explodeOffset={[0, -0.5, 0]} isCutawayShell>
         <mesh>
           <boxGeometry args={[2.15, 0.42, 1.55]} />
           <PbrMat preset="phenolic" />
@@ -576,10 +589,17 @@ export function WheatstoneAssembly() {
 
       <CadPartGroup partId="wb_terminals" basePos={[0, 0.02, -0.52]} explodeOffset={[0, 0.6, -0.4]}>
         {[-0.75, -0.25, 0.25, 0.75].map((x, idx) => (
-          <mesh key={idx} position={[x, 0, 0]}>
-            <cylinderGeometry args={[0.07, 0.07, 0.16, 16]} />
-            <PbrMat preset="brass" />
-          </mesh>
+          <group key={idx} position={[x, 0, 0]}>
+            <mesh>
+              <cylinderGeometry args={[0.07, 0.07, 0.16, 16]} />
+              <PbrMat preset="brass" />
+            </mesh>
+            {/* Precision manganin decade coil revealed inside wb_console cutaway */}
+            <mesh position={[0, -0.27, 0.45]}>
+              <cylinderGeometry args={[0.11, 0.11, 0.24, 18]} />
+              <PbrMat preset="copper" />
+            </mesh>
+          </group>
         ))}
       </CadPartGroup>
 
@@ -604,7 +624,7 @@ export function KelvinDoubleAssembly() {
 
   return (
     <group>
-      <CadPartGroup partId="kb_console" basePos={[0, -0.2, 0]} explodeOffset={[0, -0.5, 0]}>
+      <CadPartGroup partId="kb_console" basePos={[0, -0.2, 0]} explodeOffset={[0, -0.5, 0]} isCutawayShell>
         <mesh>
           <boxGeometry args={[2.3, 0.45, 1.65]} />
           <PbrMat preset="castIron" />
@@ -629,6 +649,11 @@ export function KelvinDoubleAssembly() {
             <PbrMat preset="brass" />
           </mesh>
         ))}
+        {/* Internal heavy copper standard low-resistance shunt bus inside kb_console cutaway */}
+        <mesh position={[0, -0.32, 0.12]}>
+          <boxGeometry args={[1.65, 0.18, 0.24]} />
+          <PbrMat preset="copper" />
+        </mesh>
       </CadPartGroup>
       <CadPartGroup partId="kb_galvo" basePos={[0, 0.48, -0.45]} explodeOffset={[0, 1.0, -0.3]}>
         <mesh>
