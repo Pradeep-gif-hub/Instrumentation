@@ -1,4 +1,6 @@
+import { useEffect, useMemo } from 'react';
 import { CadPartGroup, useCadSim } from '../CadPart';
+import { buildLcdDisplayTexture } from '../materials';
 import { HelicalTube, PbrMat } from '../primitives';
 
 export function HallEffectAssembly() {
@@ -268,6 +270,72 @@ export function AdcDacBoardAssembly() {
   );
 }
 
+export function LoopCalibratorAssembly() {
+  const sim = useCadSim();
+  const loopMa = (4 + sim.primaryNorm * 16).toFixed(3);
+  const pct = (sim.primaryNorm * 100).toFixed(1);
+  const lcdTex = useMemo(
+    () => buildLcdDisplayTexture('SOURCE · 24V LOOP + HART 250R', `${loopMa} mA`, `${pct}% SPAN`),
+    [loopMa, pct],
+  );
+  useEffect(() => () => lcdTex.dispose(), [lcdTex]);
+
+  return (
+    <group>
+      <CadPartGroup partId="lc_handheld_body" basePos={[0, 0, 0]} explodeOffset={[0, 0, -0.45]}>
+        <mesh>
+          <boxGeometry args={[1.05, 1.88, 0.36]} />
+          <PbrMat preset="yellowSafety" />
+        </mesh>
+        <mesh position={[0, 0.02, 0.04]}>
+          <boxGeometry args={[0.92, 1.74, 0.34]} />
+          <PbrMat preset="anodizedDark" />
+        </mesh>
+        {[-0.25, 0, 0.25].map((x) => (
+          <mesh key={x} position={[x, -0.35, 0.23]}>
+            <boxGeometry args={[0.16, 0.14, 0.05]} />
+            <PbrMat preset="blueHousing" />
+          </mesh>
+        ))}
+      </CadPartGroup>
+
+      <CadPartGroup partId="lc_lcd_screen" basePos={[0, 0.42, 0.22]} explodeOffset={[0, 0.35, 0.65]}>
+        <mesh>
+          <boxGeometry args={[0.82, 0.6, 0.04]} />
+          <PbrMat preset="ssDark" />
+        </mesh>
+        <mesh position={[0, 0, 0.025]}>
+          <planeGeometry args={[0.74, 0.5]} />
+          <meshStandardMaterial map={lcdTex} />
+        </mesh>
+      </CadPartGroup>
+
+      <CadPartGroup partId="lc_test_jacks" basePos={[0, -0.82, 0.12]} explodeOffset={[0, -0.65, 0.45]}>
+        <mesh position={[-0.28, 0, 0.1]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.075, 0.075, 0.16, 18]} />
+          <PbrMat preset="alnicoRed" />
+        </mesh>
+        <mesh position={[0, 0, 0.1]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.075, 0.075, 0.16, 18]} />
+          <PbrMat preset="brass" />
+        </mesh>
+        <mesh position={[0.28, 0, 0.1]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.075, 0.075, 0.16, 18]} />
+          <PbrMat preset="anodizedDark" />
+        </mesh>
+        <mesh position={[-0.28, -0.26, 0.14]}>
+          <cylinderGeometry args={[0.032, 0.032, 0.44, 14]} />
+          <PbrMat preset="alnicoRed" />
+        </mesh>
+        <mesh position={[0.28, -0.26, 0.14]}>
+          <cylinderGeometry args={[0.032, 0.032, 0.44, 14]} />
+          <PbrMat preset="rubber" />
+        </mesh>
+      </CadPartGroup>
+    </group>
+  );
+}
+
 export function renderSignalTransducerModel(key: string) {
   switch (key) {
     case 'hall-effect':
@@ -286,6 +354,8 @@ export function renderSignalTransducerModel(key: string) {
       return <IsolatorBarrierAssembly />;
     case 'adc-dac-board':
       return <AdcDacBoardAssembly />;
+    case 'loop-calibrator':
+      return <LoopCalibratorAssembly />;
     default:
       return null;
   }

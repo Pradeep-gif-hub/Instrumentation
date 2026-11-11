@@ -394,6 +394,74 @@ export function ProcessControllerAssembly() {
   );
 }
 
+export function VfdDriveAssembly() {
+  const sim = useCadSim();
+  const freqHz = (10 + sim.primaryNorm * 50).toFixed(1);
+  const rpm = Math.round(Number(freqHz) * 30);
+  const lcdTex = useMemo(
+    () => buildLcdDisplayTexture('PWM VFD · V/f DRIVE', `${freqHz} Hz`, `${rpm} RPM · RUN`),
+    [freqHz, rpm],
+  );
+  useEffect(() => () => lcdTex.dispose(), [lcdTex]);
+
+  return (
+    <group>
+      <CadPartGroup partId="vfd_chassis" basePos={[0, 0, -0.32]} explodeOffset={[0, 0, -0.75]} isCutawayShell>
+        <mesh>
+          <boxGeometry args={[1.38, 1.95, 0.52]} />
+          <PbrMat preset="anodizedDark" />
+        </mesh>
+        {[-0.48, -0.24, 0, 0.24, 0.48].map((x) => (
+          <mesh key={x} position={[x, 0, -0.3]}>
+            <boxGeometry args={[0.06, 1.82, 0.16]} />
+            <PbrMat preset="ss316" />
+          </mesh>
+        ))}
+      </CadPartGroup>
+
+      <CadPartGroup partId="vfd_dc_bus_igbt" basePos={[0, 0, 0.05]} explodeOffset={[0, 0, 0.15]}>
+        <mesh position={[-0.32, 0.36, 0]}>
+          <cylinderGeometry args={[0.14, 0.14, 0.56, 20]} />
+          <PbrMat preset="blueHousing" />
+        </mesh>
+        <mesh position={[0.05, 0.36, 0]}>
+          <cylinderGeometry args={[0.14, 0.14, 0.56, 20]} />
+          <PbrMat preset="blueHousing" />
+        </mesh>
+        <mesh position={[0, -0.25, 0]}>
+          <boxGeometry args={[0.92, 0.5, 0.16]} />
+          <PbrMat preset="alumina" />
+        </mesh>
+        {[-0.28, 0, 0.28].map((x) => (
+          <mesh key={x} position={[x, -0.72, 0.05]}>
+            <boxGeometry args={[0.12, 0.34, 0.06]} />
+            <PbrMat preset="copper" />
+          </mesh>
+        ))}
+      </CadPartGroup>
+
+      <CadPartGroup partId="vfd_keypad" basePos={[0, 0, 0.42]} explodeOffset={[0, 0, 0.78]}>
+        <mesh>
+          <boxGeometry args={[1.32, 1.88, 0.14]} />
+          <PbrMat preset="blueHousing" />
+        </mesh>
+        <mesh position={[0, 0.36, 0.08]}>
+          <planeGeometry args={[0.96, 0.56]} />
+          <meshStandardMaterial map={lcdTex} />
+        </mesh>
+        <mesh position={[-0.26, -0.35, 0.08]}>
+          <cylinderGeometry args={[0.09, 0.09, 0.05, 18]} />
+          <PbrMat preset="blueLiquid" />
+        </mesh>
+        <mesh position={[0.26, -0.35, 0.08]}>
+          <cylinderGeometry args={[0.09, 0.09, 0.05, 18]} />
+          <PbrMat preset="alnicoRed" />
+        </mesh>
+      </CadPartGroup>
+    </group>
+  );
+}
+
 export function renderControlActuatorModel(key: string) {
   switch (key) {
     case 'control-valve':
@@ -414,6 +482,8 @@ export function renderControlActuatorModel(key: string) {
       return <ServomotorAssembly />;
     case 'process-controller':
       return <ProcessControllerAssembly />;
+    case 'vfd-drive':
+      return <VfdDriveAssembly />;
     default:
       return null;
   }

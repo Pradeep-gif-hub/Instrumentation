@@ -385,9 +385,14 @@ export const PRIMARY_PLACEMENT: Record<string, PlacementRule> = {
   'process-controller': { subjectId: 'nitj-sem5-pdc', familyKey: 'control-actuators', alsoUsedIn: ['nitj-sem4-control'] },
   'valve-characteristics': { subjectId: 'nitj-sem5-pdc', familyKey: 'control-actuators' },
   'fail-open-and-fail-close': { subjectId: 'nitj-sem5-pdc', familyKey: 'control-actuators' },
+  'vibrating-fork-level': { subjectId: 'nitj-sem4-ims', familyKey: 'level' },
+  'mass-flow-controller': { subjectId: 'nitj-sem4-ims', familyKey: 'flow', alsoUsedIn: ['nitj-sem5-pdc'] },
+  'variable-frequency-drive': { subjectId: 'nitj-sem5-pdc', familyKey: 'control-actuators', alsoUsedIn: ['nitj-sem4-machines'] },
 
-  // === Additional Learning: ICMI0303 Testing & Calibration — Supplementary (1 primary + cross-refs) ===
+  // === Additional Learning: ICMI0303 Testing & Calibration — Supplementary (3 primary + cross-refs) ===
   'deadweight-tester': { subjectId: 'nitj-supp-cal', familyKey: 'pressure', alsoUsedIn: ['nitj-sem4-ims'] },
+  'dry-well-calibrator': { subjectId: 'nitj-supp-cal', familyKey: 'temperature', alsoUsedIn: ['nitj-sem4-ims'] },
+  'process-loop-calibrator': { subjectId: 'nitj-supp-cal', familyKey: 'sensors-motion', alsoUsedIn: ['nitj-sem3-emmi', 'nitj-sem4-ims'] },
 };
 
 export function getCanonicalInstrumentUrl(id: string, tab?: InstrumentTabKey): string {

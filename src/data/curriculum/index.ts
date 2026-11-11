@@ -215,6 +215,7 @@ const CONCEPT_INSTRUMENT_LINKS: Record<
     { id: 'vortex-flow-meter', label: 'Vortex Shedding Meter', hasSimulation: true },
     { id: 'coriolis-flow-meter', label: 'Coriolis Mass Flowmeter', hasSimulation: true },
     { id: 'thermal-mass-flow-meter', label: 'Thermal Mass / Hot-Wire', hasSimulation: true },
+    { id: 'mass-flow-controller', label: 'Thermal Mass Flow Controller (MFC)', hasSimulation: true },
     { id: 'pitot-tube', label: 'Pitot-Static Probe', hasSimulation: true },
     { id: 'positive-displacement-flowmeter', label: 'Oval-Gear PD Meter', hasSimulation: true },
   ],
@@ -227,6 +228,7 @@ const CONCEPT_INSTRUMENT_LINKS: Record<
     { id: 'radar', label: '80 GHz FMCW Radar', hasSimulation: true },
     { id: 'guided-wave-radar', label: 'Guided Wave Radar', hasSimulation: true },
     { id: 'nuclear-level-measurement', label: 'Cs-137 Gamma Level', hasSimulation: true },
+    { id: 'vibrating-fork-level', label: 'Vibrating Tuning Fork Switch', hasSimulation: true },
     { id: 'humidity-sensor', label: 'Polymer RH & Chilled Mirror', hasSimulation: true },
     { id: 'viscometer', label: 'Rotational Viscometer', hasSimulation: true },
     { id: 'density-meter', label: 'U-Tube Density Meter', hasSimulation: true },
@@ -399,16 +401,21 @@ const CONCEPT_INSTRUMENT_LINKS: Record<
     { id: 'ip-converters', label: 'Flapper-Nozzle I/P', hasSimulation: true },
     { id: 'solenoid-valves', label: '3/2 NAMUR Solenoid', hasSimulation: true },
     { id: 'spool-valve', label: '4/3 Hydraulic Spool Valve', hasSimulation: true },
+    { id: 'variable-frequency-drive', label: 'PWM Variable Frequency Drive', hasSimulation: true },
   ],
 
   // Supplementary — ICMI0303 Testing and Calibration
   'cal-u1-fundamentals': [
     { id: 'deadweight-tester', label: 'Primary Dead-Weight Tester', hasSimulation: true },
     { id: 'digital-multimeter', label: 'Reference True-RMS DMM', hasSimulation: true },
+    { id: 'dry-well-calibrator', label: 'Dry-Well Block Calibrator', hasSimulation: true },
+    { id: 'process-loop-calibrator', label: '4–20 mA / HART Loop Calibrator', hasSimulation: true },
   ],
   'cal-u2-practices': [
     { id: 'rtd-pt100', label: 'Pt100 RTD Calibration', hasSimulation: true },
     { id: 'thermocouple-k', label: 'Type-K TC CJC Test', hasSimulation: true },
+    { id: 'dry-well-calibrator', label: 'Dry-Well RTD Block Test', hasSimulation: true },
+    { id: 'process-loop-calibrator', label: '5-Point Loop Calibration', hasSimulation: true },
     { id: 'deadweight-tester', label: 'DWT Pressure Standard', hasSimulation: true },
     { id: 'dp-transmitter', label: '4–20 mA DP Trim', hasSimulation: true },
     { id: 'cro-crt', label: 'CRO 1 kHz Probe Comp', hasSimulation: true },

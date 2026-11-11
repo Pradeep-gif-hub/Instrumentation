@@ -30,6 +30,37 @@ import { INSTRUMENT_SIMULATIONS } from '@/data/simulations';
 
 const VALID_TABS: InstrumentTabKey[] = ['simple', 'theory', '3d', 'sim', 'interview'];
 
+const ROMAN_SEMESTER_MAP: Array<[RegExp, string]> = [
+  [/\bVIII\b/i, '8'],
+  [/\bVII\b/i, '7'],
+  [/\bVI\b/i, '6'],
+  [/\bIV\b/i, '4'],
+  [/\bV\b/i, '5'],
+  [/\bIII\b/i, '3'],
+  [/\bII\b/i, '2'],
+  [/\bI\b/i, '1'],
+];
+
+function resolveRoadmapSemParam(semesterLabel: string, subjectId: string): string {
+  const lowerLabel = semesterLabel.toLowerCase();
+  const lowerSubject = subjectId.toLowerCase();
+  if (
+    lowerLabel.includes('additional') ||
+    lowerLabel.includes('supplement') ||
+    lowerSubject.includes('-supp-')
+  ) {
+    return 'additional';
+  }
+  const digitMatch = semesterLabel.match(/\b([1-8])\b/);
+  if (digitMatch) return digitMatch[1];
+  for (const [pattern, sem] of ROMAN_SEMESTER_MAP) {
+    if (pattern.test(semesterLabel)) return sem;
+  }
+  const subjectMatch = lowerSubject.match(/sem([1-8])/);
+  if (subjectMatch) return subjectMatch[1];
+  return '3';
+}
+
 function parseTabParam(raw: string | null, focusRaw: string | null): InstrumentTabKey {
   if (raw && (VALID_TABS as string[]).includes(raw)) return raw as InstrumentTabKey;
   if (focusRaw === 'sim') return 'sim';
@@ -755,11 +786,7 @@ export function InstrumentPage() {
                 {entry.curriculumLinks.map((cl) => (
                   <Link
                     key={`${cl.subjectId}-${cl.conceptId}`}
-                    to={`/roadmap?sem=${
-                      cl.semesterLabel.toLowerCase().includes('supplement')
-                        ? 'additional'
-                        : cl.semesterLabel.replace(/[^0-9]/g, '') || '3'
-                    }&subject=${encodeURIComponent(cl.subjectId)}&unit=${cl.unitNumber}&concept=${encodeURIComponent(cl.conceptId)}`}
+                    to={`/roadmap?sem=${resolveRoadmapSemParam(cl.semesterLabel, cl.subjectId)}&subject=${encodeURIComponent(cl.subjectId)}&unit=${cl.unitNumber}&concept=${encodeURIComponent(cl.conceptId)}`}
                     className="sub block p-4 transition hover:border-[var(--st-accent)]"
                   >
                     <p className="text-[14px] text-[var(--st-on-var)]">

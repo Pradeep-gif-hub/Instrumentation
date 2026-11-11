@@ -19,18 +19,27 @@ export function BrowsePage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const initialFamily =
+  const urlFamily =
     (searchParams.get('family') as TopicFamilyKey | null) ||
     (category ? getLegacyCategoryToFamily(category) : 'all');
 
   const [query, setQuery] = useState('');
   const [selectedFamily, setSelectedFamily] = useState<TopicFamilyKey | null>(
-    initialFamily && initialFamily !== 'all' ? initialFamily : null,
+    urlFamily && urlFamily !== 'all' ? urlFamily : null,
   );
   const [showMoreChips, setShowMoreChips] = useState(
     Boolean(selectedFamily && MORE_BROWSE_FAMILIES.some((f) => f.key === selectedFamily)),
   );
   const [limit, setLimit] = useState(PAGE_SIZE);
+
+  useEffect(() => {
+    const nextFamily = urlFamily && urlFamily !== 'all' ? urlFamily : null;
+    setSelectedFamily(nextFamily);
+    if (nextFamily && MORE_BROWSE_FAMILIES.some((f) => f.key === nextFamily)) {
+      setShowMoreChips(true);
+    }
+    setLimit(PAGE_SIZE);
+  }, [urlFamily]);
 
   useEffect(() => {
     if (searchParams.get('focus') === 'search') {
