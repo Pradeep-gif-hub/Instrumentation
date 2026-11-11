@@ -23,7 +23,7 @@ import { Link, matchPath, useLocation, useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { resolveCanonicalPath } from '@/data/navigationTree';
 import { getPlainDisplayName } from '@/data/simpleGuides';
-import { SITE_LINKS } from '@/lib/siteConfig';
+import { DEVELOPERS } from '@/lib/siteConfig';
 import { BookmarksDrawer } from './BookmarksDrawer';
 import { CursorDotField } from './CursorDotField';
 import { SearchModal } from './SearchModal';
@@ -463,36 +463,40 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
         <main className="min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8">{children}</main>
 
-        <footer className="flex min-h-[48px] flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t border-[var(--st-line)] px-4 py-2.5 text-[14px] text-[var(--st-on-var)] sm:px-8">
-          <span className="min-w-0">Meet the Developer - Pradeep Awasthi</span>
-          <div className="flex shrink-0 items-center gap-4 whitespace-nowrap">
-            <a
-              href={SITE_LINKS.githubUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="GitHub"
-              className="inline-flex items-center justify-center rounded p-1 text-[var(--st-on-var)] transition hover:text-[var(--st-accent)]"
-            >
-              <Github size={18} aria-hidden="true" />
-            </a>
-            <a
-              href={SITE_LINKS.linkedinUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="LinkedIn"
-              className="inline-flex items-center justify-center rounded p-1 text-[var(--st-on-var)] transition hover:text-[var(--st-accent)]"
-            >
-              <Linkedin size={18} aria-hidden="true" />
-            </a>
-            <a
-              href={SITE_LINKS.websiteUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Website"
-              className="inline-flex items-center justify-center rounded p-1 text-[var(--st-on-var)] transition hover:text-[var(--st-accent)]"
-            >
-              <Globe size={18} aria-hidden="true" />
-            </a>
+        <footer className="flex min-h-[48px] flex-wrap items-center justify-between gap-x-6 gap-y-2 border-t border-[var(--st-line)] px-4 py-2.5 text-[13px] text-[var(--st-on-var)] sm:px-8">
+          <div className="flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1">
+            <span className="font-medium text-[var(--st-on)]">&copy; {new Date().getFullYear()} Instrument-AI</span>
+            <span className="text-[var(--st-edge)]" aria-hidden="true">·</span>
+            <span>Meet the Developers</span>
+          </div>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+            {DEVELOPERS.map((dev, idx) => (
+              <div key={dev.name} className="flex items-center gap-2">
+                {idx > 0 && (
+                  <span className="mr-1.5 hidden h-3.5 w-px bg-[var(--st-edge)] sm:inline-block" aria-hidden="true" />
+                )}
+                <span className="whitespace-nowrap font-medium text-[var(--st-on-var)]">{dev.name}</span>
+                <div className="flex shrink-0 items-center gap-1">
+                  {[
+                    { label: `${dev.name} — GitHub`, href: dev.githubUrl, Icon: Github },
+                    { label: `${dev.name} — LinkedIn`, href: dev.linkedinUrl, Icon: Linkedin },
+                    { label: `${dev.name} — Portfolio`, href: dev.websiteUrl, Icon: Globe },
+                  ].map(({ label, href, Icon }) => (
+                    <a
+                      key={label}
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={label}
+                      title={label}
+                      className="inline-flex items-center justify-center rounded-md p-1.5 text-[var(--st-on-var)] transition hover:bg-[var(--st-1)] hover:text-[var(--st-accent)]"
+                    >
+                      <Icon size={16} aria-hidden="true" />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </footer>
       </div>
