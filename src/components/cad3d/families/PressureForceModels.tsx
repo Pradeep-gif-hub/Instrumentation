@@ -221,7 +221,7 @@ export function BourdonGaugeAssembly() {
         </mesh>
       </CadPartGroup>
 
-      <CadPartGroup partId="bg_dial_pointer" basePos={[0, 0.15, 0.12]} explodeOffset={[0, 0, 0.85]}>
+      <CadPartGroup partId="bg_dial_pointer" basePos={[0, 0.15, 0.12]} explodeOffset={[0, 0, 0.85]} isCutawayShell>
         <mesh rotation={[Math.PI / 2, 0, 0]}>
           <cylinderGeometry args={[0.92, 0.92, 0.02, 44]} />
           <meshStandardMaterial map={dialTex} transparent opacity={0.9} roughness={0.5} />
@@ -465,18 +465,18 @@ export function DeadWeightTesterAssembly() {
         </mesh>
       </CadPartGroup>
 
-      <CadPartGroup partId="dw_piston_cylinder" basePos={[-0.55, -0.1, 0]} explodeOffset={[-0.7, 0.1, 0]}>
+      <CadPartGroup partId="dw_piston_cylinder" basePos={[-0.55, -0.1, 0]} explodeOffset={[-0.7, 0.1, 0]} isCutawayShell>
         <mesh>
-          <cylinderGeometry args={[0.22, 0.22, 0.8, 28]} />
+          <cylinderGeometry args={[0.24, 0.24, 0.8, 28]} />
           <PbrMat preset="ssDark" />
-        </mesh>
-        <mesh position={[0, 0.5, 0]}>
-          <cylinderGeometry args={[0.11, 0.11, 0.55, 24]} />
-          <PbrMat preset="chrome" />
         </mesh>
       </CadPartGroup>
 
       <CadPartGroup partId="dw_mass_discs" basePos={[-0.55, 0.48, 0]} explodeOffset={[-0.55, 0.85, 0]}>
+        <mesh position={[0, -0.58, 0]}>
+          <cylinderGeometry args={[0.11, 0.11, 0.92, 24]} />
+          <PbrMat preset="chrome" />
+        </mesh>
         {Array.from({ length: numWeights }, (_, i) => (
           <mesh key={i} position={[0, i * 0.11, 0]}>
             <cylinderGeometry args={[0.42 - i * 0.025, 0.42 - i * 0.025, 0.09, 32]} />

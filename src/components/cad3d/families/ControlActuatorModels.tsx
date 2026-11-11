@@ -130,7 +130,7 @@ export function SmartPositionerAssembly() {
         ))}
       </CadPartGroup>
 
-      <CadPartGroup partId="ps_lcd" basePos={[0.15, 0.12, 0.41]} explodeOffset={[0, 0.45, 0.8]}>
+      <CadPartGroup partId="ps_lcd" basePos={[0.15, 0.12, 0.41]} explodeOffset={[0, 0.45, 0.8]} isCutawayShell>
         <mesh>
           <planeGeometry args={[0.85, 0.48]} />
           <meshStandardMaterial map={lcdTex} />
@@ -373,7 +373,7 @@ export function ProcessControllerAssembly() {
         </mesh>
       </CadPartGroup>
 
-      <CadPartGroup partId="pc_display" basePos={[0, 0, 0.62]} explodeOffset={[0, 0.4, 0.75]}>
+      <CadPartGroup partId="pc_display" basePos={[0, 0, 0.62]} explodeOffset={[0, 0.4, 0.75]} isCutawayShell>
         <mesh>
           <boxGeometry args={[1.42, 1.42, 0.14]} />
           <PbrMat preset="ssDark" />
@@ -440,7 +440,7 @@ export function VfdDriveAssembly() {
         ))}
       </CadPartGroup>
 
-      <CadPartGroup partId="vfd_keypad" basePos={[0, 0, 0.42]} explodeOffset={[0, 0, 0.78]}>
+      <CadPartGroup partId="vfd_keypad" basePos={[0, 0, 0.42]} explodeOffset={[0, 0, 0.78]} isCutawayShell>
         <mesh>
           <boxGeometry args={[1.32, 1.88, 0.14]} />
           <PbrMat preset="blueHousing" />
