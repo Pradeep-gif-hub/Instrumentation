@@ -35,7 +35,7 @@ export function OverviewPage() {
   };
 
   return (
-    <div className="glass relative z-10 mx-auto flex max-w-[860px] flex-col gap-8 px-6 py-6 sm:px-8 sm:py-8">
+    <div className="glass pointer-events-auto relative z-10 mx-auto flex max-w-[860px] flex-col gap-8 px-6 py-6 sm:px-8 sm:py-8">
       <header className="space-y-2">
         <h1>What do you want to study?</h1>
         <p className="text-[16px] text-[var(--st-on-var)]">

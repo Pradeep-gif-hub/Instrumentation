@@ -1,6 +1,6 @@
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
-import { Suspense, useMemo, useRef, useState } from 'react';
+import { Suspense, useMemo, useRef, useState, type RefObject } from 'react';
 import * as THREE from 'three';
 import { useApp } from '@/context/AppContext';
 
@@ -51,10 +51,12 @@ function Worker({
   position,
   task = 'walk',
   person,
+  labelRoot,
 }: {
   position: [number, number, number];
   task?: 'walk' | 'gauge' | 'valve' | 'furnace';
   person: { name: string; detail: string };
+  labelRoot: RefObject<HTMLDivElement | null>;
 }) {
   const [open, setOpen] = useState(false);
   const group = useRef<THREE.Group>(null);
@@ -103,25 +105,16 @@ function Worker({
         document.body.style.cursor = '';
       }}
     >
-      {open && (
-        <Html position={[0, 1.85, 0]} center distanceFactor={8} zIndexRange={[20, 0]}>
-          <div
-            style={{
-              background: '#f7f4ec',
-              color: '#1a242e',
-              border: '1px solid #c84b31',
-              borderRadius: 10,
-              padding: '8px 10px',
-              minWidth: 148,
-              fontFamily: 'Inter, sans-serif',
-              boxShadow: '0 8px 18px rgba(0,0,0,0.18)',
-            }}
-          >
-            <div style={{ fontWeight: 700, fontSize: 13 }}>{person.name}</div>
-            <div style={{ fontSize: 12, marginTop: 2 }}>{person.detail}</div>
-          </div>
-        </Html>
-      )}
+      <mesh
+        position={[0, 0.9, 0]}
+        onClick={(event) => {
+          event.stopPropagation();
+          setOpen((value) => !value);
+        }}
+      >
+        <capsuleGeometry args={[0.34, 0.9, 4, 8]} />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+      </mesh>
       <mesh ref={leftLeg} position={[0, 0.42, 0.08]}>
         <capsuleGeometry args={[0.07, 0.34, 4, 8]} />
         <meshStandardMaterial color="#243e56" roughness={0.75} />
@@ -160,6 +153,27 @@ function Worker({
         <cylinderGeometry args={[0.2, 0.2, 0.025, 14]} />
         <meshStandardMaterial color="#f2c14b" roughness={0.45} />
       </mesh>
+      {open && (
+        <Html position={[0, 1.85, 0]} center portal={labelRoot as RefObject<HTMLElement>} distanceFactor={8} zIndexRange={[40, 0]}>
+          <div
+            style={{
+              background: '#f7f4ec',
+              color: '#1a242e',
+              border: '1px solid #c84b31',
+              borderRadius: 10,
+              padding: '6px 8px',
+              minWidth: 120,
+              textAlign: 'center',
+              fontFamily: 'Inter, sans-serif',
+              boxShadow: '0 8px 18px rgba(0,0,0,0.18)',
+              pointerEvents: 'none',
+            }}
+          >
+            <div style={{ fontWeight: 700, fontSize: 13 }}>{person.name}</div>
+            <div style={{ fontSize: 12, marginTop: 2 }}>{person.detail}</div>
+          </div>
+        </Html>
+      )}
     </group>
   );
 }
@@ -559,7 +573,13 @@ function Hazards() {
   );
 }
 
-function PlantScene({ light }: { light: boolean }) {
+function PlantScene({
+  light,
+  labelRoot,
+}: {
+  light: boolean;
+  labelRoot: RefObject<HTMLDivElement | null>;
+}) {
   return (
     <>
       <color attach="background" args={[light ? '#d5e6f3' : '#10161d']} />
@@ -584,10 +604,10 @@ function PlantScene({ light }: { light: boolean }) {
       <DangerSign />
       <Pipe a={[7.2, 1.1, 0.4]} b={[7.2, 0.7, 3.6]} radius={0.07} color="#c5ced6" />
       <Pipe a={[9.3, 1.1, 0.4]} b={[7.6, 0.85, 3.2]} radius={0.06} color="#3c6e96" />
-      <Worker position={[-2, 0, 2.15]} task="walk" person={{ name: 'Pradeep Awasthi', detail: 'GET · Instrumentation' }} />
-      <Worker position={[-5.4, 0, 1.15]} task="gauge" person={{ name: 'Shanmukh Datta', detail: 'GET · Instrumentation' }} />
-      <Worker position={[1.15, 0, 1.15]} task="valve" person={{ name: 'Jasper Jolly', detail: 'HPCL Officer' }} />
-      <Worker position={[4.6, 0, 1.35]} task="furnace" person={{ name: 'Plant GET', detail: 'On shift · furnace round' }} />
+      <Worker position={[-2, 0, 2.15]} task="walk" labelRoot={labelRoot} person={{ name: 'Pradeep Awasthi', detail: 'GET · Instrumentation' }} />
+      <Worker position={[-5.4, 0, 1.15]} task="gauge" labelRoot={labelRoot} person={{ name: 'Shanmukh Datta', detail: 'GET · Instrumentation' }} />
+      <Worker position={[1.15, 0, 1.15]} task="valve" labelRoot={labelRoot} person={{ name: 'Jasper Jolly', detail: 'HPCL Officer' }} />
+      <Worker position={[4.6, 0, 1.35]} task="furnace" labelRoot={labelRoot} person={{ name: 'Plant GET', detail: 'On shift · furnace round' }} />
       <mesh position={[-7.4, 1.25, -3.1]}>
         <boxGeometry args={[1.5, 2.3, 1.35]} />
         <meshStandardMaterial color={light ? '#e7eef3' : '#243140'} roughness={0.6} />
@@ -602,19 +622,23 @@ function PlantScene({ light }: { light: boolean }) {
 
 export function PlantBackdrop() {
   const { theme } = useApp();
+  const labelRoot = useRef<HTMLDivElement>(null);
   return (
-    <div className="pointer-events-none fixed inset-0 z-0">
-      <Suspense fallback={null}>
-        <Canvas
-          style={{ pointerEvents: 'auto' }}
-          camera={{ position: [0.4, 5.8, 13.2], fov: 36 }}
-          dpr={1}
-          gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
-          onCreated={({ camera }) => camera.lookAt(0.2, 1.3, 0)}
-        >
-          <PlantScene light={theme === 'light'} />
-        </Canvas>
-      </Suspense>
-    </div>
+    <>
+      <div className="pointer-events-none fixed inset-0 z-0">
+        <Suspense fallback={null}>
+          <Canvas
+            style={{ pointerEvents: 'auto' }}
+            camera={{ position: [0.4, 5.8, 13.2], fov: 36 }}
+            dpr={1}
+            gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
+            onCreated={({ camera }) => camera.lookAt(0.2, 1.3, 0)}
+          >
+            <PlantScene light={theme === 'light'} labelRoot={labelRoot} />
+          </Canvas>
+        </Suspense>
+      </div>
+      <div ref={labelRoot} className="pointer-events-none fixed inset-0 z-30" />
+    </>
   );
 }

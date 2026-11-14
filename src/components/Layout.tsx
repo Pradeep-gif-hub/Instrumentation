@@ -357,8 +357,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main Column */}
-      <div className="relative z-10 flex min-h-screen min-w-0 flex-col overflow-x-hidden lg:pl-[var(--sidebar-width)]">
-        <header className="topbar sticky top-0 z-10 flex min-h-16 items-center gap-3 px-4 py-3 sm:px-6">
+      <div className={`relative z-10 flex min-h-screen min-w-0 flex-col overflow-x-hidden lg:pl-[var(--sidebar-width)] ${location.pathname === '/' ? 'pointer-events-none' : ''}`}>
+        <header className={`topbar sticky top-0 z-10 flex min-h-16 items-center gap-3 px-4 py-3 sm:px-6 ${location.pathname === '/' ? 'pointer-events-auto' : ''}`}>
           {/* Mobile Menu Button */}
           <button
             ref={mobileMenuBtnRef}
@@ -435,9 +435,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </button>
         </header>
 
-        <main className="min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8">{children}</main>
+        <main className={`min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8 ${location.pathname === '/' ? 'pointer-events-none' : ''}`}>{children}</main>
 
-        <footer className="flex min-h-[48px] flex-wrap items-center justify-between gap-x-6 gap-y-2 border-t border-[var(--st-line)] px-4 py-2.5 text-[13px] text-[var(--st-on-var)] sm:px-8">
+        <footer className={`flex min-h-[48px] flex-wrap items-center justify-between gap-x-6 gap-y-2 border-t border-[var(--st-line)] px-4 py-2.5 text-[13px] text-[var(--st-on-var)] sm:px-8 ${location.pathname === '/' ? 'pointer-events-auto' : ''}`}>
           <div className="flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1">
             <span className="font-medium text-[var(--st-on)]">&copy; {new Date().getFullYear()} Instrument-AI</span>
             <span className="text-[var(--st-edge)]" aria-hidden="true">·</span>
