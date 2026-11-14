@@ -2,6 +2,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Bookmark,
+  Box,
   ChevronDown,
   ChevronRight,
   ExternalLink,
@@ -336,9 +337,8 @@ export function InstrumentPage() {
           </button>
         </div>
 
-        {/* Five Clear Beginner Tabs */}
         <div className="border-t border-[var(--st-line)] pt-4">
-          <div className="seg" role="tablist" aria-label="Instrument sections">
+          <div className="tab-row" role="tablist" aria-label="Instrument sections">
             <button
               type="button"
               role="tab"
@@ -362,9 +362,10 @@ export function InstrumentPage() {
               role="tab"
               aria-selected={activeTab === '3d'}
               onClick={() => setActiveTab('3d')}
-              className={activeTab === '3d' ? 'on' : ''}
+              className={`tab-3d ${activeTab === '3d' ? 'on' : ''}`}
             >
-              3D
+              <Box className="size-4" />
+              3D view
             </button>
             <button
               type="button"
@@ -388,7 +389,7 @@ export function InstrumentPage() {
         </div>
       </header>
 
-      <InstrumentNameplate entry={entry} topic={topic} />
+      {activeTab === 'theory' && <InstrumentNameplate entry={entry} topic={topic} />}
 
       {/* ==================== TAB 1: SIMPLE ==================== */}
       {activeTab === 'simple' && (
@@ -399,45 +400,31 @@ export function InstrumentPage() {
             ))}
           </div>
 
-          <div className="sub space-y-2 p-5">
-            <h2>Everyday analogy</h2>
-            <p className="prose-measure text-[var(--st-on-var)]">{simpleGuide.analogy}</p>
-          </div>
+          <p className="prose-measure text-[var(--st-on-var)]">{simpleGuide.typicalUse}</p>
 
-          <div className="space-y-1">
-            <h2>Role in the control loop</h2>
-            <p className="prose-measure text-[var(--st-on-var)]">{simpleGuide.plantRole}</p>
-          </div>
-
-          {entry.workingPrincipleSteps.length > 0 && (
-            <div className="space-y-2">
-              <h2>How the reading is formed</h2>
-              <ol className="space-y-2">
-                {entry.workingPrincipleSteps.slice(0, 4).map((step, index) => (
-                  <li key={step} className="sub p-4 text-[16px] text-[var(--st-on)]">
-                    <span className="font-semibold text-[var(--st-accent-text)]">{index + 1}. </span>
-                    {step}
-                  </li>
-                ))}
-              </ol>
-            </div>
-          )}
-
-          <div className="space-y-1">
-            <h2>Where you&apos;ll see it</h2>
-            <p className="prose-measure text-[var(--st-on-var)]">{simpleGuide.typicalUse}</p>
-          </div>
-
-          <div className="border-t border-[var(--st-line)] pt-4">
-            <button
-              type="button"
-              onClick={() => setActiveTab('theory')}
-              className="btn primary"
-            >
+          {cadConfig ? (
+            <button type="button" onClick={() => setActiveTab('3d')} className="view-3d-invite">
+              <span className="relative flex items-center justify-between gap-4">
+                <span>
+                  <span className="block text-[14px] font-semibold text-[#9CC4E4]">
+                    The interesting part
+                  </span>
+                  <span className="mt-1 block font-[family-name:var(--font-display)] text-[24px] font-semibold leading-tight">
+                    Open this in 3D
+                  </span>
+                  <span className="mt-1 block max-w-[42ch] text-[15px] text-[#C5CED6]">
+                    Spin the instrument, hide a part, and see how it is built.
+                  </span>
+                </span>
+                <Box className="size-8 shrink-0 text-[#7FB3DE]" />
+              </span>
+            </button>
+          ) : (
+            <button type="button" onClick={() => setActiveTab('theory')} className="btn primary">
               Go deeper: Theory
               <ArrowRight className="size-4" />
             </button>
-          </div>
+          )}
         </section>
       )}
 

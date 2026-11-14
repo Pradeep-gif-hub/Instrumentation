@@ -1,10 +1,11 @@
-import { AlertCircle, Bookmark, Building2, CheckCircle2, HelpCircle, RotateCcw, XCircle } from 'lucide-react';
+import { AlertCircle, Bookmark, CheckCircle2, HelpCircle, RotateCcw, XCircle } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { MathBlock } from '@/components/MathBlock';
 import { SubjectInterviewSimulator } from '@/components/SubjectInterviewSimulator';
 import { useApp } from '@/context/AppContext';
 import { COMPANY_PREP_PROFILES, INDUSTRY_PREP_DISCLAIMER } from '@/data/industryPrepData';
+import { ICE_CORE_PLACEMENTS } from '@/data/icePlacementSeniors';
 import { INTERVIEW_QUESTION_BANK } from '@/data/interviewBankData';
 import type { BankQuestion, QuestionDifficulty, QuestionKind } from '@/types/engineering';
 
@@ -31,10 +32,17 @@ export function InterviewPrepPage() {
       ? 'automation'
       : searchParams.get('sector') === 'oil-gas'
       ? 'oil-gas'
-      : 'all';
-  const [sectorFilter, setSectorFilter] = useState<'all' | 'oil-gas' | 'automation'>(initialSector);
+      : searchParams.get('sector') === 'campus'
+      ? 'campus'
+      : 'campus';
+  const [sectorFilter, setSectorFilter] = useState<'all' | 'oil-gas' | 'automation' | 'campus'>(
+    initialSector,
+  );
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>(
     searchParams.get('company') || COMPANY_PREP_PROFILES[0].id,
+  );
+  const [iceCompanyId, setIceCompanyId] = useState(
+    searchParams.get('company') || 'reliance-industries-limited',
   );
 
   const subjectsList = useMemo(
@@ -93,11 +101,36 @@ export function InterviewPrepPage() {
     });
   };
 
-  const visibleCompanies = COMPANY_PREP_PROFILES.filter(
-    (c) => sectorFilter === 'all' || c.sector === sectorFilter,
-  );
+  const visibleCompanies = COMPANY_PREP_PROFILES.filter((c) => {
+    if (sectorFilter === 'all') return true;
+    if (sectorFilter === 'campus') return c.sector === 'campus' || Boolean(c.campusNote);
+    return c.sector === sectorFilter;
+  });
   const activeCompany =
     visibleCompanies.find((c) => c.id === selectedCompanyId) ?? visibleCompanies[0];
+
+  const campusCards = useMemo(() => {
+    const fromPlacements = ICE_CORE_PLACEMENTS.map((company) => ({
+      id: company.id,
+      name: company.name,
+      seniors: company.seniors,
+      prep: company.prepId
+        ? COMPANY_PREP_PROFILES.find((profile) => profile.id === company.prepId)
+        : undefined,
+    }));
+    const linkedPrepIds = new Set(
+      fromPlacements.map((company) => company.prep?.id).filter((id): id is string => Boolean(id)),
+    );
+    const extras = COMPANY_PREP_PROFILES.filter(
+      (profile) => profile.sector === 'campus' && !linkedPrepIds.has(profile.id),
+    ).map((profile) => ({
+      id: profile.id,
+      name: profile.name,
+      seniors: [],
+      prep: profile,
+    }));
+    return [...fromPlacements, ...extras];
+  }, []);
 
   return (
     <div className="mx-auto flex max-w-[1440px] flex-col gap-5">
@@ -440,65 +473,201 @@ export function InterviewPrepPage() {
             <p className="text-[var(--st-on-var)]">{INDUSTRY_PREP_DISCLAIMER}</p>
           </div>
 
-          <div className="seg">
+          <div className="choice-row" role="tablist" aria-label="Company groups">
+            <button
+              type="button"
+              onClick={() => setSectorFilter('campus')}
+              className={sectorFilter === 'campus' ? 'on' : ''}
+            >
+              NITJ ICE 2026–27 ({campusCards.length})
+            </button>
             <button
               type="button"
               onClick={() => setSectorFilter('all')}
               className={sectorFilter === 'all' ? 'on' : ''}
             >
-              All Companies ({COMPANY_PREP_PROFILES.length})
+              All companies ({COMPANY_PREP_PROFILES.length})
             </button>
             <button
               type="button"
               onClick={() => setSectorFilter('oil-gas')}
               className={sectorFilter === 'oil-gas' ? 'on' : ''}
             >
-              Oil &amp; Gas PSUs / Refineries (9)
+              Oil and gas
             </button>
             <button
               type="button"
               onClick={() => setSectorFilter('automation')}
               className={sectorFilter === 'automation' ? 'on' : ''}
             >
-              Automation OEMs (8)
+              Automation OEMs
             </button>
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
-            <aside className="glass max-h-[680px] space-y-1.5 overflow-y-auto p-3">
-              {visibleCompanies.map((c) => (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => setSelectedCompanyId(c.id)}
-                  className={`flex w-full cursor-pointer items-center justify-between gap-2 rounded-2xl px-3.5 py-2.5 text-left transition ${
-                    activeCompany?.id === c.id
-                      ? 'bg-[var(--st-3)] text-[var(--st-accent-text)] ring-1 ring-[var(--st-accent)]/40'
-                      : 'text-[var(--st-on-var)] hover:bg-[var(--st-2)] hover:text-[var(--st-on)]'
-                  }`}
-                >
-                  <div className="min-w-0">
-                    <p className="truncate text-[14px] font-semibold text-[var(--st-on)]">{c.name}</p>
-                    <p className="text-[14px] text-[var(--st-outline)]">
-                      {c.sector === 'oil-gas' ? 'Oil & Gas' : 'Automation OEM'}
+          <div className="choice-row" role="listbox" aria-label="Companies">
+            {sectorFilter === 'campus'
+              ? campusCards.map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    aria-pressed={iceCompanyId === c.id}
+                    onClick={() => setIceCompanyId(c.id)}
+                    className={iceCompanyId === c.id ? 'on' : ''}
+                  >
+                    {c.seniors.length > 0 ? `${c.name} (${c.seniors.length})` : c.name}
+                  </button>
+                ))
+              : visibleCompanies.map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    aria-pressed={activeCompany?.id === c.id}
+                    onClick={() => setSelectedCompanyId(c.id)}
+                    className={activeCompany?.id === c.id ? 'on' : ''}
+                  >
+                    {c.name}
+                  </button>
+                ))}
+          </div>
+
+          <div>
+            {sectorFilter === 'campus' && (() => {
+              const placed = campusCards.find((c) => c.id === iceCompanyId) ?? campusCards[0];
+              const prep = placed.prep;
+              return (
+                <section className="glass space-y-4 p-6">
+                  <div className="border-b border-[var(--st-line)] pb-4">
+                    <span className="status" style={{ '--tone': 'var(--st-accent)' } as React.CSSProperties}>
+                      NITJ ICE campus
+                    </span>
+                    <h2 className="mt-2 text-[20px] font-semibold text-[var(--st-on)]">{placed.name}</h2>
+                    {prep && <p className="muted text-[14px]">{prep.roleFocus}</p>}
+                    <p className="mt-1 text-[14px] text-[var(--st-on-var)]">
+                      {placed.seniors.length > 0
+                        ? `${placed.seniors.length} Instrumentation and Control students listed for batches 2026 and 2027.`
+                        : 'No 2026 or 2027 placement row on the portal. The interview questions for this company are still here.'}
                     </p>
                   </div>
-                  <Building2 className="size-4 shrink-0 opacity-70" />
-                </button>
-              ))}
-            </aside>
-
-            {activeCompany && (
+                  {prep && (
+                    <>
+                      <p className="text-[16px] leading-relaxed text-[var(--st-on)]">{prep.publiclyKnownFocus}</p>
+                      {prep.rounds && prep.rounds.length > 0 && (
+                        <div className="space-y-2">
+                          <p className="eyebrow">How the interview is split</p>
+                          {prep.rounds.map((round) => (
+                            <div key={round.title} className="sub space-y-1.5 p-4 text-[14px]">
+                              <p className="font-semibold text-[var(--st-on)]">{round.title}</p>
+                              <ul className="space-y-1 text-[var(--st-on-var)]">
+                                {round.points.map((point) => (
+                                  <li key={point}>• {point}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div className="grid gap-3 md:grid-cols-2">
+                        <div className="sub space-y-2 p-4">
+                          <p className="eyebrow">Relevant technologies</p>
+                          <ul className="space-y-1.5 text-[14px] text-[var(--st-on)]">
+                            {prep.coreTechnologies.map((item) => (
+                              <li key={item}>• {item}</li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div className="sub space-y-2 p-4">
+                          <p className="eyebrow">Priority technical subjects</p>
+                          <ul className="space-y-1.5 text-[14px] text-[var(--st-on)]">
+                            {prep.keySubjects.map((item) => (
+                              <li key={item}>• {item}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="eyebrow">Interview questions</p>
+                        {prep.practiceQuestions.map((pq) => (
+                          <div key={pq.question} className="sub space-y-1.5 p-4 text-[14px]">
+                            <span className="pill text-[14px]">{pq.topic}</span>
+                            <p className="font-semibold text-[var(--st-on)]">{pq.question}</p>
+                            <p className="text-[var(--st-on-var)]">
+                              <strong className="text-[var(--st-accent-text)]">Guideline answer: </strong>
+                              {pq.guidelineAnswer}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                  {placed.seniors.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="eyebrow">Seniors placed</p>
+                    <ul className="space-y-2">
+                      {placed.seniors.map((senior) => (
+                        <li
+                          key={`${senior.name}-${senior.batch}-${senior.profile}-${senior.linkedin}`}
+                          className="sub flex flex-wrap items-center justify-between gap-3 px-4 py-3"
+                        >
+                          <span className="min-w-0">
+                            <span className="block text-[16px] font-semibold text-[var(--st-on)]">{senior.name}</span>
+                            <span className="text-[14px] text-[var(--st-on-var)]">
+                              Batch {senior.batch} · {senior.profile || senior.placementType}
+                            </span>
+                          </span>
+                          {senior.linkedin ? (
+                            <a
+                              href={senior.linkedin}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-[14px] font-semibold text-[var(--st-accent-text)] hover:underline"
+                            >
+                              LinkedIn
+                            </a>
+                          ) : (
+                            <span className="text-[14px] text-[var(--st-outline)]">No LinkedIn on the portal</span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  )}
+                </section>
+              );
+            })()}
+            {sectorFilter !== 'campus' && activeCompany && (
               <section className="glass space-y-4 p-6">
                 <div className="border-b border-[var(--st-line)] pb-4">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="status" style={{ '--tone': 'var(--st-accent)' } as React.CSSProperties}>
-                      {activeCompany.sector === 'oil-gas' ? 'Oil & Gas track' : 'Automation OEM track'}
+                      {activeCompany.sector === 'campus'
+                        ? 'NITJ ICE campus'
+                        : activeCompany.sector === 'oil-gas'
+                        ? 'Oil and gas'
+                        : 'Automation OEM'}
                     </span>
                   </div>
                   <h2 className="mt-2 text-[20px] font-semibold text-[var(--st-on)]">{activeCompany.name}</h2>
                   <p className="muted text-[14px]">{activeCompany.roleFocus}</p>
+                  {activeCompany.campusNote && (
+                    <p className="mt-2 text-[14px] text-[var(--st-accent-text)]">{activeCompany.campusNote}</p>
+                  )}
                 </div>
+
+                {activeCompany.rounds && activeCompany.rounds.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="eyebrow">How the interview is split</p>
+                    {activeCompany.rounds.map((round) => (
+                      <div key={round.title} className="sub space-y-1.5 p-4 text-[14px]">
+                        <p className="font-semibold text-[var(--st-on)]">{round.title}</p>
+                        <ul className="space-y-1 text-[var(--st-on-var)]">
+                          {round.points.map((point) => (
+                            <li key={point}>• {point}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 <div className="space-y-2">
                   <p className="eyebrow">Company focus</p>
