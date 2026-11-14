@@ -444,21 +444,29 @@ function Road() {
   );
 }
 
-function DangerSign({ position, rotation = 0 }: { position: [number, number, number]; rotation?: number }) {
+function DangerSign() {
+  const board = useRef<THREE.Group>(null);
+  useFrame(({ camera }) => {
+    if (!board.current) return;
+    const height = board.current.position.y;
+    board.current.lookAt(camera.position.x, height, camera.position.z);
+  });
   return (
-    <group position={position} rotation={[0, rotation, 0]}>
+    <group position={[1.6, 0, 6.2]}>
       <mesh position={[0, 0.55, 0]}>
-        <cylinderGeometry args={[0.04, 0.04, 1.1, 8]} />
+        <cylinderGeometry args={[0.045, 0.045, 1.1, 8]} />
         <meshStandardMaterial color="#4a5258" metalness={0.4} roughness={0.5} />
       </mesh>
-      <mesh position={[0, 1.2, 0]} rotation={[0, 0, Math.PI / 4]}>
-        <boxGeometry args={[0.42, 0.42, 0.04]} />
-        <meshStandardMaterial color="#e2b326" roughness={0.45} />
-      </mesh>
-      <mesh position={[0, 1.2, 0.03]}>
-        <boxGeometry args={[0.12, 0.22, 0.02]} />
-        <meshStandardMaterial color="#9b1c1c" />
-      </mesh>
+      <group ref={board} position={[0, 1.25, 0]}>
+        <mesh rotation={[0, 0, Math.PI / 4]}>
+          <boxGeometry args={[0.62, 0.62, 0.05]} />
+          <meshStandardMaterial color="#e2b326" roughness={0.4} />
+        </mesh>
+        <mesh position={[0, 0, 0.04]}>
+          <boxGeometry args={[0.16, 0.32, 0.02]} />
+          <meshStandardMaterial color="#9b1c1c" />
+        </mesh>
+      </group>
     </group>
   );
 }
@@ -573,17 +581,12 @@ function PlantScene({ light }: { light: boolean }) {
       <Truck lane={5.7} direction={-1} color="#2f6f9a" offset={11} />
       <Steam />
       <Hazards />
-      <DangerSign position={[-7.4, 0, 4.05]} />
-      <DangerSign position={[0.2, 0, 4.05]} />
-      <DangerSign position={[7.6, 0, 4.05]} />
-      <DangerSign position={[-7.4, 0, 6.55]} rotation={Math.PI} />
-      <DangerSign position={[0.2, 0, 6.55]} rotation={Math.PI} />
-      <DangerSign position={[7.6, 0, 6.55]} rotation={Math.PI} />
+      <DangerSign />
       <Pipe a={[7.2, 1.1, 0.4]} b={[7.2, 0.7, 3.6]} radius={0.07} color="#c5ced6" />
       <Pipe a={[9.3, 1.1, 0.4]} b={[7.6, 0.85, 3.2]} radius={0.06} color="#3c6e96" />
       <Worker position={[-2, 0, 2.15]} task="walk" person={{ name: 'Pradeep Awasthi', detail: 'GET · Instrumentation' }} />
       <Worker position={[-5.4, 0, 1.15]} task="gauge" person={{ name: 'Shanmukh Datta', detail: 'GET · Instrumentation' }} />
-      <Worker position={[1.15, 0, 1.15]} task="valve" person={{ name: 'Jasper Jolly', detail: 'Placed · HPCL · Batch 2026' }} />
+      <Worker position={[1.15, 0, 1.15]} task="valve" person={{ name: 'Jasper Jolly', detail: 'HPCL Officer' }} />
       <Worker position={[4.6, 0, 1.35]} task="furnace" person={{ name: 'Plant GET', detail: 'On shift · furnace round' }} />
       <mesh position={[-7.4, 1.25, -3.1]}>
         <boxGeometry args={[1.5, 2.3, 1.35]} />
@@ -600,7 +603,7 @@ function PlantScene({ light }: { light: boolean }) {
 export function PlantBackdrop() {
   const { theme } = useApp();
   return (
-    <div className="pointer-events-none absolute inset-0">
+    <div className="pointer-events-none fixed inset-0 z-0">
       <Suspense fallback={null}>
         <Canvas
           style={{ pointerEvents: 'auto' }}

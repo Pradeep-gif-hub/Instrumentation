@@ -312,7 +312,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* ONE Sidebar (Desktop lg+) */}
       <aside
         aria-label="Sidebar navigation"
-        className="rail fixed inset-y-0 left-0 z-20 hidden w-[var(--sidebar-width)] lg:block"
+        className={`rail fixed inset-y-0 left-0 z-20 hidden w-[var(--sidebar-width)] lg:block ${location.pathname === '/' ? 'rail-clear' : ''}`}
       >
         {renderSidebarContents()}
 

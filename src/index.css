@@ -200,6 +200,14 @@ html:has(.studio.light) {
   border-right: 1px solid rgba(255, 255, 255, 0.6);
 }
 
+.studio .rail.rail-clear,
+.studio.light .rail.rail-clear {
+  background: transparent;
+  border-right-color: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
 .studio .topbar {
   background: color-mix(in srgb, var(--st-0) 92%, transparent);
   -webkit-backdrop-filter: blur(20px);
