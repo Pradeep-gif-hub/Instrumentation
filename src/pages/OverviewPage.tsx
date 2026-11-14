@@ -7,7 +7,6 @@ import {
   LEARN_SEMESTERS,
 } from '@/data/navigationTree';
 import { getPlainDisplayName } from '@/data/simpleGuides';
-import { PlantBackdrop } from '@/components/PlantBackdrop';
 
 export function OverviewPage() {
   const [semesterKey, setSemesterKey] = useState<string | null>(null);
@@ -36,9 +35,7 @@ export function OverviewPage() {
   };
 
   return (
-    <div className="relative -mx-4 -my-6 min-h-[calc(100vh-7.5rem)] overflow-hidden sm:-mx-8 sm:-my-8">
-      <PlantBackdrop />
-      <div className="relative z-10 mx-auto flex max-w-[860px] flex-col gap-8 rounded-[28px] bg-[color-mix(in_srgb,var(--st-0)_72%,transparent)] px-4 py-6 backdrop-blur-[3px] sm:px-8 sm:py-8">
+    <div className="glass relative z-10 mx-auto flex max-w-[860px] flex-col gap-8 px-6 py-6 sm:px-8 sm:py-8">
       <header className="space-y-2">
         <h1>What do you want to study?</h1>
         <p className="text-[16px] text-[var(--st-on-var)]">
@@ -162,7 +159,6 @@ export function OverviewPage() {
           Open the toolbox
         </Link>
       </p>
-      </div>
     </div>
   );
 }

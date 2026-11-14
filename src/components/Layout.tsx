@@ -25,6 +25,7 @@ import { resolveCanonicalPath } from '@/data/navigationTree';
 import { getPlainDisplayName } from '@/data/simpleGuides';
 import { DEVELOPERS } from '@/lib/siteConfig';
 import { BookmarksDrawer } from './BookmarksDrawer';
+import { PlantBackdrop } from './PlantBackdrop';
 import { CursorDotField } from './CursorDotField';
 import { SearchModal } from './SearchModal';
 import { SuggestInstrumentModal } from './SuggestInstrumentModal';
@@ -309,6 +310,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
     >
       <CursorDotField theme={theme} />
+      {location.pathname === '/' && <PlantBackdrop />}
       {/* ONE Sidebar (Desktop lg+) */}
       <aside
         aria-label="Sidebar navigation"
@@ -355,7 +357,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main Column */}
-      <div className="flex min-h-screen min-w-0 flex-col overflow-x-hidden lg:pl-[var(--sidebar-width)]">
+      <div className="relative z-10 flex min-h-screen min-w-0 flex-col overflow-x-hidden lg:pl-[var(--sidebar-width)]">
         <header className="topbar sticky top-0 z-10 flex min-h-16 items-center gap-3 px-4 py-3 sm:px-6">
           {/* Mobile Menu Button */}
           <button
