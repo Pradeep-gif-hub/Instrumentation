@@ -148,6 +148,7 @@ function hashSuggestionData(data: CleanSuggestionData): string {
         data.reason,
         data.link,
         data.studentName,
+        data.rollNumber,
         data.email,
         data.phone,
       ]),
@@ -230,8 +231,8 @@ function buildOtpEmailBodies(data: CleanSuggestionData, otp: string) {
   const text = [
     `Your Instrument-AI verification code is: ${otp}`,
     '',
-    `Instrument suggestion: ${data.name}`,
     'This code expires in 10 minutes.',
+    'Check your spam folder too.',
     '',
     'If you did not request this suggestion on Instrument-AI, you can ignore this email.',
   ].join('\n');
@@ -240,7 +241,7 @@ function buildOtpEmailBodies(data: CleanSuggestionData, otp: string) {
     <div style="font-family:Inter,system-ui,-apple-system,sans-serif;max-width:540px;margin:0 auto;color:#141414;line-height:1.5;">
       <h2 style="margin:0 0 10px;color:#121A24;">Verify your NITJ email</h2>
       <p style="margin:0 0 14px;font-size:14px;color:#374151;">
-        Use this 6-digit code to finish submitting your suggestion for <strong>${escapeHtml(data.name)}</strong> on Instrument-AI:
+        Use this 6-digit code to finish your suggestion on Instrument-AI. Check your spam folder too.
       </p>
       <div style="margin:16px 0;padding:14px 18px;border-radius:10px;background:#F1F5F9;border:1px solid #CBD5E1;text-align:center;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:28px;font-weight:700;letter-spacing:8px;color:#121A24;">
         ${escapeHtml(otp)}
@@ -255,30 +256,22 @@ function buildOtpEmailBodies(data: CleanSuggestionData, otp: string) {
 }
 
 function buildSuggestionEmailBodies(data: CleanSuggestionData, submittedAtIst: string) {
-  const linkDisplay = data.link || 'None';
-
   const text = [
-    `Instrument name: ${data.name}`,
-    `Subject area: ${data.family}`,
-    `Why it should be added: ${data.reason}`,
-    `Reference link: ${linkDisplay}`,
-    `Student name: ${data.studentName}`,
-    `Student NITJ email: ${data.email} (OTP verified)`,
-    `Phone number: ${data.phone}`,
+    `Name: ${data.studentName}`,
+    `Roll number: ${data.rollNumber}`,
+    `Suggestion: ${data.reason}`,
+    `Email: ${data.email} (OTP verified)`,
     `Submitted at: ${submittedAtIst}`,
   ].join('\n');
 
   const html = `
     <div style="font-family:Inter,system-ui,-apple-system,sans-serif;max-width:600px;margin:0 auto;color:#141414;line-height:1.5;">
-      <h2 style="margin:0 0 12px;color:#121A24;">New Instrument Suggestion</h2>
+      <h2 style="margin:0 0 12px;color:#121A24;">New suggestion</h2>
       <table style="width:100%;border-collapse:collapse;font-size:14px;">
-        <tr><td style="padding:8px 10px;border-bottom:1px solid #e5e7eb;font-weight:600;width:190px;">Instrument name</td><td style="padding:8px 10px;border-bottom:1px solid #e5e7eb;">${escapeHtml(data.name)}</td></tr>
-        <tr><td style="padding:8px 10px;border-bottom:1px solid #e5e7eb;font-weight:600;">Subject area</td><td style="padding:8px 10px;border-bottom:1px solid #e5e7eb;">${escapeHtml(data.family)}</td></tr>
-        <tr><td style="padding:8px 10px;border-bottom:1px solid #e5e7eb;font-weight:600;vertical-align:top;">Why it should be added</td><td style="padding:8px 10px;border-bottom:1px solid #e5e7eb;white-space:pre-wrap;">${escapeHtml(data.reason)}</td></tr>
-        <tr><td style="padding:8px 10px;border-bottom:1px solid #e5e7eb;font-weight:600;">Reference link</td><td style="padding:8px 10px;border-bottom:1px solid #e5e7eb;">${escapeHtml(linkDisplay)}</td></tr>
-        <tr><td style="padding:8px 10px;border-bottom:1px solid #e5e7eb;font-weight:600;">Student name</td><td style="padding:8px 10px;border-bottom:1px solid #e5e7eb;">${escapeHtml(data.studentName)}</td></tr>
-        <tr><td style="padding:8px 10px;border-bottom:1px solid #e5e7eb;font-weight:600;">Student NITJ email</td><td style="padding:8px 10px;border-bottom:1px solid #e5e7eb;">${escapeHtml(data.email)} <span style="color:#15803d;font-weight:600;">(OTP verified)</span></td></tr>
-        <tr><td style="padding:8px 10px;border-bottom:1px solid #e5e7eb;font-weight:600;">Phone number</td><td style="padding:8px 10px;border-bottom:1px solid #e5e7eb;">${escapeHtml(data.phone)}</td></tr>
+        <tr><td style="padding:8px 10px;border-bottom:1px solid #e5e7eb;font-weight:600;width:160px;">Name</td><td style="padding:8px 10px;border-bottom:1px solid #e5e7eb;">${escapeHtml(data.studentName)}</td></tr>
+        <tr><td style="padding:8px 10px;border-bottom:1px solid #e5e7eb;font-weight:600;">Roll number</td><td style="padding:8px 10px;border-bottom:1px solid #e5e7eb;">${escapeHtml(data.rollNumber)}</td></tr>
+        <tr><td style="padding:8px 10px;border-bottom:1px solid #e5e7eb;font-weight:600;vertical-align:top;">Suggestion</td><td style="padding:8px 10px;border-bottom:1px solid #e5e7eb;white-space:pre-wrap;">${escapeHtml(data.reason)}</td></tr>
+        <tr><td style="padding:8px 10px;border-bottom:1px solid #e5e7eb;font-weight:600;">Email</td><td style="padding:8px 10px;border-bottom:1px solid #e5e7eb;">${escapeHtml(data.email)} <span style="color:#15803d;font-weight:600;">(OTP verified)</span></td></tr>
         <tr><td style="padding:8px 10px;font-weight:600;">Submitted at</td><td style="padding:8px 10px;">${escapeHtml(submittedAtIst)}</td></tr>
       </table>
     </div>
@@ -625,7 +618,7 @@ export function createSuggestionHandler(deps: SuggestionHandlerDeps = {}) {
       const mailResult = await sendMail({
         to: getSuggestionRecipientEmail(),
         replyTo: validation.data.email,
-        subject: `New instrument suggestion: ${safeSubjectName}`,
+        subject: `New suggestion from ${safeSubjectName}`,
         text,
         html,
         purpose: 'suggestion',

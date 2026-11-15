@@ -25,6 +25,7 @@ const KNOWN_FIELDS = new Set<SuggestionField>([
   'reason',
   'link',
   'studentName',
+  'rollNumber',
   'email',
   'phone',
 ]);
@@ -47,6 +48,7 @@ export function SuggestInstrumentModal({
   const [reason, setReason] = useState('');
   const [link, setLink] = useState('');
   const [studentName, setStudentName] = useState('');
+  const [rollNumber, setRollNumber] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [website, setWebsite] = useState('');
@@ -77,6 +79,7 @@ export function SuggestInstrumentModal({
     setReason('');
     setLink('');
     setStudentName('');
+    setRollNumber('');
     setEmail('');
     setPhone('');
     setWebsite('');
@@ -174,13 +177,14 @@ export function SuggestInstrumentModal({
   if (!open) return null;
 
   const currentPayload = {
-    name,
-    family,
+    name: studentName,
+    family: 'Other',
     reason,
-    link,
+    link: '',
     studentName,
+    rollNumber,
     email,
-    phone,
+    phone: '',
     website,
   };
 
@@ -371,6 +375,7 @@ export function SuggestInstrumentModal({
                   <span className="font-mono font-medium text-[var(--st-on)]">
                     {verifiedEmailTarget || email.trim()}
                   </span>
+                  . Check your spam folder too.
                 </p>
               </>
             ) : (
@@ -380,10 +385,10 @@ export function SuggestInstrumentModal({
                   className="flex items-center gap-2 text-[20px] font-semibold text-[var(--st-on)]"
                 >
                   <Plus className="size-5 shrink-0 text-[var(--st-accent)]" />
-                  Suggest an instrument
+                  Make a suggestion
                 </h2>
                 <p id={descId} className="text-[14px] text-[var(--st-on-var)]">
-                  Tell us which instrument should be added. We review every suggestion.
+                  We email the suggestion after your mail is verified.
                 </p>
               </>
             )}
@@ -401,10 +406,7 @@ export function SuggestInstrumentModal({
         {modalStep === 'otp' ? (
           <form onSubmit={handleVerifyOtpSubmit} noValidate className="flex min-h-0 flex-1 flex-col">
             <div className="flex-1 space-y-4 overflow-y-auto px-6 py-5">
-              <div className="rounded-xl border border-[var(--st-line)] bg-[var(--st-1)]/60 px-3.5 py-2.5 text-[13px] text-[var(--st-on-var)]">
-                Instrument:{' '}
-                <span className="font-medium text-[var(--st-on)]">{name.trim()}</span>
-              </div>
+              <p className="text-[14px] text-[var(--st-on-var)]">Check your spam folder too.</p>
 
               <div className="space-y-1.5">
                 <label htmlFor="suggest-otp-code" className="label">
@@ -526,124 +528,11 @@ export function SuggestInstrumentModal({
               </div>
 
               <div className="space-y-1.5">
-                <label htmlFor="suggest-inst-name" className="label">
-                  Instrument name <span className="text-[var(--st-crimson)]">*</span>
+                <label htmlFor="suggest-student-name" className="label">
+                  Name <span className="text-[var(--st-crimson)]">*</span>
                 </label>
                 <input
                   ref={nameInputRef}
-                  id="suggest-inst-name"
-                  name="name"
-                  type="text"
-                  maxLength={120}
-                  required
-                  value={name}
-                  onChange={(e) => {
-                    setName(e.target.value);
-                    clearFieldErrorIfEdited('name');
-                  }}
-                  onBlur={() => validateSingleOnBlur('name', name)}
-                  placeholder="For example: Coriolis Mass Flow Meter"
-                  className="field-rect"
-                  aria-invalid={Boolean(errors.name)}
-                />
-                {errors.name && (
-                  <p role="alert" className="text-[14px] text-[var(--st-crimson)]">
-                    {errors.name}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-1.5">
-                <label htmlFor="suggest-inst-area" className="label">
-                  Subject area
-                </label>
-                <select
-                  id="suggest-inst-area"
-                  name="family"
-                  value={family}
-                  onChange={(e) => {
-                    setFamily(e.target.value);
-                    clearFieldErrorIfEdited('family');
-                  }}
-                  onBlur={() => validateSingleOnBlur('family', family)}
-                  className="field-rect cursor-pointer"
-                  aria-invalid={Boolean(errors.family)}
-                >
-                  {SUBJECT_AREAS.map((area) => (
-                    <option key={area} value={area}>
-                      {area}
-                    </option>
-                  ))}
-                </select>
-                {errors.family && (
-                  <p role="alert" className="text-[14px] text-[var(--st-crimson)]">
-                    {errors.family}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-1.5">
-                <label htmlFor="suggest-inst-reason" className="label">
-                  Why it should be added <span className="text-[var(--st-crimson)]">*</span>
-                </label>
-                <textarea
-                  id="suggest-inst-reason"
-                  name="reason"
-                  rows={2}
-                  maxLength={500}
-                  required
-                  value={reason}
-                  onChange={(e) => {
-                    setReason(e.target.value);
-                    clearFieldErrorIfEdited('reason');
-                  }}
-                  onBlur={() => validateSingleOnBlur('reason', reason)}
-                  placeholder="For example: used in refinery crude heaters"
-                  className="field-rect resize-y"
-                  aria-invalid={Boolean(errors.reason)}
-                />
-                <div className="flex items-center justify-between gap-2 text-[14px]">
-                  {errors.reason ? (
-                    <p role="alert" className="text-[var(--st-crimson)]">
-                      {errors.reason}
-                    </p>
-                  ) : (
-                    <span />
-                  )}
-                  <span className="text-[var(--st-on-var)]">{reason.length}/500</span>
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label htmlFor="suggest-inst-link" className="label">
-                  Reference link (optional)
-                </label>
-                <input
-                  id="suggest-inst-link"
-                  name="link"
-                  type="url"
-                  value={link}
-                  onChange={(e) => {
-                    setLink(e.target.value);
-                    clearFieldErrorIfEdited('link');
-                  }}
-                  onBlur={() => validateSingleOnBlur('link', link)}
-                  placeholder="https://..."
-                  className="field-rect"
-                  aria-invalid={Boolean(errors.link)}
-                />
-                {errors.link && (
-                  <p role="alert" className="text-[14px] text-[var(--st-crimson)]">
-                    {errors.link}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-1.5">
-                <label htmlFor="suggest-student-name" className="label">
-                  Student name <span className="text-[var(--st-crimson)]">*</span>
-                </label>
-                <input
                   id="suggest-student-name"
                   name="studentName"
                   type="text"
@@ -655,7 +544,6 @@ export function SuggestInstrumentModal({
                     clearFieldErrorIfEdited('studentName');
                   }}
                   onBlur={() => validateSingleOnBlur('studentName', studentName)}
-                  placeholder="Your full name"
                   className="field-rect"
                   aria-invalid={Boolean(errors.studentName)}
                 />
@@ -666,58 +554,82 @@ export function SuggestInstrumentModal({
                 )}
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="space-y-1.5">
-                  <label htmlFor="suggest-student-email" className="label">
-                    Student email <span className="text-[var(--st-crimson)]">*</span>
-                  </label>
-                  <input
-                    id="suggest-student-email"
-                    name="email"
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      clearFieldErrorIfEdited('email');
-                    }}
-                    onBlur={() => validateSingleOnBlur('email', email)}
-                    placeholder="pradeepka.ic.24@nitj.ac.in"
-                    className="field-rect"
-                    aria-invalid={Boolean(errors.email)}
-                  />
-                  {errors.email && (
-                    <p role="alert" className="text-[14px] text-[var(--st-crimson)]">
-                      {errors.email}
-                    </p>
-                  )}
-                </div>
+              <div className="space-y-1.5">
+                <label htmlFor="suggest-roll-number" className="label">
+                  Roll number <span className="text-[var(--st-crimson)]">*</span>
+                </label>
+                <input
+                  id="suggest-roll-number"
+                  name="rollNumber"
+                  type="text"
+                  maxLength={20}
+                  required
+                  value={rollNumber}
+                  onChange={(e) => {
+                    setRollNumber(e.target.value);
+                    clearFieldErrorIfEdited('rollNumber');
+                  }}
+                  onBlur={() => validateSingleOnBlur('rollNumber', rollNumber)}
+                  className="field-rect"
+                  aria-invalid={Boolean(errors.rollNumber)}
+                />
+                {errors.rollNumber && (
+                  <p role="alert" className="text-[14px] text-[var(--st-crimson)]">
+                    {errors.rollNumber}
+                  </p>
+                )}
+              </div>
 
-                <div className="space-y-1.5">
-                  <label htmlFor="suggest-student-phone" className="label">
-                    Phone number <span className="text-[var(--st-crimson)]">*</span>
-                  </label>
-                  <input
-                    id="suggest-student-phone"
-                    name="phone"
-                    type="tel"
-                    required
-                    value={phone}
-                    onChange={(e) => {
-                      setPhone(e.target.value);
-                      clearFieldErrorIfEdited('phone');
-                    }}
-                    onBlur={() => validateSingleOnBlur('phone', phone)}
-                    placeholder="9876543210"
-                    className="field-rect"
-                    aria-invalid={Boolean(errors.phone)}
-                  />
-                  {errors.phone && (
-                    <p role="alert" className="text-[14px] text-[var(--st-crimson)]">
-                      {errors.phone}
-                    </p>
-                  )}
-                </div>
+              <div className="space-y-1.5">
+                <label htmlFor="suggest-inst-reason" className="label">
+                  Suggestion <span className="text-[var(--st-crimson)]">*</span>
+                </label>
+                <textarea
+                  id="suggest-inst-reason"
+                  name="reason"
+                  rows={4}
+                  maxLength={500}
+                  required
+                  value={reason}
+                  onChange={(e) => {
+                    setReason(e.target.value);
+                    clearFieldErrorIfEdited('reason');
+                  }}
+                  onBlur={() => validateSingleOnBlur('reason', reason)}
+                  className="field-rect resize-y"
+                  aria-invalid={Boolean(errors.reason)}
+                />
+                {errors.reason && (
+                  <p role="alert" className="text-[14px] text-[var(--st-crimson)]">
+                    {errors.reason}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor="suggest-student-email" className="label">
+                  Email <span className="text-[var(--st-crimson)]">*</span>
+                </label>
+                <input
+                  id="suggest-student-email"
+                  name="email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    clearFieldErrorIfEdited('email');
+                  }}
+                  onBlur={() => validateSingleOnBlur('email', email)}
+                  placeholder="name.ic.24@nitj.ac.in"
+                  className="field-rect"
+                  aria-invalid={Boolean(errors.email)}
+                />
+                {errors.email && (
+                  <p role="alert" className="text-[14px] text-[var(--st-crimson)]">
+                    {errors.email}
+                  </p>
+                )}
               </div>
             </div>
 

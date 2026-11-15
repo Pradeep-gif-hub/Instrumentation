@@ -17,6 +17,7 @@ export type SuggestionField =
   | 'reason'
   | 'link'
   | 'studentName'
+  | 'rollNumber'
   | 'email'
   | 'phone';
 
@@ -26,6 +27,7 @@ export interface SuggestionInputPayload {
   reason: string;
   link: string;
   studentName: string;
+  rollNumber: string;
   email: string;
   phone: string;
   website: string;
@@ -60,6 +62,7 @@ export interface CleanSuggestionData {
   reason: string;
   link: string;
   studentName: string;
+  rollNumber: string;
   email: string;
   phone: string;
 }
@@ -101,30 +104,28 @@ export function validateSuggestionField(field: SuggestionField, rawValue: string
 
   switch (field) {
     case 'name':
-      if (!value) return 'Please enter the instrument name.';
-      if (value.length > 120) return 'Please keep the instrument name under 120 characters.';
       return undefined;
 
     case 'family':
-      if (!value || !(SUBJECT_AREAS as readonly string[]).includes(value)) {
-        return 'Please choose a subject area.';
-      }
       return undefined;
 
     case 'reason':
-      if (!value) return 'Please explain why this instrument should be added.';
-      if (value.length > 500) return 'Please keep the explanation under 500 characters.';
+      if (!value) return 'Please write your suggestion.';
+      if (value.length > 500) return 'Please keep the suggestion under 500 characters.';
       return undefined;
 
     case 'link':
-      if (value && !/^https?:\/\/\S+$/i.test(value)) {
-        return 'Reference link must start with http:// or https://.';
-      }
       return undefined;
 
     case 'studentName':
       if (!value) return 'Please enter your name.';
       if (value.length > 80) return 'Please keep your name under 80 characters.';
+      return undefined;
+
+    case 'rollNumber':
+      if (!/^[A-Za-z0-9/-]{4,20}$/.test(value.replace(/\s+/g, ''))) {
+        return 'Please enter your roll number.';
+      }
       return undefined;
 
     case 'email':
@@ -134,9 +135,6 @@ export function validateSuggestionField(field: SuggestionField, rawValue: string
       return undefined;
 
     case 'phone':
-      if (!normalizeIndianMobile(value)) {
-        return 'Please enter a valid 10-digit mobile number.';
-      }
       return undefined;
   }
 }
@@ -163,15 +161,13 @@ export function validateSuggestionPayload(raw: unknown):
       ? body.contactEmail
       : '';
   const phoneRaw = typeof body.phone === 'string' ? body.phone : '';
+  const rollRaw = typeof body.rollNumber === 'string' ? body.rollNumber : '';
 
   const fields: [SuggestionField, string][] = [
-    ['name', nameRaw],
-    ['family', familyRaw],
-    ['reason', reasonRaw],
-    ['link', linkRaw],
     ['studentName', studentNameRaw],
+    ['rollNumber', rollRaw],
+    ['reason', reasonRaw],
     ['email', emailRaw],
-    ['phone', phoneRaw],
   ];
 
   const errors: Partial<Record<SuggestionField, string>> = {};
@@ -194,15 +190,17 @@ export function validateSuggestionPayload(raw: unknown):
   }
 
   const normalizedPhone = normalizeIndianMobile(phoneRaw) ?? '';
+  const studentName = studentNameRaw.trim();
 
   return {
     valid: true,
     data: {
-      name: nameRaw.trim(),
-      family: familyRaw.trim(),
+      name: studentName,
+      family: 'Other',
       reason: reasonRaw.trim(),
-      link: linkRaw.trim(),
-      studentName: studentNameRaw.trim(),
+      link: '',
+      studentName,
+      rollNumber: rollRaw.replace(/\s+/g, '').toUpperCase(),
       email: emailRaw.trim().toLowerCase(),
       phone: normalizedPhone,
     },

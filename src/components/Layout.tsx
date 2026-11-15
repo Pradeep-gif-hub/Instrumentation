@@ -267,7 +267,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl border border-transparent px-2.5 py-2.5 text-left text-[16px] font-normal leading-snug text-[var(--st-on-var)] transition hover:bg-[var(--st-2)] hover:text-[var(--st-on)]"
             >
               <Plus className="size-[18px] shrink-0" />
-              <span>Suggest an instrument</span>
+              <span>Make a suggestion</span>
             </button>
 
             <div className="pt-2">
