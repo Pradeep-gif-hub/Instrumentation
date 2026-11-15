@@ -40,6 +40,9 @@ const InterviewPrepPage = lazy(() =>
 const ToolboxPage = lazy(() =>
   import('@/pages/ToolboxPage').then((m) => ({ default: m.ToolboxPage })),
 );
+const ResourcesPage = lazy(() =>
+  import('@/pages/ResourcesPage').then((m) => ({ default: m.ResourcesPage })),
+);
 
 const ALLOWED_TABS = new Set<string>(['simple', 'theory', '3d', 'sim', 'interview']);
 
@@ -123,6 +126,7 @@ function SignedInApp() {
               <Route path="/interview" element={<InterviewPrepPage />} />
               <Route path="/toolbox" element={<ToolboxPage />} />
               <Route path="/toolbox/:toolId" element={<ToolboxPage />} />
+              <Route path="/resources" element={<ResourcesPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
