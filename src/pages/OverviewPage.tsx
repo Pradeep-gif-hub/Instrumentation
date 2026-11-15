@@ -65,23 +65,18 @@ export function OverviewPage() {
         >
           Welcome to the ICE Factory of NITJ where Engineers are produced.. 😭😭
         </h1>
-        <p
-          className="pointer-events-auto mt-3 text-[16px] text-[var(--st-on)]"
+        <button
+          type="button"
+          onClick={() => {
+            setThanks(false);
+            setError('');
+            setOpen(true);
+          }}
+          className="pointer-events-auto mt-3 cursor-pointer text-[16px] text-[var(--st-on)] underline decoration-2 underline-offset-4"
           style={{ textShadow: '0 2px 8px rgba(0,0,0,0.85)' }}
         >
-          You wanna be one of those engineers?{' '}
-          <button
-            type="button"
-            onClick={() => {
-              setThanks(false);
-              setError('');
-              setOpen(true);
-            }}
-            className="cursor-pointer font-semibold text-[var(--st-accent-text)] underline"
-          >
-            Click here
-          </button>
-        </p>
+          You wanna be one of those engineers?
+        </button>
       </div>
 
       {open && (
