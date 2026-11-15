@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import type { IncomingHttpHeaders } from 'node:http';
-import { countUsers, getUser, listUsers, profileIsComplete, upsertUser } from './userStore.ts';
+import { countUsers, getUser, listUsers, upsertUser } from './userStore.ts';
 
 const COOKIE = 'instrumenta_session';
 
@@ -37,7 +37,7 @@ function sessionSecret(): string {
 }
 
 function adminEmails(): Set<string> {
-  const raw = process.env.ADMIN_EMAILS || 'pradeepka.ic.24@nitj.ac.in,pawasthi063@gmail.com';
+  const raw = process.env.ADMIN_EMAILS || 'pradeepka.ic.24@nitj.ac.in,pawasthi063@gmail.com,pradeep240818@gmail.com';
   return new Set(
     raw
       .split(',')
@@ -112,7 +112,7 @@ function readSignup(body: unknown): { credential: string; details: SignupDetails
   }
   const record = value && typeof value === 'object' ? (value as { credential?: unknown; profile?: unknown }) : {};
   const profile = record.profile && typeof record.profile === 'object' ? (record.profile as Record<string, unknown>) : {};
-  const mobile = clip(profile.mobile, 20).replace(/[^\d+]/g, '');
+  const mobile = clip(profile.mobile, 24).replace(/[^\d+]/g, '');
   return {
     credential: String(record.credential || ''),
     details: {
@@ -131,12 +131,19 @@ function emptyDetails(): SignupDetails {
   return { name: '', branch: '', year: '', gmail: '', college: '', mobile: '', gender: '' };
 }
 
+function formTouched(details: SignupDetails): boolean {
+  return Object.values(details).some((value) => value.trim().length > 0);
+}
+
 function detailError(details: SignupDetails, googleEmail: string): string | null {
+  if (!formTouched(details)) return null;
   if (details.name.length < 2) return 'Enter your name.';
   if (details.branch.length < 2) return 'Enter your branch.';
   if (!YEARS.has(details.year)) return 'Choose your year.';
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(details.gmail)) return 'Enter your Gmail address.';
-  if (details.gmail !== googleEmail.toLowerCase()) return 'The Gmail in the form has to match the Google account you sign in with.';
+  if (details.gmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(details.gmail)) return 'Enter your Gmail address.';
+  if (details.gmail && details.gmail !== googleEmail.toLowerCase()) {
+    return 'The Gmail in the form has to match the Google account you sign in with.';
+  }
   if (details.college.length < 2) return 'Enter your college.';
   const digits = details.mobile.replace(/\D/g, '');
   if (digits.length < 10 || digits.length > 15) return 'Enter a valid mobile number.';
@@ -153,24 +160,20 @@ export async function handleAuthHttp(req: AuthRequest, res: AuthResponse) {
       res.status(200).json({ user: null, isAdmin: false });
       return;
     }
+    const isAdmin = adminEmails().has(session.email.toLowerCase());
     try {
       const saved = await getUser(session.sub);
-      if (!saved || !profileIsComplete(saved)) {
-        res.status(200).json({ user: null, isAdmin: false });
-        return;
-      }
-      const isAdmin = adminEmails().has(saved.email.toLowerCase());
       res.status(200).json({
-        user: { email: saved.email, name: saved.name },
+        user: { email: saved?.email || session.email, name: saved?.name || session.name },
         isAdmin,
         userCount: isAdmin ? await countUsers() : undefined,
         users: isAdmin ? await listUsers() : undefined,
       });
     } catch {
       res.status(200).json({
-        user: null,
-        isAdmin: false,
-        notice: 'Accounts cannot be saved yet because the database is not connected.',
+        user: { email: session.email, name: session.name },
+        isAdmin,
+        notice: 'Signed in, but the account list could not be loaded.',
       });
     }
     return;
@@ -214,11 +217,12 @@ export async function handleAuthHttp(req: AuthRequest, res: AuthResponse) {
     return;
   }
 
+  const name = details.name || profile.name || profile.email;
   try {
     await upsertUser({
       id: profile.sub,
       email: profile.email,
-      name: details.name,
+      name,
       picture: profile.picture || '',
       branch: details.branch,
       year: details.year,
@@ -234,7 +238,7 @@ export async function handleAuthHttp(req: AuthRequest, res: AuthResponse) {
   const token = sign({
     sub: profile.sub,
     email: profile.email,
-    name: details.name,
+    name,
     exp: Date.now() + 30 * 24 * 60 * 60 * 1000,
   });
   writeSessionCookie(res, token);
@@ -250,7 +254,7 @@ export async function handleAuthHttp(req: AuthRequest, res: AuthResponse) {
     }
   }
   res.status(200).json({
-    user: { email: profile.email, name: details.name },
+    user: { email: profile.email, name },
     isAdmin,
     userCount,
     users,

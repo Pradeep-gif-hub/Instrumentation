@@ -42,7 +42,12 @@ function getPool(): pg.Pool {
 async function ready(): Promise<pg.Pool> {
   const current = getPool();
   if (!schemaReady) {
-    schemaReady = current.query(USERS_SQL).then(() => undefined).catch((error) => {
+    const statements = USERS_SQL.split(';').map((statement) => statement.trim()).filter(Boolean);
+    schemaReady = (async () => {
+      for (const statement of statements) {
+        await current.query(statement);
+      }
+    })().catch((error) => {
       schemaReady = null;
       throw error;
     });

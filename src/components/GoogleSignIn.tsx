@@ -21,10 +21,10 @@ declare global {
   }
 }
 
-export function GoogleSignIn({ details }: { details?: SignupDetails }) {
+export function GoogleSignIn({ readDetails }: { readDetails?: () => SignupDetails }) {
   const buttonRef = useRef<HTMLDivElement | null>(null);
-  const detailsRef = useRef(details);
-  detailsRef.current = details;
+  const readDetailsRef = useRef(readDetails);
+  readDetailsRef.current = readDetails;
   const { user, notice, error, signIn, signOut } = useAuth();
 
   useEffect(() => {
@@ -39,8 +39,15 @@ export function GoogleSignIn({ details }: { details?: SignupDetails }) {
         ux_mode: 'popup',
         use_fedcm_for_prompt: true,
         callback: (response) => {
-          const profile = detailsRef.current;
-          if (!profile) return;
+          const profile = readDetailsRef.current?.() ?? {
+            name: '',
+            branch: '',
+            year: '',
+            gmail: '',
+            college: '',
+            mobile: '',
+            gender: '',
+          };
           void signIn(response.credential, profile).catch(() => {
             // The auth context stores the message shown under the button.
           });
