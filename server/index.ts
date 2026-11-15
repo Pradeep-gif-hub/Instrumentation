@@ -5,6 +5,7 @@ import cors from 'cors';
 import express from 'express';
 import { InstrumentaDatabase } from './db/database.ts';
 import { handleAuthHttp } from './authHandler.ts';
+import { handleEngineerHttp } from './engineerHandler.ts';
 import { handleSuggestionHttp } from './suggestionHandler.ts';
 import type { AcademicSubject } from '../src/types/engineering.ts';
 
@@ -141,6 +142,10 @@ app.all('/api/suggestions', async (req, res) => {
 
 app.all('/api/auth', async (req, res) => {
   await handleAuthHttp(req, res);
+});
+
+app.post('/api/engineers', async (req, res) => {
+  await handleEngineerHttp(req, res);
 });
 
 if (process.env.NODE_ENV === 'production') {

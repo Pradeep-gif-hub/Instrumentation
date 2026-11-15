@@ -51,6 +51,16 @@ CREATE TABLE IF NOT EXISTS users (
   last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS engineer_applications (
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  study_year TEXT NOT NULL,
+  email TEXT NOT NULL,
+  linkedin TEXT NOT NULL DEFAULT '',
+  contact TEXT NOT NULL DEFAULT '',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS suggestions (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL,

@@ -19,6 +19,15 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS study_year TEXT NOT NULL DEFAULT '';
 ALTER TABLE users ADD COLUMN IF NOT EXISTS college TEXT NOT NULL DEFAULT '';
 ALTER TABLE users ADD COLUMN IF NOT EXISTS mobile TEXT NOT NULL DEFAULT '';
 ALTER TABLE users ADD COLUMN IF NOT EXISTS gender TEXT NOT NULL DEFAULT '';
+CREATE TABLE IF NOT EXISTS engineer_applications (
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  study_year TEXT NOT NULL,
+  email TEXT NOT NULL,
+  linkedin TEXT NOT NULL DEFAULT '',
+  contact TEXT NOT NULL DEFAULT '',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
 `;
 
 let pool: pg.Pool | null = null;
@@ -155,6 +164,21 @@ function mapUser(row: {
     createdAt: row.created_at,
     lastSeenAt: row.last_seen_at,
   };
+}
+
+export async function insertEngineerApplication(entry: {
+  name: string;
+  year: string;
+  email: string;
+  linkedin: string;
+  contact: string;
+}): Promise<void> {
+  const current = await ready();
+  await current.query(
+    `INSERT INTO engineer_applications (name, study_year, email, linkedin, contact)
+     VALUES ($1, $2, $3, $4, $5)`,
+    [entry.name, entry.year, entry.email, entry.linkedin, entry.contact],
+  );
 }
 
 export function profileIsComplete(user: StoredUser): boolean {
