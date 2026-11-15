@@ -2,8 +2,10 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useParams, useSearchParams } from 'react-router-dom';
 import { Layout } from '@/components/Layout';
 import { AppProvider } from '@/context/AppContext';
+import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { findCanonicalForTopic } from '@/data/instrumentRegistry';
 import { getCanonicalInstrumentUrl, type InstrumentTabKey } from '@/data/navigationTree';
+import { LoginPage } from '@/pages/LoginPage';
 
 const OverviewPage = lazy(() =>
   import('@/pages/OverviewPage').then((m) => ({ default: m.OverviewPage })),
@@ -90,14 +92,16 @@ function PageLoader() {
   );
 }
 
-export function App() {
+function SignedInApp() {
+  const { user, loading } = useAuth();
+  if (loading || !user) return <LoginPage />;
+
   return (
-    <BrowserRouter>
-      <AppProvider>
-        <Layout>
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
-              <Route path="/" element={<OverviewPage />} />
+    <AppProvider>
+      <Layout>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/" element={<OverviewPage />} />
               <Route path="/learn" element={<LearnPage />} />
               <Route path="/browse" element={<BrowsePage />} />
               <Route path="/instrument/:instrumentId" element={<InstrumentPage />} />
@@ -120,10 +124,19 @@ export function App() {
               <Route path="/toolbox" element={<ToolboxPage />} />
               <Route path="/toolbox/:toolId" element={<ToolboxPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </Suspense>
-        </Layout>
-      </AppProvider>
+          </Routes>
+        </Suspense>
+      </Layout>
+    </AppProvider>
+  );
+}
+
+export function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <SignedInApp />
+      </AuthProvider>
     </BrowserRouter>
   );
 }

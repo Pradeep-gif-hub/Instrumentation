@@ -27,28 +27,42 @@ function getPool(): pg.Pool {
 }
 
 export class InstrumentaDatabase {
-  private pool = getPool();
+  private pool: pg.Pool | null = null;
   private ready: Promise<void>;
+  private initError: Error | null = null;
 
   constructor() {
     this.ready = this.init();
   }
 
   private async init() {
-    const schemaSql = fs.readFileSync(SCHEMA_PATH, 'utf8');
-    await this.pool.query(schemaSql);
-    await this.seedAcademicSubjects();
+    try {
+      const pool = getPool();
+      this.pool = pool;
+      const schemaSql = fs.readFileSync(SCHEMA_PATH, 'utf8');
+      await pool.query(schemaSql);
+      await this.seedAcademicSubjects();
+    } catch (error) {
+      this.initError = error instanceof Error ? error : new Error('Database failed to start');
+    }
+  }
+
+  private connected(): pg.Pool {
+    if (!this.pool || this.initError) {
+      throw this.initError ?? new Error('Database is not connected');
+    }
+    return this.pool;
   }
 
   private async query<T>(sql: string, params: unknown[] = []): Promise<T[]> {
-    const result = await this.pool.query(sql, params);
+    const result = await this.connected().query(sql, params);
     return result.rows as T[];
   }
 
   private async seedAcademicSubjects() {
-    await this.pool.query("DELETE FROM academic_allocations WHERE is_custom = FALSE AND id NOT LIKE 'nitj-%'");
+    await this.connected().query("DELETE FROM academic_allocations WHERE is_custom = FALSE AND id NOT LIKE 'nitj-%'");
     for (const subject of DEFAULT_ACADEMIC_SUBJECTS) {
-      await this.pool.query(
+      await this.connected().query(
         `INSERT INTO academic_allocations
          (id, semester, code, name, credits, category, overview, completed, is_custom, units_json)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb)
@@ -71,7 +85,7 @@ export class InstrumentaDatabase {
     const seedVersion = await this.readPreference<string>('curriculum_seed_version');
     if (seedVersion === 'nitj-2025.06-four-subjects') return;
     for (const subject of DEFAULT_ACADEMIC_SUBJECTS) {
-      await this.pool.query(
+      await this.connected().query(
         `UPDATE academic_allocations
          SET semester = $1, code = $2, name = $3, credits = $4, category = $5,
              overview = $6, units_json = $7::jsonb, updated_at = NOW()
@@ -113,7 +127,7 @@ export class InstrumentaDatabase {
 
   async upsertBookmark(item: Omit<BookmarkItem, 'createdAt'>): Promise<BookmarkItem[]> {
     await this.ready;
-    await this.pool.query(
+    await this.connected().query(
       `INSERT INTO bookmarks (id, item_type, title, subtitle, route)
        VALUES ($1, $2, $3, $4, $5)
        ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title, subtitle = EXCLUDED.subtitle, route = EXCLUDED.route`,
@@ -124,7 +138,7 @@ export class InstrumentaDatabase {
 
   async deleteBookmark(id: string): Promise<BookmarkItem[]> {
     await this.ready;
-    await this.pool.query('DELETE FROM bookmarks WHERE id = $1', [id]);
+    await this.connected().query('DELETE FROM bookmarks WHERE id = $1', [id]);
     return this.listBookmarks();
   }
 
@@ -161,7 +175,7 @@ export class InstrumentaDatabase {
 
   async upsertAcademicSubject(subject: AcademicSubject): Promise<AcademicSubject[]> {
     await this.ready;
-    await this.pool.query(
+    await this.connected().query(
       `INSERT INTO academic_allocations
        (id, semester, code, name, credits, category, overview, completed, is_custom, units_json, updated_at)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, NOW())
@@ -194,13 +208,13 @@ export class InstrumentaDatabase {
 
   async deleteAcademicSubject(id: string): Promise<AcademicSubject[]> {
     await this.ready;
-    await this.pool.query('DELETE FROM academic_allocations WHERE id = $1', [id]);
+    await this.connected().query('DELETE FROM academic_allocations WHERE id = $1', [id]);
     return this.listAcademicSubjects();
   }
 
   async resetAcademicSubjects(): Promise<AcademicSubject[]> {
     await this.ready;
-    await this.pool.query('DELETE FROM academic_allocations');
+    await this.connected().query('DELETE FROM academic_allocations');
     await this.seedAcademicSubjects();
     return this.listAcademicSubjects();
   }
@@ -225,7 +239,7 @@ export class InstrumentaDatabase {
 
   async upsertQuestionAttempt(attempt: Omit<QuestionAttempt, 'answeredAt'>): Promise<QuestionAttempt[]> {
     await this.ready;
-    await this.pool.query(
+    await this.connected().query(
       `INSERT INTO question_attempts (question_id, is_correct, selected_option, user_numeric_answer, answered_at)
        VALUES ($1, $2, $3, $4, NOW())
        ON CONFLICT (question_id) DO UPDATE SET
@@ -240,7 +254,7 @@ export class InstrumentaDatabase {
 
   async clearQuestionAttempts(): Promise<QuestionAttempt[]> {
     await this.ready;
-    await this.pool.query('DELETE FROM question_attempts');
+    await this.connected().query('DELETE FROM question_attempts');
     return [];
   }
 
@@ -259,7 +273,7 @@ export class InstrumentaDatabase {
   }
 
   private async writePreference<T>(key: string, value: T): Promise<void> {
-    await this.pool.query(
+    await this.connected().query(
       `INSERT INTO preferences (key, value_json, updated_at)
        VALUES ($1, $2::jsonb, NOW())
        ON CONFLICT (key) DO UPDATE SET value_json = EXCLUDED.value_json, updated_at = NOW()`,
@@ -347,7 +361,7 @@ export class InstrumentaDatabase {
 
   async upsertUser(user: { id: string; email: string; name: string; picture: string }): Promise<void> {
     await this.ready;
-    await this.pool.query(
+    await this.connected().query(
       `INSERT INTO users (id, email, name, picture)
        VALUES ($1, $2, $3, $4)
        ON CONFLICT (id) DO UPDATE SET

@@ -1,9 +1,8 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import type { IncomingHttpHeaders } from 'node:http';
-import { InstrumentaDatabase } from './db/database.ts';
+import { countUsers, listUsers, upsertUser } from './userStore.ts';
 
 const COOKIE = 'instrumenta_session';
-const db = new InstrumentaDatabase();
 
 type AuthResponse = {
   status: (code: number) => AuthResponse;
@@ -14,7 +13,7 @@ type AuthResponse = {
 type AuthRequest = {
   method?: string;
   headers: IncomingHttpHeaders;
-  body?: { credential?: string };
+  body?: unknown;
 };
 
 type SessionPayload = {
@@ -22,6 +21,15 @@ type SessionPayload = {
   email: string;
   name: string;
   exp: number;
+};
+
+type GoogleProfile = {
+  aud?: string;
+  sub?: string;
+  email?: string;
+  email_verified?: string | boolean;
+  name?: string;
+  picture?: string;
 };
 
 function sessionSecret(): string {
@@ -75,17 +83,45 @@ function writeSessionCookie(res: AuthResponse, token: string | null) {
   res.setHeader('Set-Cookie', value);
 }
 
+function readCredential(body: unknown): string {
+  let value = body;
+  if (typeof Buffer !== 'undefined' && Buffer.isBuffer(value)) value = value.toString('utf8');
+  if (typeof value === 'string') {
+    try {
+      value = JSON.parse(value) as unknown;
+    } catch {
+      return '';
+    }
+  }
+  if (value && typeof value === 'object' && 'credential' in value) {
+    return String((value as { credential?: unknown }).credential || '');
+  }
+  return '';
+}
+
 export async function handleAuthHttp(req: AuthRequest, res: AuthResponse) {
   const method = (req.method || 'GET').toUpperCase();
   const session = readSession(req.headers.cookie);
 
   if (method === 'GET') {
     const isAdmin = Boolean(session && adminEmails().has(session.email.toLowerCase()));
+    let userCount: number | undefined;
+    let users: Awaited<ReturnType<typeof listUsers>> | undefined;
+    let notice: string | undefined;
+    if (isAdmin) {
+      try {
+        userCount = await countUsers();
+        users = await listUsers();
+      } catch {
+        notice = 'Signed-in accounts are not being saved yet.';
+      }
+    }
     res.status(200).json({
       user: session ? { email: session.email, name: session.name } : null,
       isAdmin,
-      userCount: isAdmin ? await db.countUsers() : undefined,
-      users: isAdmin ? await db.listUsers() : undefined,
+      userCount,
+      users,
+      notice,
     });
     return;
   }
@@ -101,7 +137,7 @@ export async function handleAuthHttp(req: AuthRequest, res: AuthResponse) {
     return;
   }
 
-  const credential = String(req.body?.credential || '');
+  const credential = readCredential(req.body);
   const clientId = process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID || '';
   if (!credential || !clientId) {
     res.status(400).json({ error: 'Google sign-in is not configured yet.' });
@@ -115,26 +151,25 @@ export async function handleAuthHttp(req: AuthRequest, res: AuthResponse) {
     res.status(401).json({ error: 'Google could not verify that sign-in.' });
     return;
   }
-  const profile = (await googleRes.json()) as {
-    aud?: string;
-    sub?: string;
-    email?: string;
-    email_verified?: string;
-    name?: string;
-    picture?: string;
-  };
-  if (profile.aud !== clientId || profile.email_verified !== 'true' || !profile.sub || !profile.email) {
+  const profile = (await googleRes.json()) as GoogleProfile;
+  const verified = profile.email_verified === true || profile.email_verified === 'true';
+  if (profile.aud !== clientId || !verified || !profile.sub || !profile.email) {
     res.status(401).json({ error: 'That Google account could not be accepted.' });
     return;
   }
 
   const name = profile.name || profile.email;
-  await db.upsertUser({
-    id: profile.sub,
-    email: profile.email,
-    name,
-    picture: profile.picture || '',
-  });
+  let notice: string | undefined;
+  try {
+    await upsertUser({
+      id: profile.sub,
+      email: profile.email,
+      name,
+      picture: profile.picture || '',
+    });
+  } catch {
+    notice = 'Signed in, but this account could not be saved yet.';
+  }
   const token = sign({
     sub: profile.sub,
     email: profile.email,
@@ -143,9 +178,18 @@ export async function handleAuthHttp(req: AuthRequest, res: AuthResponse) {
   });
   writeSessionCookie(res, token);
   const isAdmin = adminEmails().has(profile.email.toLowerCase());
+  let userCount: number | undefined;
+  if (isAdmin && !notice) {
+    try {
+      userCount = await countUsers();
+    } catch {
+      notice = 'Signed in, but the user count is unavailable.';
+    }
+  }
   res.status(200).json({
     user: { email: profile.email, name },
     isAdmin,
-    userCount: isAdmin ? await db.countUsers() : undefined,
+    userCount,
+    notice,
   });
 }

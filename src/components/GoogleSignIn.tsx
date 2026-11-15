@@ -1,11 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-
-type AuthUser = { email: string; name: string };
-type AuthState = {
-  user: AuthUser | null;
-  isAdmin: boolean;
-  userCount?: number;
-};
+import { useEffect, useRef } from 'react';
+import { useAuth } from '@/context/AuthContext';
 
 const CLIENT_ID = (import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined) || '';
 
@@ -14,101 +8,92 @@ declare global {
     google?: {
       accounts: {
         id: {
-          initialize: (config: { client_id: string; callback: (response: { credential: string }) => void }) => void;
-          renderButton: (parent: HTMLElement, options: Record<string, string | number>) => void;
+          initialize: (config: {
+            client_id: string;
+            callback: (response: { credential: string }) => void;
+            ux_mode?: 'popup' | 'redirect';
+            use_fedcm_for_prompt?: boolean;
+          }) => void;
+          renderButton: (parent: HTMLElement, options: Record<string, string | number | boolean>) => void;
         };
       };
     };
   }
 }
 
-async function readSession(): Promise<AuthState> {
-  const res = await fetch('/api/auth', { credentials: 'include' });
-  if (!res.ok) return { user: null, isAdmin: false };
-  return (await res.json()) as AuthState;
-}
-
 export function GoogleSignIn() {
   const buttonRef = useRef<HTMLDivElement | null>(null);
-  const [state, setState] = useState<AuthState>({ user: null, isAdmin: false });
+  const { user, isAdmin, userCount, notice, error, signIn, signOut } = useAuth();
 
   useEffect(() => {
-    let active = true;
-    readSession()
-      .then((next) => {
-        if (active) setState(next);
-      })
-      .catch(() => {
-        if (active) setState({ user: null, isAdmin: false });
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!CLIENT_ID || state.user || !buttonRef.current) return;
+    if (!CLIENT_ID || user || !buttonRef.current) return;
     const parent = buttonRef.current;
+    let cancelled = false;
+
     const render = () => {
-      if (!window.google || !parent) return;
+      if (cancelled || !window.google || !parent) return;
       window.google.accounts.id.initialize({
         client_id: CLIENT_ID,
-        callback: async (response) => {
-          const res = await fetch('/api/auth', {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ credential: response.credential }),
+        ux_mode: 'popup',
+        use_fedcm_for_prompt: true,
+        callback: (response) => {
+          void signIn(response.credential).catch(() => {
+            // The auth context stores the message shown under the button.
           });
-          if (res.ok) setState((await res.json()) as AuthState);
         },
       });
       parent.replaceChildren();
       window.google.accounts.id.renderButton(parent, {
         type: 'standard',
         theme: 'outline',
-        size: 'medium',
+        size: 'large',
         text: 'signin_with',
-        width: 210,
+        width: 280,
+        shape: 'pill',
       });
     };
+
     if (window.google) {
       render();
-      return;
+      return () => {
+        cancelled = true;
+      };
     }
-    const script = document.createElement('script');
+
+    const existing = document.querySelector<HTMLScriptElement>('script[src="https://accounts.google.com/gsi/client"]');
+    const script = existing ?? document.createElement('script');
     script.src = 'https://accounts.google.com/gsi/client';
     script.async = true;
     script.onload = render;
-    document.head.appendChild(script);
-  }, [state.user]);
-
-  const signOut = async () => {
-    await fetch('/api/auth', { method: 'DELETE', credentials: 'include' });
-    setState({ user: null, isAdmin: false });
-  };
+    if (!existing) document.head.appendChild(script);
+    return () => {
+      cancelled = true;
+    };
+  }, [signIn, user]);
 
   if (!CLIENT_ID) {
     return (
-      <p className="px-3 text-[13px] leading-snug text-[var(--st-on-var)]">
+      <p className="text-[14px] leading-snug text-[var(--st-on-var)]">
         Google sign-in needs a client id in the site settings.
       </p>
     );
   }
 
-  if (state.user) {
+  if (user) {
     return (
       <div className="space-y-1 px-3">
-        <p className="truncate text-[14px] font-semibold text-[var(--st-on)]">{state.user.name}</p>
-        {state.isAdmin && typeof state.userCount === 'number' && (
-          <p className="text-[13px] text-[var(--st-on-var)]">{state.userCount} signed-in users</p>
+        <p className="truncate text-[14px] font-semibold text-[var(--st-on)]">{user.name}</p>
+        {isAdmin && typeof userCount === 'number' && (
+          <p className="text-[13px] text-[var(--st-on-var)]">{userCount} signed-in users</p>
         )}
-        <button type="button" onClick={signOut} className="text-[13px] font-semibold text-[var(--st-accent-text)]">
+        {notice && <p className="text-[13px] leading-snug text-[var(--st-on-var)]">{notice}</p>}
+        {error && <p className="text-[13px] leading-snug text-[var(--st-accent-text)]">{error}</p>}
+        <button type="button" onClick={() => void signOut()} className="text-[13px] font-semibold text-[var(--st-accent-text)]">
           Sign out
         </button>
       </div>
     );
   }
 
-  return <div ref={buttonRef} className="px-2" />;
+  return <div ref={buttonRef} />;
 }

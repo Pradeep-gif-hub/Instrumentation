@@ -164,6 +164,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   // Load persisted data from SQLite/Express API if reachable, else remain in browser storage mode
   useEffect(() => {
+    if (!import.meta.env.DEV && !import.meta.env.VITE_API_BASE_URL) return;
     let active = true;
     (async () => {
       try {
