@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import cors from 'cors';
 import express from 'express';
 import { InstrumentaDatabase } from './db/database.ts';
+import { handleAuthHttp } from './authHandler.ts';
 import { handleSuggestionHttp } from './suggestionHandler.ts';
 import type { AcademicSubject } from '../src/types/engineering.ts';
 
@@ -26,17 +27,17 @@ app.get('/api/health', (_req, res) => {
 });
 
 // Bookmarks
-app.get('/api/bookmarks', (_req, res) => {
-  res.json({ items: db.listBookmarks() });
+app.get('/api/bookmarks', async (_req, res) => {
+  res.json({ items: await db.listBookmarks() });
 });
 
-app.post('/api/bookmarks', (req, res) => {
+app.post('/api/bookmarks', async (req, res) => {
   const { id, itemType, title, subtitle, route } = req.body ?? {};
   if (!id || !itemType || !title || !route) {
     res.status(400).json({ error: 'Missing required bookmark fields (id, itemType, title, route).' });
     return;
   }
-  const items = db.upsertBookmark({
+  const items = await db.upsertBookmark({
     id: String(id),
     itemType,
     title: String(title),
@@ -46,17 +47,17 @@ app.post('/api/bookmarks', (req, res) => {
   res.json({ items });
 });
 
-app.delete('/api/bookmarks/:id', (req, res) => {
-  const items = db.deleteBookmark(req.params.id);
+app.delete('/api/bookmarks/:id', async (req, res) => {
+  const items = await db.deleteBookmark(req.params.id);
   res.json({ items });
 });
 
 // Academic Roadmap Editable Allocations
-app.get('/api/roadmap', (_req, res) => {
-  res.json({ subjects: db.listAcademicSubjects() });
+app.get('/api/roadmap', async (_req, res) => {
+  res.json({ subjects: await db.listAcademicSubjects() });
 });
 
-app.post('/api/roadmap', (req, res) => {
+app.post('/api/roadmap', async (req, res) => {
   const payload = req.body as AcademicSubject;
   if (!payload?.name || !payload?.code || !payload?.semester) {
     res.status(400).json({ error: 'Missing required subject fields (semester, code, name).' });
@@ -76,39 +77,39 @@ app.post('/api/roadmap', (req, res) => {
       },
     ],
   };
-  res.json({ subjects: db.upsertAcademicSubject(subject) });
+  res.json({ subjects: await db.upsertAcademicSubject(subject) });
 });
 
-app.put('/api/roadmap/:id', (req, res) => {
+app.put('/api/roadmap/:id', async (req, res) => {
   const payload = req.body as AcademicSubject;
   if (!payload?.name || !payload?.code) {
     res.status(400).json({ error: 'Invalid subject payload.' });
     return;
   }
-  const subjects = db.upsertAcademicSubject({ ...payload, id: req.params.id });
+  const subjects = await db.upsertAcademicSubject({ ...payload, id: req.params.id });
   res.json({ subjects });
 });
 
-app.delete('/api/roadmap/:id', (req, res) => {
-  res.json({ subjects: db.deleteAcademicSubject(req.params.id) });
+app.delete('/api/roadmap/:id', async (req, res) => {
+  res.json({ subjects: await db.deleteAcademicSubject(req.params.id) });
 });
 
-app.post('/api/roadmap/reset', (_req, res) => {
-  res.json({ subjects: db.resetAcademicSubjects() });
+app.post('/api/roadmap/reset', async (_req, res) => {
+  res.json({ subjects: await db.resetAcademicSubjects() });
 });
 
 // Interview Progress
-app.get('/api/progress', (_req, res) => {
-  res.json({ attempts: db.listQuestionAttempts() });
+app.get('/api/progress', async (_req, res) => {
+  res.json({ attempts: await db.listQuestionAttempts() });
 });
 
-app.post('/api/progress', (req, res) => {
+app.post('/api/progress', async (req, res) => {
   const { questionId, isCorrect, selectedOption, userNumericAnswer } = req.body ?? {};
   if (!questionId || typeof isCorrect !== 'boolean') {
     res.status(400).json({ error: 'Missing questionId or isCorrect boolean.' });
     return;
   }
-  const attempts = db.upsertQuestionAttempt({
+  const attempts = await db.upsertQuestionAttempt({
     questionId: String(questionId),
     isCorrect,
     selectedOption: typeof selectedOption === 'number' ? selectedOption : undefined,
@@ -117,25 +118,29 @@ app.post('/api/progress', (req, res) => {
   res.json({ attempts });
 });
 
-app.delete('/api/progress', (_req, res) => {
-  res.json({ attempts: db.clearQuestionAttempts() });
+app.delete('/api/progress', async (_req, res) => {
+  res.json({ attempts: await db.clearQuestionAttempts() });
 });
 
 // UI Preferences (Navigation Tree state)
-app.get('/api/preferences/:key', (req, res) => {
-  const value = db.getPreference(req.params.key);
+app.get('/api/preferences/:key', async (req, res) => {
+  const value = await db.getPreference(req.params.key);
   res.json({ key: req.params.key, value });
 });
 
-app.put('/api/preferences/:key', (req, res) => {
+app.put('/api/preferences/:key', async (req, res) => {
   const value = req.body?.value ?? null;
-  db.setPreference(req.params.key, value);
+  await db.setPreference(req.params.key, value);
   res.json({ key: req.params.key, value });
 });
 
 // Instrument Suggestions (shared validation, rate limit, honeypot & Resend email sender)
 app.all('/api/suggestions', async (req, res) => {
   await handleSuggestionHttp(req, res);
+});
+
+app.all('/api/auth', async (req, res) => {
+  await handleAuthHttp(req, res);
 });
 
 if (process.env.NODE_ENV === 'production') {

@@ -13,6 +13,7 @@ import {
   Linkedin,
   Menu,
   Moon,
+  Notebook,
   Plus,
   Search,
   Sun,
@@ -25,6 +26,7 @@ import { resolveCanonicalPath } from '@/data/navigationTree';
 import { getPlainDisplayName } from '@/data/simpleGuides';
 import { DEVELOPERS } from '@/lib/siteConfig';
 import { BookmarksDrawer } from './BookmarksDrawer';
+import { GoogleSignIn } from './GoogleSignIn';
 import { PlantBackdrop } from './PlantBackdrop';
 import { CursorDotField } from './CursorDotField';
 import { SearchModal } from './SearchModal';
@@ -70,6 +72,29 @@ const MAIN_LINKS = [
   { id: 'toolbox', label: 'Toolbox', path: '/toolbox', icon: Calculator },
 ];
 
+const NOTE_LINKS = [
+  {
+    label: 'Semester 2',
+    href: 'https://drive.google.com/drive/folders/1qKgMco_DMXC6CNVOgyZC95FfZtWE074b?usp=sharing',
+  },
+  {
+    label: 'Semester 3',
+    href: 'https://drive.google.com/drive/folders/14sL1xKHOQUE1i2ULdxyNv29PgsN2ZJIZ?usp=sharing',
+  },
+  {
+    label: 'Semester 4',
+    href: 'https://drive.google.com/drive/folders/1Ek8sYBgBtd_RQM2V-9lPstkOca5vQSNV?usp=sharing',
+  },
+  {
+    label: 'Semester 5',
+    href: 'https://drive.google.com/drive/folders/1uP6ZAVXDa25fUbJ7sSw7qcr3EO-CM2RZ?usp=sharing',
+  },
+  {
+    label: 'Additional semesters',
+    href: 'https://drive.google.com/drive/folders/1p49STgJqpYccV_EAPbOXggUUQut-Omdj?usp=sharing',
+  },
+];
+
 const MORE_LINKS = [
   { label: 'Automation & PLC', to: '/automation' },
   { label: 'Plant diagrams', to: '/applications' },
@@ -100,6 +125,7 @@ function buildPlainBreadcrumb(pathname: string): { label: string; to?: string }[
 export function Layout({ children }: { children: React.ReactNode }) {
   const { theme, toggleTheme, setSearchOpen, bookmarks, setBookmarksOpen } = useApp();
   const [moreOpen, setMoreOpen] = useState(false);
+  const [notesOpen, setNotesOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [suggestOpen, setSuggestOpen] = useState(false);
 
@@ -244,6 +270,37 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <div className="pt-2">
               <button
                 type="button"
+                aria-expanded={notesOpen}
+                onClick={() => setNotesOpen((v) => !v)}
+                className="flex w-full cursor-pointer items-center justify-between rounded-xl px-3 py-2.5 text-[16px] font-normal text-[var(--st-on-var)] transition hover:bg-[var(--st-2)] hover:text-[var(--st-on)]"
+              >
+                <span className="flex items-center gap-2.5">
+                  <Notebook className="size-4" />
+                  Notes
+                </span>
+                {notesOpen ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
+              </button>
+              {notesOpen && (
+                <div className="mt-1 space-y-1 border-l border-[var(--st-line)] pl-3">
+                  {NOTE_LINKS.map((link) => (
+                    <a
+                      key={link.href}
+                      href={link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={onNavigate}
+                      className="block rounded-lg px-3 py-2 text-[14px] font-normal text-[var(--st-on-var)] transition hover:bg-[var(--st-2)] hover:text-[var(--st-on)]"
+                    >
+                      {link.label}
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="pt-2">
+              <button
+                type="button"
                 aria-expanded={moreOpen}
                 onClick={() => setMoreOpen((v) => !v)}
                 className="flex w-full cursor-pointer items-center justify-between rounded-xl px-3 py-2.5 text-[16px] font-normal text-[var(--st-on-var)] transition hover:bg-[var(--st-2)] hover:text-[var(--st-on)]"
@@ -271,6 +328,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </div>
 
         <div className="space-y-2 pt-4">
+          <GoogleSignIn />
           <button
             type="button"
             onClick={() => {

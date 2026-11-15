@@ -1,124 +1,136 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { DatabaseSync } from 'node:sqlite';
+import pg from 'pg';
 import { DEFAULT_ACADEMIC_SUBJECTS } from '../../src/data/roadmapData.ts';
 import type { AcademicSubject, BookmarkItem, QuestionAttempt } from '../../src/types/engineering.ts';
 
+const { Pool } = pg;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = path.resolve(__dirname, '../../data');
-const DB_PATH = path.join(DATA_DIR, 'instrumenta.db');
-const SCHEMA_PATH = path.join(__dirname, 'schema.sql');
+const SCHEMA_PATH = path.join(__dirname, 'postgres.schema.sql');
+
+let sharedPool: pg.Pool | null = null;
+
+function getPool(): pg.Pool {
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error('DATABASE_URL is missing. Paste the Neon pooled connection string into .env and Vercel.');
+  }
+  if (!sharedPool) {
+    sharedPool = new Pool({
+      connectionString,
+      ssl: connectionString.includes('localhost') ? undefined : { rejectUnauthorized: false },
+      max: 5,
+    });
+  }
+  return sharedPool;
+}
 
 export class InstrumentaDatabase {
-  private db: DatabaseSync;
+  private pool = getPool();
+  private ready: Promise<void>;
 
   constructor() {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-    this.db = new DatabaseSync(DB_PATH);
-    this.db.exec('PRAGMA journal_mode = WAL;');
-    const schemaSql = fs.readFileSync(SCHEMA_PATH, 'utf8');
-    this.db.exec(schemaSql);
-    this.seedAcademicSubjectsIfEmpty();
+    this.ready = this.init();
   }
 
-  private seedAcademicSubjectsIfEmpty() {
-    // Migrate legacy pre-NITJ uncustomized seed rows while keeping custom entries and nitj-* edits intact
-    this.db
-      .prepare("DELETE FROM academic_allocations WHERE is_custom = 0 AND id NOT LIKE 'nitj-%'")
-      .run();
+  private async init() {
+    const schemaSql = fs.readFileSync(SCHEMA_PATH, 'utf8');
+    await this.pool.query(schemaSql);
+    await this.seedAcademicSubjects();
+  }
 
-    const insert = this.db.prepare(`
-      INSERT OR IGNORE INTO academic_allocations
-      (id, semester, code, name, credits, category, overview, completed, is_custom, units_json)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-    for (const s of DEFAULT_ACADEMIC_SUBJECTS) {
-      insert.run(
-        s.id,
-        s.semester,
-        s.code,
-        s.name,
-        s.credits,
-        s.category,
-        s.overview,
-        s.completed ? 1 : 0,
-        s.isCustom ? 1 : 0,
-        JSON.stringify(s.units),
+  private async query<T>(sql: string, params: unknown[] = []): Promise<T[]> {
+    const result = await this.pool.query(sql, params);
+    return result.rows as T[];
+  }
+
+  private async seedAcademicSubjects() {
+    await this.pool.query("DELETE FROM academic_allocations WHERE is_custom = FALSE AND id NOT LIKE 'nitj-%'");
+    for (const subject of DEFAULT_ACADEMIC_SUBJECTS) {
+      await this.pool.query(
+        `INSERT INTO academic_allocations
+         (id, semester, code, name, credits, category, overview, completed, is_custom, units_json)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb)
+         ON CONFLICT (id) DO NOTHING`,
+        [
+          subject.id,
+          subject.semester,
+          subject.code,
+          subject.name,
+          subject.credits,
+          subject.category,
+          subject.overview,
+          subject.completed,
+          subject.isCustom,
+          JSON.stringify(subject.units),
+        ],
       );
     }
 
-    // One-time non-destructive curriculum expansion sync for default non-custom NITJ subjects
-    const seedVersion = this.getPreference<string>('curriculum_seed_version');
-    if (seedVersion !== 'nitj-2025.06-four-subjects') {
-      const updateDefault = this.db.prepare(`
-        UPDATE academic_allocations
-        SET semester = ?, code = ?, name = ?, credits = ?, category = ?, overview = ?, units_json = ?, updated_at = datetime('now')
-        WHERE id = ? AND is_custom = 0
-      `);
-      for (const s of DEFAULT_ACADEMIC_SUBJECTS) {
-        updateDefault.run(
-          s.semester,
-          s.code,
-          s.name,
-          s.credits,
-          s.category,
-          s.overview,
-          JSON.stringify(s.units),
-          s.id,
-        );
-      }
-      this.setPreference('curriculum_seed_version', 'nitj-2025.06-four-subjects');
+    const seedVersion = await this.readPreference<string>('curriculum_seed_version');
+    if (seedVersion === 'nitj-2025.06-four-subjects') return;
+    for (const subject of DEFAULT_ACADEMIC_SUBJECTS) {
+      await this.pool.query(
+        `UPDATE academic_allocations
+         SET semester = $1, code = $2, name = $3, credits = $4, category = $5,
+             overview = $6, units_json = $7::jsonb, updated_at = NOW()
+         WHERE id = $8 AND is_custom = FALSE`,
+        [
+          subject.semester,
+          subject.code,
+          subject.name,
+          subject.credits,
+          subject.category,
+          subject.overview,
+          JSON.stringify(subject.units),
+          subject.id,
+        ],
+      );
     }
+    await this.writePreference('curriculum_seed_version', 'nitj-2025.06-four-subjects');
   }
 
-  // Bookmarks
-  listBookmarks(): BookmarkItem[] {
-    const rows = this.db
-      .prepare('SELECT id, item_type, title, subtitle, route, created_at FROM bookmarks ORDER BY created_at DESC')
-      .all() as Array<{
+  async listBookmarks(): Promise<BookmarkItem[]> {
+    await this.ready;
+    const rows = await this.query<{
       id: string;
       item_type: BookmarkItem['itemType'];
       title: string;
       subtitle: string;
       route: string;
       created_at: string;
-    }>;
-    return rows.map((r) => ({
-      id: r.id,
-      itemType: r.item_type,
-      title: r.title,
-      subtitle: r.subtitle,
-      route: r.route,
-      createdAt: r.created_at,
+    }>('SELECT id, item_type, title, subtitle, route, created_at FROM bookmarks ORDER BY created_at DESC');
+    return rows.map((row) => ({
+      id: row.id,
+      itemType: row.item_type,
+      title: row.title,
+      subtitle: row.subtitle,
+      route: row.route,
+      createdAt: row.created_at,
     }));
   }
 
-  upsertBookmark(item: Omit<BookmarkItem, 'createdAt'>): BookmarkItem[] {
-    this.db
-      .prepare(`
-        INSERT INTO bookmarks (id, item_type, title, subtitle, route)
-        VALUES (?, ?, ?, ?, ?)
-        ON CONFLICT(id) DO UPDATE SET title = excluded.title, subtitle = excluded.subtitle, route = excluded.route
-      `)
-      .run(item.id, item.itemType, item.title, item.subtitle, item.route);
+  async upsertBookmark(item: Omit<BookmarkItem, 'createdAt'>): Promise<BookmarkItem[]> {
+    await this.ready;
+    await this.pool.query(
+      `INSERT INTO bookmarks (id, item_type, title, subtitle, route)
+       VALUES ($1, $2, $3, $4, $5)
+       ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title, subtitle = EXCLUDED.subtitle, route = EXCLUDED.route`,
+      [item.id, item.itemType, item.title, item.subtitle, item.route],
+    );
     return this.listBookmarks();
   }
 
-  deleteBookmark(id: string): BookmarkItem[] {
-    this.db.prepare('DELETE FROM bookmarks WHERE id = ?').run(id);
+  async deleteBookmark(id: string): Promise<BookmarkItem[]> {
+    await this.ready;
+    await this.pool.query('DELETE FROM bookmarks WHERE id = $1', [id]);
     return this.listBookmarks();
   }
 
-  // Academic Roadmap Editable Allocations
-  listAcademicSubjects(): AcademicSubject[] {
-    const rows = this.db
-      .prepare(`
-        SELECT id, semester, code, name, credits, category, overview, completed, is_custom, units_json
-        FROM academic_allocations
-        ORDER BY semester ASC, code ASC
-      `)
-      .all() as Array<{
+  async listAcademicSubjects(): Promise<AcademicSubject[]> {
+    await this.ready;
+    const rows = await this.query<{
       id: string;
       semester: number;
       code: string;
@@ -126,44 +138,45 @@ export class InstrumentaDatabase {
       credits: number;
       category: AcademicSubject['category'];
       overview: string;
-      completed: number;
-      is_custom: number;
-      units_json: string;
-    }>;
-
-    return rows.map((r) => ({
-      id: r.id,
-      semester: r.semester,
-      code: r.code,
-      name: r.name,
-      credits: r.credits,
-      category: r.category,
-      overview: r.overview,
-      completed: Boolean(r.completed),
-      isCustom: Boolean(r.is_custom),
-      units: JSON.parse(r.units_json),
+      completed: boolean;
+      is_custom: boolean;
+      units_json: AcademicSubject['units'] | string;
+    }>(
+      `SELECT id, semester, code, name, credits, category, overview, completed, is_custom, units_json
+       FROM academic_allocations ORDER BY semester ASC, code ASC`,
+    );
+    return rows.map((row) => ({
+      id: row.id,
+      semester: row.semester,
+      code: row.code,
+      name: row.name,
+      credits: row.credits,
+      category: row.category,
+      overview: row.overview,
+      completed: Boolean(row.completed),
+      isCustom: Boolean(row.is_custom),
+      units: typeof row.units_json === 'string' ? JSON.parse(row.units_json) : row.units_json,
     }));
   }
 
-  upsertAcademicSubject(subject: AcademicSubject): AcademicSubject[] {
-    this.db
-      .prepare(`
-        INSERT INTO academic_allocations
-        (id, semester, code, name, credits, category, overview, completed, is_custom, units_json, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
-        ON CONFLICT(id) DO UPDATE SET
-          semester = excluded.semester,
-          code = excluded.code,
-          name = excluded.name,
-          credits = excluded.credits,
-          category = excluded.category,
-          overview = excluded.overview,
-          completed = excluded.completed,
-          is_custom = excluded.is_custom,
-          units_json = excluded.units_json,
-          updated_at = datetime('now')
-      `)
-      .run(
+  async upsertAcademicSubject(subject: AcademicSubject): Promise<AcademicSubject[]> {
+    await this.ready;
+    await this.pool.query(
+      `INSERT INTO academic_allocations
+       (id, semester, code, name, credits, category, overview, completed, is_custom, units_json, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, NOW())
+       ON CONFLICT (id) DO UPDATE SET
+         semester = EXCLUDED.semester,
+         code = EXCLUDED.code,
+         name = EXCLUDED.name,
+         credits = EXCLUDED.credits,
+         category = EXCLUDED.category,
+         overview = EXCLUDED.overview,
+         completed = EXCLUDED.completed,
+         is_custom = EXCLUDED.is_custom,
+         units_json = EXCLUDED.units_json,
+         updated_at = NOW()`,
+      [
         subject.id,
         subject.semester,
         subject.code,
@@ -171,98 +184,101 @@ export class InstrumentaDatabase {
         subject.credits,
         subject.category,
         subject.overview,
-        subject.completed ? 1 : 0,
-        subject.isCustom ? 1 : 0,
+        subject.completed,
+        subject.isCustom,
         JSON.stringify(subject.units),
-      );
+      ],
+    );
     return this.listAcademicSubjects();
   }
 
-  deleteAcademicSubject(id: string): AcademicSubject[] {
-    this.db.prepare('DELETE FROM academic_allocations WHERE id = ?').run(id);
+  async deleteAcademicSubject(id: string): Promise<AcademicSubject[]> {
+    await this.ready;
+    await this.pool.query('DELETE FROM academic_allocations WHERE id = $1', [id]);
     return this.listAcademicSubjects();
   }
 
-  resetAcademicSubjects(): AcademicSubject[] {
-    this.db.exec('DELETE FROM academic_allocations');
-    this.seedAcademicSubjectsIfEmpty();
+  async resetAcademicSubjects(): Promise<AcademicSubject[]> {
+    await this.ready;
+    await this.pool.query('DELETE FROM academic_allocations');
+    await this.seedAcademicSubjects();
     return this.listAcademicSubjects();
   }
 
-  // Interview Question Attempts & Progress
-  listQuestionAttempts(): QuestionAttempt[] {
-    const rows = this.db
-      .prepare('SELECT question_id, is_correct, selected_option, user_numeric_answer, answered_at FROM question_attempts')
-      .all() as Array<{
+  async listQuestionAttempts(): Promise<QuestionAttempt[]> {
+    await this.ready;
+    const rows = await this.query<{
       question_id: string;
-      is_correct: number;
+      is_correct: boolean;
       selected_option: number | null;
       user_numeric_answer: number | null;
       answered_at: string;
-    }>;
-
-    return rows.map((r) => ({
-      questionId: r.question_id,
-      isCorrect: Boolean(r.is_correct),
-      selectedOption: r.selected_option ?? undefined,
-      userNumericAnswer: r.user_numeric_answer ?? undefined,
-      answeredAt: r.answered_at,
+    }>('SELECT question_id, is_correct, selected_option, user_numeric_answer, answered_at FROM question_attempts');
+    return rows.map((row) => ({
+      questionId: row.question_id,
+      isCorrect: Boolean(row.is_correct),
+      selectedOption: row.selected_option ?? undefined,
+      userNumericAnswer: row.user_numeric_answer ?? undefined,
+      answeredAt: row.answered_at,
     }));
   }
 
-  upsertQuestionAttempt(attempt: Omit<QuestionAttempt, 'answeredAt'>): QuestionAttempt[] {
-    this.db
-      .prepare(`
-        INSERT INTO question_attempts (question_id, is_correct, selected_option, user_numeric_answer, answered_at)
-        VALUES (?, ?, ?, ?, datetime('now'))
-        ON CONFLICT(question_id) DO UPDATE SET
-          is_correct = excluded.is_correct,
-          selected_option = excluded.selected_option,
-          user_numeric_answer = excluded.user_numeric_answer,
-          answered_at = datetime('now')
-      `)
-      .run(
-        attempt.questionId,
-        attempt.isCorrect ? 1 : 0,
-        attempt.selectedOption ?? null,
-        attempt.userNumericAnswer ?? null,
-      );
+  async upsertQuestionAttempt(attempt: Omit<QuestionAttempt, 'answeredAt'>): Promise<QuestionAttempt[]> {
+    await this.ready;
+    await this.pool.query(
+      `INSERT INTO question_attempts (question_id, is_correct, selected_option, user_numeric_answer, answered_at)
+       VALUES ($1, $2, $3, $4, NOW())
+       ON CONFLICT (question_id) DO UPDATE SET
+         is_correct = EXCLUDED.is_correct,
+         selected_option = EXCLUDED.selected_option,
+         user_numeric_answer = EXCLUDED.user_numeric_answer,
+         answered_at = NOW()`,
+      [attempt.questionId, attempt.isCorrect, attempt.selectedOption ?? null, attempt.userNumericAnswer ?? null],
+    );
     return this.listQuestionAttempts();
   }
 
-  clearQuestionAttempts(): QuestionAttempt[] {
-    this.db.exec('DELETE FROM question_attempts');
+  async clearQuestionAttempts(): Promise<QuestionAttempt[]> {
+    await this.ready;
+    await this.pool.query('DELETE FROM question_attempts');
     return [];
   }
 
-  // UI Preferences (e.g., Navigation Tree open nodes)
-  getPreference<T = unknown>(key: string): T | null {
-    const row = this.db
-      .prepare('SELECT value_json FROM preferences WHERE key = ?')
-      .get(key) as { value_json: string } | undefined;
-    if (!row) return null;
-    try {
-      return JSON.parse(row.value_json) as T;
-    } catch {
-      return null;
+  private async readPreference<T>(key: string): Promise<T | null> {
+    const rows = await this.query<{ value_json: T | string }>('SELECT value_json FROM preferences WHERE key = $1', [key]);
+    const value = rows[0]?.value_json;
+    if (value == null) return null;
+    if (typeof value === 'string') {
+      try {
+        return JSON.parse(value) as T;
+      } catch {
+        return null;
+      }
     }
-  }
-
-  setPreference<T = unknown>(key: string, value: T): T {
-    this.db
-      .prepare(`
-        INSERT INTO preferences (key, value_json, updated_at)
-        VALUES (?, ?, datetime('now'))
-        ON CONFLICT(key) DO UPDATE SET
-          value_json = excluded.value_json,
-          updated_at = datetime('now')
-      `)
-      .run(key, JSON.stringify(value));
     return value;
   }
 
-  // Instrument Suggestions
-  createSuggestion(input: {
+  private async writePreference<T>(key: string, value: T): Promise<void> {
+    await this.pool.query(
+      `INSERT INTO preferences (key, value_json, updated_at)
+       VALUES ($1, $2::jsonb, NOW())
+       ON CONFLICT (key) DO UPDATE SET value_json = EXCLUDED.value_json, updated_at = NOW()`,
+      [key, JSON.stringify(value)],
+    );
+  }
+
+  async getPreference<T = unknown>(key: string): Promise<T | null> {
+    await this.ready;
+    return this.readPreference<T>(key);
+  }
+
+  async setPreference<T = unknown>(key: string, value: T): Promise<T> {
+    await this.ready;
+    await this.writePreference(key, value);
+    return value;
+  }
+
+  async createSuggestion(input: {
     name: string;
     family: string;
     reason: string;
@@ -270,25 +286,8 @@ export class InstrumentaDatabase {
     contactName?: string;
     contactEmail?: string;
   }) {
-    const info = this.db
-      .prepare(`
-        INSERT INTO suggestions (name, family, reason, link, contact_name, contact_email, status)
-        VALUES (?, ?, ?, ?, ?, ?, 'new')
-      `)
-      .run(
-        input.name,
-        input.family,
-        input.reason,
-        input.link ?? '',
-        input.contactName ?? '',
-        input.contactEmail ?? '',
-      );
-    const id = Number(info.lastInsertRowid);
-    const row = this.db
-      .prepare(
-        'SELECT id, name, family, reason, link, contact_name, contact_email, status, created_at FROM suggestions WHERE id = ?',
-      )
-      .get(id) as {
+    await this.ready;
+    const rows = await this.query<{
       id: number;
       name: string;
       family: string;
@@ -298,7 +297,13 @@ export class InstrumentaDatabase {
       contact_email: string;
       status: string;
       created_at: string;
-    };
+    }>(
+      `INSERT INTO suggestions (name, family, reason, link, contact_name, contact_email, status)
+       VALUES ($1, $2, $3, $4, $5, $6, 'new')
+       RETURNING id, name, family, reason, link, contact_name, contact_email, status, created_at`,
+      [input.name, input.family, input.reason, input.link ?? '', input.contactName ?? '', input.contactEmail ?? ''],
+    );
+    const row = rows[0];
     return {
       id: row.id,
       name: row.name,
@@ -312,12 +317,9 @@ export class InstrumentaDatabase {
     };
   }
 
-  listSuggestions() {
-    const rows = this.db
-      .prepare(
-        'SELECT id, name, family, reason, link, contact_name, contact_email, status, created_at FROM suggestions ORDER BY created_at DESC, id DESC',
-      )
-      .all() as Array<{
+  async listSuggestions() {
+    await this.ready;
+    const rows = await this.query<{
       id: number;
       name: string;
       family: string;
@@ -327,7 +329,9 @@ export class InstrumentaDatabase {
       contact_email: string;
       status: string;
       created_at: string;
-    }>;
+    }>(
+      'SELECT id, name, family, reason, link, contact_name, contact_email, status, created_at FROM suggestions ORDER BY created_at DESC, id DESC',
+    );
     return rows.map((row) => ({
       id: row.id,
       name: row.name,
@@ -340,5 +344,46 @@ export class InstrumentaDatabase {
       createdAt: row.created_at,
     }));
   }
-}
 
+  async upsertUser(user: { id: string; email: string; name: string; picture: string }): Promise<void> {
+    await this.ready;
+    await this.pool.query(
+      `INSERT INTO users (id, email, name, picture)
+       VALUES ($1, $2, $3, $4)
+       ON CONFLICT (id) DO UPDATE SET
+         email = EXCLUDED.email,
+         name = EXCLUDED.name,
+         picture = EXCLUDED.picture,
+         last_seen_at = NOW()`,
+      [user.id, user.email, user.name, user.picture],
+    );
+  }
+
+  async countUsers(): Promise<number> {
+    await this.ready;
+    const rows = await this.query<{ n: string }>('SELECT COUNT(*)::int AS n FROM users');
+    return Number(rows[0]?.n ?? 0);
+  }
+
+  async listUsers(): Promise<
+    Array<{ id: string; email: string; name: string; picture: string; createdAt: string; lastSeenAt: string }>
+  > {
+    await this.ready;
+    const rows = await this.query<{
+      id: string;
+      email: string;
+      name: string;
+      picture: string;
+      created_at: string;
+      last_seen_at: string;
+    }>('SELECT id, email, name, picture, created_at, last_seen_at FROM users ORDER BY last_seen_at DESC');
+    return rows.map((row) => ({
+      id: row.id,
+      email: row.email,
+      name: row.name,
+      picture: row.picture,
+      createdAt: row.created_at,
+      lastSeenAt: row.last_seen_at,
+    }));
+  }
+}
