@@ -6,9 +6,19 @@ CREATE TABLE IF NOT EXISTS users (
   email TEXT NOT NULL UNIQUE,
   name TEXT NOT NULL,
   picture TEXT NOT NULL DEFAULT '',
+  branch TEXT NOT NULL DEFAULT '',
+  study_year TEXT NOT NULL DEFAULT '',
+  college TEXT NOT NULL DEFAULT '',
+  mobile TEXT NOT NULL DEFAULT '',
+  gender TEXT NOT NULL DEFAULT '',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+ALTER TABLE users ADD COLUMN IF NOT EXISTS branch TEXT NOT NULL DEFAULT '';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS study_year TEXT NOT NULL DEFAULT '';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS college TEXT NOT NULL DEFAULT '';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS mobile TEXT NOT NULL DEFAULT '';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS gender TEXT NOT NULL DEFAULT '';
 `;
 
 let pool: pg.Pool | null = null;
@@ -41,23 +51,71 @@ async function ready(): Promise<pg.Pool> {
   return current;
 }
 
+export type StoredUser = {
+  id: string;
+  email: string;
+  name: string;
+  picture: string;
+  branch: string;
+  year: string;
+  college: string;
+  mobile: string;
+  gender: string;
+  createdAt: string;
+  lastSeenAt: string;
+};
+
 export async function upsertUser(user: {
   id: string;
   email: string;
   name: string;
   picture: string;
+  branch: string;
+  year: string;
+  college: string;
+  mobile: string;
+  gender: string;
 }): Promise<void> {
   const current = await ready();
   await current.query(
-    `INSERT INTO users (id, email, name, picture)
-     VALUES ($1, $2, $3, $4)
+    `INSERT INTO users (id, email, name, picture, branch, study_year, college, mobile, gender)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
      ON CONFLICT (id) DO UPDATE SET
        email = EXCLUDED.email,
        name = EXCLUDED.name,
        picture = EXCLUDED.picture,
+       branch = EXCLUDED.branch,
+       study_year = EXCLUDED.study_year,
+       college = EXCLUDED.college,
+       mobile = EXCLUDED.mobile,
+       gender = EXCLUDED.gender,
        last_seen_at = NOW()`,
-    [user.id, user.email, user.name, user.picture],
+    [user.id, user.email, user.name, user.picture, user.branch, user.year, user.college, user.mobile, user.gender],
   );
+}
+
+export async function getUser(id: string): Promise<StoredUser | null> {
+  const current = await ready();
+  const result = await current.query<{
+    id: string;
+    email: string;
+    name: string;
+    picture: string;
+    branch: string;
+    study_year: string;
+    college: string;
+    mobile: string;
+    gender: string;
+    created_at: string;
+    last_seen_at: string;
+  }>(
+    `SELECT id, email, name, picture, branch, study_year, college, mobile, gender, created_at, last_seen_at
+     FROM users WHERE id = $1`,
+    [id],
+  );
+  const row = result.rows[0];
+  if (!row) return null;
+  return mapUser(row);
 }
 
 export async function countUsers(): Promise<number> {
@@ -66,24 +124,55 @@ export async function countUsers(): Promise<number> {
   return Number(result.rows[0]?.n ?? 0);
 }
 
-export async function listUsers(): Promise<
-  Array<{ id: string; email: string; name: string; picture: string; createdAt: string; lastSeenAt: string }>
-> {
+function mapUser(row: {
+  id: string;
+  email: string;
+  name: string;
+  picture: string;
+  branch: string;
+  study_year: string;
+  college: string;
+  mobile: string;
+  gender: string;
+  created_at: string;
+  last_seen_at: string;
+}): StoredUser {
+  return {
+    id: row.id,
+    email: row.email,
+    name: row.name,
+    picture: row.picture,
+    branch: row.branch,
+    year: row.study_year,
+    college: row.college,
+    mobile: row.mobile,
+    gender: row.gender,
+    createdAt: row.created_at,
+    lastSeenAt: row.last_seen_at,
+  };
+}
+
+export function profileIsComplete(user: StoredUser): boolean {
+  return Boolean(user.name && user.branch && user.year && user.college && user.mobile && user.gender);
+}
+
+export async function listUsers(): Promise<StoredUser[]> {
   const current = await ready();
   const result = await current.query<{
     id: string;
     email: string;
     name: string;
     picture: string;
+    branch: string;
+    study_year: string;
+    college: string;
+    mobile: string;
+    gender: string;
     created_at: string;
     last_seen_at: string;
-  }>('SELECT id, email, name, picture, created_at, last_seen_at FROM users ORDER BY last_seen_at DESC');
-  return result.rows.map((row) => ({
-    id: row.id,
-    email: row.email,
-    name: row.name,
-    picture: row.picture,
-    createdAt: row.created_at,
-    lastSeenAt: row.last_seen_at,
-  }));
+  }>(
+    `SELECT id, email, name, picture, branch, study_year, college, mobile, gender, created_at, last_seen_at
+     FROM users ORDER BY last_seen_at DESC`,
+  );
+  return result.rows.map(mapUser);
 }

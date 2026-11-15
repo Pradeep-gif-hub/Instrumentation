@@ -31,7 +31,7 @@ export function UserCountButton() {
         {label}
       </button>
       {open && (
-        <div className="absolute bottom-full left-0 z-40 mb-2 w-64 rounded-2xl border border-[var(--st-line)] bg-[var(--st-1)] p-3 shadow-lg">
+        <div className="absolute bottom-full left-0 z-40 mb-2 w-72 rounded-2xl border border-[var(--st-line)] bg-[var(--st-1)] p-3 shadow-lg">
           <p className="text-[13px] font-semibold text-[var(--st-on)]">{label} signed in</p>
           {notice && <p className="mt-1 text-[12px] leading-snug text-[var(--st-on-var)]">{notice}</p>}
           <ul className="mt-2 max-h-48 space-y-1 overflow-auto">
@@ -40,6 +40,9 @@ export function UserCountButton() {
               <li key={person.id}>
                 <p className="truncate text-[13px] font-medium text-[var(--st-on)]">{person.name}</p>
                 <p className="truncate text-[12px] text-[var(--st-on-var)]">{person.email}</p>
+                <p className="truncate text-[12px] text-[var(--st-on-var)]">
+                  {[person.branch, person.year, person.college].filter(Boolean).join(' · ')}
+                </p>
               </li>
             ))}
           </ul>

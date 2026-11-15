@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth, type SignupDetails } from '@/context/AuthContext';
 
 const CLIENT_ID = (import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined) || '';
 
@@ -21,8 +21,10 @@ declare global {
   }
 }
 
-export function GoogleSignIn() {
+export function GoogleSignIn({ details }: { details?: SignupDetails }) {
   const buttonRef = useRef<HTMLDivElement | null>(null);
+  const detailsRef = useRef(details);
+  detailsRef.current = details;
   const { user, notice, error, signIn, signOut } = useAuth();
 
   useEffect(() => {
@@ -37,7 +39,9 @@ export function GoogleSignIn() {
         ux_mode: 'popup',
         use_fedcm_for_prompt: true,
         callback: (response) => {
-          void signIn(response.credential).catch(() => {
+          const profile = detailsRef.current;
+          if (!profile) return;
+          void signIn(response.credential, profile).catch(() => {
             // The auth context stores the message shown under the button.
           });
         },

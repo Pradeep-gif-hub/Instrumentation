@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import type { IncomingHttpHeaders } from 'node:http';
-import { countUsers, listUsers, upsertUser } from './userStore.ts';
+import { countUsers, getUser, listUsers, profileIsComplete, upsertUser } from './userStore.ts';
 
 const COOKIE = 'instrumenta_session';
 
@@ -83,20 +83,65 @@ function writeSessionCookie(res: AuthResponse, token: string | null) {
   res.setHeader('Set-Cookie', value);
 }
 
-function readCredential(body: unknown): string {
+const YEARS = new Set(['1st year', '2nd year', '3rd year', '4th year']);
+const GENDERS = new Set(['Female', 'Male', 'Prefer not to say']);
+
+export type SignupDetails = {
+  name: string;
+  branch: string;
+  year: string;
+  gmail: string;
+  college: string;
+  mobile: string;
+  gender: string;
+};
+
+function clip(value: unknown, max: number): string {
+  return String(value ?? '').replace(/\s+/g, ' ').trim().slice(0, max);
+}
+
+function readSignup(body: unknown): { credential: string; details: SignupDetails } {
   let value = body;
   if (typeof Buffer !== 'undefined' && Buffer.isBuffer(value)) value = value.toString('utf8');
   if (typeof value === 'string') {
     try {
       value = JSON.parse(value) as unknown;
     } catch {
-      return '';
+      return { credential: '', details: emptyDetails() };
     }
   }
-  if (value && typeof value === 'object' && 'credential' in value) {
-    return String((value as { credential?: unknown }).credential || '');
-  }
-  return '';
+  const record = value && typeof value === 'object' ? (value as { credential?: unknown; profile?: unknown }) : {};
+  const profile = record.profile && typeof record.profile === 'object' ? (record.profile as Record<string, unknown>) : {};
+  const mobile = clip(profile.mobile, 20).replace(/[^\d+]/g, '');
+  return {
+    credential: String(record.credential || ''),
+    details: {
+      name: clip(profile.name, 80),
+      branch: clip(profile.branch, 80),
+      year: clip(profile.year, 20),
+      gmail: clip(profile.gmail, 120).toLowerCase(),
+      college: clip(profile.college, 120),
+      mobile,
+      gender: clip(profile.gender, 40),
+    },
+  };
+}
+
+function emptyDetails(): SignupDetails {
+  return { name: '', branch: '', year: '', gmail: '', college: '', mobile: '', gender: '' };
+}
+
+function detailError(details: SignupDetails, googleEmail: string): string | null {
+  if (details.name.length < 2) return 'Enter your name.';
+  if (details.branch.length < 2) return 'Enter your branch.';
+  if (!YEARS.has(details.year)) return 'Choose your year.';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(details.gmail)) return 'Enter your Gmail address.';
+  if (details.gmail !== googleEmail.toLowerCase()) return 'The Gmail in the form has to match the Google account you sign in with.';
+  if (details.college.length < 2) return 'Enter your college.';
+  const digits = details.mobile.replace(/\D/g, '');
+  if (digits.length < 10 || digits.length > 15) return 'Enter a valid mobile number.';
+  if (!GENDERS.has(details.gender)) return 'Choose a gender.';
+  return null;
 }
 
 export async function handleAuthHttp(req: AuthRequest, res: AuthResponse) {
@@ -104,25 +149,30 @@ export async function handleAuthHttp(req: AuthRequest, res: AuthResponse) {
   const session = readSession(req.headers.cookie);
 
   if (method === 'GET') {
-    const isAdmin = Boolean(session && adminEmails().has(session.email.toLowerCase()));
-    let userCount: number | undefined;
-    let users: Awaited<ReturnType<typeof listUsers>> | undefined;
-    let notice: string | undefined;
-    if (isAdmin) {
-      try {
-        userCount = await countUsers();
-        users = await listUsers();
-      } catch {
-        notice = 'Signed-in accounts are not being saved yet.';
-      }
+    if (!session) {
+      res.status(200).json({ user: null, isAdmin: false });
+      return;
     }
-    res.status(200).json({
-      user: session ? { email: session.email, name: session.name } : null,
-      isAdmin,
-      userCount,
-      users,
-      notice,
-    });
+    try {
+      const saved = await getUser(session.sub);
+      if (!saved || !profileIsComplete(saved)) {
+        res.status(200).json({ user: null, isAdmin: false });
+        return;
+      }
+      const isAdmin = adminEmails().has(saved.email.toLowerCase());
+      res.status(200).json({
+        user: { email: saved.email, name: saved.name },
+        isAdmin,
+        userCount: isAdmin ? await countUsers() : undefined,
+        users: isAdmin ? await listUsers() : undefined,
+      });
+    } catch {
+      res.status(200).json({
+        user: null,
+        isAdmin: false,
+        notice: 'Accounts cannot be saved yet because the database is not connected.',
+      });
+    }
     return;
   }
 
@@ -137,7 +187,7 @@ export async function handleAuthHttp(req: AuthRequest, res: AuthResponse) {
     return;
   }
 
-  const credential = readCredential(req.body);
+  const { credential, details } = readSignup(req.body);
   const clientId = process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID || '';
   if (!credential || !clientId) {
     res.status(400).json({ error: 'Google sign-in is not configured yet.' });
@@ -158,38 +208,51 @@ export async function handleAuthHttp(req: AuthRequest, res: AuthResponse) {
     return;
   }
 
-  const name = profile.name || profile.email;
-  let notice: string | undefined;
+  const problem = detailError(details, profile.email);
+  if (problem) {
+    res.status(400).json({ error: problem });
+    return;
+  }
+
   try {
     await upsertUser({
       id: profile.sub,
       email: profile.email,
-      name,
+      name: details.name,
       picture: profile.picture || '',
+      branch: details.branch,
+      year: details.year,
+      college: details.college,
+      mobile: details.mobile.replace(/\D/g, ''),
+      gender: details.gender,
     });
   } catch {
-    notice = 'Signed in, but this account could not be saved yet.';
+    res.status(503).json({ error: 'Your details could not be saved. The database is not connected yet.' });
+    return;
   }
+
   const token = sign({
     sub: profile.sub,
     email: profile.email,
-    name,
+    name: details.name,
     exp: Date.now() + 30 * 24 * 60 * 60 * 1000,
   });
   writeSessionCookie(res, token);
   const isAdmin = adminEmails().has(profile.email.toLowerCase());
   let userCount: number | undefined;
-  if (isAdmin && !notice) {
+  let users: Awaited<ReturnType<typeof listUsers>> | undefined;
+  if (isAdmin) {
     try {
       userCount = await countUsers();
+      users = await listUsers();
     } catch {
-      notice = 'Signed in, but the user count is unavailable.';
+      userCount = undefined;
     }
   }
   res.status(200).json({
-    user: { email: profile.email, name },
+    user: { email: profile.email, name: details.name },
     isAdmin,
     userCount,
-    notice,
+    users,
   });
 }

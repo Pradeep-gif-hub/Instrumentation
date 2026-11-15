@@ -27,6 +27,7 @@ import { getPlainDisplayName } from '@/data/simpleGuides';
 import { DEVELOPERS } from '@/lib/siteConfig';
 import { BookmarksDrawer } from './BookmarksDrawer';
 import { GoogleSignIn } from './GoogleSignIn';
+import { StudyResources } from './StudyResources';
 import { UserCountButton } from './UserCountButton';
 import { PlantBackdrop } from './PlantBackdrop';
 import { CursorDotField } from './CursorDotField';
@@ -127,6 +128,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const { theme, toggleTheme, setSearchOpen, bookmarks, setBookmarksOpen } = useApp();
   const [moreOpen, setMoreOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
+  const [resourcesOpen, setResourcesOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [suggestOpen, setSuggestOpen] = useState(false);
 
@@ -295,6 +297,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       {link.label}
                     </a>
                   ))}
+                  <button
+                    type="button"
+                    aria-expanded={resourcesOpen}
+                    onClick={() => setResourcesOpen((open) => !open)}
+                    className="flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-left text-[14px] font-semibold text-[var(--st-on)] transition hover:bg-[var(--st-2)]"
+                  >
+                    <span>Resources</span>
+                    {resourcesOpen ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
+                  </button>
+                  {resourcesOpen && <StudyResources onNavigate={onNavigate} />}
                 </div>
               )}
             </div>

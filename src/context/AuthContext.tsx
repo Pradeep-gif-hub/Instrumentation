@@ -1,7 +1,25 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 export type AuthUser = { email: string; name: string };
-export type SignedInAccount = { id: string; email: string; name: string };
+export type SignupDetails = {
+  name: string;
+  branch: string;
+  year: string;
+  gmail: string;
+  college: string;
+  mobile: string;
+  gender: string;
+};
+export type SignedInAccount = {
+  id: string;
+  email: string;
+  name: string;
+  branch: string;
+  year: string;
+  college: string;
+  mobile: string;
+  gender: string;
+};
 
 type AuthResponse = {
   user: AuthUser | null;
@@ -20,7 +38,7 @@ type AuthContextValue = {
   notice: string | null;
   error: string | null;
   loading: boolean;
-  signIn: (credential: string) => Promise<void>;
+  signIn: (credential: string, details: SignupDetails) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -72,14 +90,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [apply]);
 
   const signIn = useCallback(
-    async (credential: string) => {
+    async (credential: string, details: SignupDetails) => {
       setError(null);
       try {
         const res = await fetch('/api/auth', {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ credential }),
+          body: JSON.stringify({ credential, profile: details }),
         });
         const data = await readAuthResponse(res);
         apply(data);
