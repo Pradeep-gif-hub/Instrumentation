@@ -36,11 +36,8 @@ export function OverviewPage() {
 
   return (
     <div className="glass pointer-events-auto relative z-10 mx-auto flex max-w-[860px] flex-col gap-8 px-6 py-6 sm:px-8 sm:py-8">
-      <header className="space-y-2">
-        <h1>What do you want to study?</h1>
-        <p className="text-[16px] text-[var(--st-on-var)]">
-          Start with your semester. The next choices show up only after you pick one.
-        </p>
+      <header>
+        <h1>Welcome to the ICE Factory of NITJ where Engineers are produced.. 😭😭</h1>
       </header>
 
       <section className="space-y-3">

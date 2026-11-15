@@ -606,8 +606,8 @@ function PlantScene({
       <Pipe a={[9.3, 1.1, 0.4]} b={[7.6, 0.85, 3.2]} radius={0.06} color="#3c6e96" />
       <Worker position={[-2, 0, 2.15]} task="walk" labelRoot={labelRoot} person={{ name: 'Pradeep Awasthi', detail: 'GET · Instrumentation' }} />
       <Worker position={[-5.4, 0, 1.15]} task="gauge" labelRoot={labelRoot} person={{ name: 'Shanmukh Datta', detail: 'GET · Instrumentation' }} />
-      <Worker position={[1.15, 0, 1.15]} task="valve" labelRoot={labelRoot} person={{ name: 'Jasper Jolly', detail: 'HPCL Officer' }} />
-      <Worker position={[4.6, 0, 1.35]} task="furnace" labelRoot={labelRoot} person={{ name: 'Plant GET', detail: 'On shift · furnace round' }} />
+      <Worker position={[1.15, 0, 1.15]} task="valve" labelRoot={labelRoot} person={{ name: 'Elon Musk', detail: 'SpaceX' }} />
+      <Worker position={[4.6, 0, 1.35]} task="furnace" labelRoot={labelRoot} person={{ name: 'Jensen Huang', detail: 'Fresher' }} />
       <mesh position={[-7.4, 1.25, -3.1]}>
         <boxGeometry args={[1.5, 2.3, 1.35]} />
         <meshStandardMaterial color={light ? '#e7eef3' : '#243140'} roughness={0.6} />
