@@ -27,6 +27,7 @@ import { getPlainDisplayName } from '@/data/simpleGuides';
 import { DEVELOPERS } from '@/lib/siteConfig';
 import { BookmarksDrawer } from './BookmarksDrawer';
 import { GoogleSignIn } from './GoogleSignIn';
+import { UserCountButton } from './UserCountButton';
 import { PlantBackdrop } from './PlantBackdrop';
 import { CursorDotField } from './CursorDotField';
 import { SearchModal } from './SearchModal';
@@ -497,6 +498,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
         <footer className={`flex min-h-[48px] flex-wrap items-center justify-between gap-x-6 gap-y-2 border-t border-[var(--st-line)] px-4 py-2.5 text-[13px] text-[var(--st-on-var)] sm:px-8 ${location.pathname === '/' ? 'pointer-events-auto' : ''}`}>
           <div className="flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1">
+            <UserCountButton />
             <span className="font-medium text-[var(--st-on)]">&copy; {new Date().getFullYear()} Instrument-AI</span>
             <span className="text-[var(--st-edge)]" aria-hidden="true">·</span>
             <span>Meet the Developers</span>

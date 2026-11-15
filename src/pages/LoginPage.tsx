@@ -15,12 +15,12 @@ export function LoginPage() {
 
   return (
     <div className={`studio ${theme === 'light' ? 'light' : ''} relative grid min-h-screen place-items-center bg-[var(--st-0)] px-4 py-10`}>
-      <main className="w-full max-w-[420px]">
-        <section className="glass pointer-events-auto w-full max-w-[420px] px-6 py-8 sm:px-8">
+      <main className="w-full max-w-[480px]">
+        <section className="glass pointer-events-auto w-full max-w-[480px] px-6 py-8 sm:px-8">
           <img src="/favicon.svg" width={48} height={48} alt="" />
-          <h1 className="mt-5 text-[32px] leading-tight">Sign in</h1>
+          <h1 className="mt-5 text-[32px] leading-tight">Welcome to Instrumentation AI</h1>
           <p className="mt-2 text-[16px] leading-relaxed text-[var(--st-on-var)]">
-            Use your Google account to open Instrument-AI.
+            Before you start, let’s sign in. This is so we can follow up when you share feedback later.
           </p>
           <div className="mt-6 min-h-11">
             {loading ? (

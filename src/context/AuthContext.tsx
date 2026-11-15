@@ -1,11 +1,13 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 export type AuthUser = { email: string; name: string };
+export type SignedInAccount = { id: string; email: string; name: string };
 
 type AuthResponse = {
   user: AuthUser | null;
   isAdmin: boolean;
   userCount?: number;
+  users?: SignedInAccount[];
   notice?: string;
   error?: string;
 };
@@ -14,6 +16,7 @@ type AuthContextValue = {
   user: AuthUser | null;
   isAdmin: boolean;
   userCount?: number;
+  users: SignedInAccount[];
   notice: string | null;
   error: string | null;
   loading: boolean;
@@ -35,6 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [userCount, setUserCount] = useState<number | undefined>(undefined);
+  const [users, setUsers] = useState<SignedInAccount[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -43,6 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(data.user);
     setIsAdmin(Boolean(data.isAdmin));
     setUserCount(data.userCount);
+    setUsers(Array.isArray(data.users) ? data.users : []);
     setNotice(data.notice || null);
   }, []);
 
@@ -91,13 +96,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setIsAdmin(false);
     setUserCount(undefined);
+    setUsers([]);
     setNotice(null);
     setError(null);
   }, []);
 
   const value = useMemo(
-    () => ({ user, isAdmin, userCount, notice, error, loading, signIn, signOut }),
-    [user, isAdmin, userCount, notice, error, loading, signIn, signOut],
+    () => ({ user, isAdmin, userCount, users, notice, error, loading, signIn, signOut }),
+    [user, isAdmin, userCount, users, notice, error, loading, signIn, signOut],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

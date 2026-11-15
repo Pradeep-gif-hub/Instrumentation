@@ -23,7 +23,7 @@ declare global {
 
 export function GoogleSignIn() {
   const buttonRef = useRef<HTMLDivElement | null>(null);
-  const { user, isAdmin, userCount, notice, error, signIn, signOut } = useAuth();
+  const { user, notice, error, signIn, signOut } = useAuth();
 
   useEffect(() => {
     if (!CLIENT_ID || user || !buttonRef.current) return;
@@ -83,9 +83,6 @@ export function GoogleSignIn() {
     return (
       <div className="space-y-1 px-3">
         <p className="truncate text-[14px] font-semibold text-[var(--st-on)]">{user.name}</p>
-        {isAdmin && typeof userCount === 'number' && (
-          <p className="text-[13px] text-[var(--st-on-var)]">{userCount} signed-in users</p>
-        )}
         {notice && <p className="text-[13px] leading-snug text-[var(--st-on-var)]">{notice}</p>}
         {error && <p className="text-[13px] leading-snug text-[var(--st-accent-text)]">{error}</p>}
         <button type="button" onClick={() => void signOut()} className="text-[13px] font-semibold text-[var(--st-accent-text)]">
