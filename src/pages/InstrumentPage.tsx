@@ -254,7 +254,6 @@ export function InstrumentPage() {
       proceduralKey: entry.proceduralKey,
       supportsExplode: entry.supportsExplode,
       supportsCutaway: entry.supportsCutaway,
-      cutawayOnly: entry.id.startsWith('valve-') || entry.proceduralKey?.startsWith('valve-'),
       defaultCameraPos: entry.defaultCameraPos,
       target: entry.target,
       parts: entry.parts,

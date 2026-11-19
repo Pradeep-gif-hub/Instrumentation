@@ -1,6 +1,6 @@
 import { useFrame } from '@react-three/fiber';
-import { useMemo, useRef, type MutableRefObject } from 'react';
-import * as THREE from 'three';
+import { useRef, type MutableRefObject } from 'react';
+import type * as THREE from 'three';
 import { CadPartGroup, useCadSim } from '../CadPart';
 import { FlangeWithBolts } from '../primitives';
 
@@ -30,43 +30,42 @@ function Wheel({ position }: { position: [number, number, number] }) {
 }
 
 function LiquidStream({ opening }: { opening: MutableRefObject<number> }) {
-  const mesh = useRef<THREE.InstancedMesh>(null);
-  const bore = useRef<THREE.Mesh>(null);
-  const dummy = useMemo(() => new THREE.Object3D(), []);
-  const count = 28;
+  const upstream = useRef<THREE.Mesh>(null);
+  const throat = useRef<THREE.Mesh>(null);
+  const downstream = useRef<THREE.Mesh>(null);
 
-  useFrame(({ clock }) => {
+  useFrame(() => {
     const open = opening.current;
-    const speed = 0.08 + open * 0.22;
-    if (bore.current) {
-      bore.current.scale.set(0.35 + open * 0.65, 0.35 + open * 0.65, 0.45 + open * 0.55);
-      const mat = bore.current.material as THREE.MeshStandardMaterial;
-      mat.opacity = 0.18 + open * 0.28;
+    if (throat.current) {
+      const radius = 0.012 + open * 0.055;
+      throat.current.scale.set(radius / 0.07, radius / 0.07, 1);
     }
-    if (!mesh.current) return;
-    for (let i = 0; i < count; i += 1) {
-      const phase = i / count;
-      let x = ((phase + clock.elapsedTime * speed) % 1) * 2.05 - 1.02;
-      if (open < 0.22 && x > -0.02) x = -0.08 - (i % 6) * 0.05;
-      const wobble = Math.sin(clock.elapsedTime * 1.4 + i) * 0.012;
-      dummy.position.set(x, wobble, 0);
-      dummy.scale.set(0.055 + open * 0.03, 0.04 + open * 0.02, 0.04);
-      dummy.updateMatrix();
-      mesh.current.setMatrixAt(i, dummy.matrix);
+    if (downstream.current) {
+      downstream.current.scale.x = Math.max(0.04, open);
+      downstream.current.position.x = 0.12 + open * 0.38;
+      const mat = downstream.current.material as THREE.MeshStandardMaterial;
+      mat.opacity = 0.08 + open * 0.4;
     }
-    mesh.current.instanceMatrix.needsUpdate = true;
   });
+
+  const water = (
+    <meshStandardMaterial color="#4aa3d8" transparent opacity={0.42} roughness={0.06} metalness={0.02} depthWrite={false} />
+  );
 
   return (
     <group>
-      <mesh ref={bore} rotation={[0, 0, Math.PI / 2]}>
-        <cylinderGeometry args={[0.09, 0.09, 1.7, 16]} />
-        <meshStandardMaterial color="#3d92c9" transparent opacity={0.28} roughness={0.08} metalness={0.02} depthWrite={false} />
+      <mesh ref={upstream} position={[-0.42, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+        <cylinderGeometry args={[0.055, 0.055, 0.72, 16]} />
+        {water}
       </mesh>
-      <instancedMesh ref={mesh} args={[undefined, undefined, count]}>
-        <sphereGeometry args={[1, 8, 6]} />
-        <meshStandardMaterial color="#8ec8ea" transparent opacity={0.72} roughness={0.12} metalness={0.02} depthWrite={false} />
-      </instancedMesh>
+      <mesh ref={throat} position={[0, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+        <cylinderGeometry args={[0.07, 0.07, 0.16, 14]} />
+        <meshStandardMaterial color="#7ec8ee" transparent opacity={0.5} roughness={0.05} depthWrite={false} />
+      </mesh>
+      <mesh ref={downstream} position={[0.42, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+        <cylinderGeometry args={[0.055, 0.055, 0.72, 16]} />
+        <meshStandardMaterial color="#4aa3d8" transparent opacity={0.4} roughness={0.06} metalness={0.02} depthWrite={false} />
+      </mesh>
     </group>
   );
 }
@@ -145,8 +144,8 @@ function BodyShell({ kind }: { kind: string }) {
     );
   }
   return (
-    <mesh>
-      <sphereGeometry args={[0.32, 22, 16]} />
+    <mesh rotation={[0, 0, Math.PI / 2]}>
+      <cylinderGeometry args={[0.24, 0.24, 0.5, 24]} />
       <Paint color={CYAN} metal={0.25} />
     </mesh>
   );
