@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { CadPartGroup, useCadSim, useInstrumentFinish } from '../CadPart';
 import { buildDialFaceTexture, buildLcdDisplayTexture } from '../materials';
 import { DialPointer, FlangeWithBolts, HelicalTube, PbrMat } from '../primitives';
+import { ValveFamilyModel } from './ValveChartModels';
 
 export function ControlValveAssembly() {
   const sim = useCadSim();
@@ -14,7 +15,7 @@ export function ControlValveAssembly() {
       <CadPartGroup partId="cv_globe_body" basePos={[0, -0.72, 0]} explodeOffset={[0, -0.75, 0]} isCutawayShell>
         <mesh rotation={[0, 0, Math.PI / 2]}>
           <cylinderGeometry args={[0.38, 0.38, 1.8, 32]} />
-          <PbrMat preset="blueHousing" />
+          <meshStandardMaterial color="#e6b325" metalness={0.3} roughness={0.42} />
         </mesh>
         <FlangeWithBolts outerR={0.62} innerR={0.34} thickness={0.12} boltCount={8} position={[-0.95, 0, 0]} rotation={[0, 0, Math.PI / 2]} />
         <FlangeWithBolts outerR={0.62} innerR={0.34} thickness={0.12} boltCount={8} position={[0.95, 0, 0]} rotation={[0, 0, Math.PI / 2]} />
@@ -40,12 +41,16 @@ export function ControlValveAssembly() {
           <boxGeometry args={[0.1, 0.92, 0.2]} />
           <PbrMat preset="castIron" />
         </mesh>
+        <mesh position={[0.42, 0.15, 0]}>
+          <boxGeometry args={[0.22, 0.28, 0.18]} />
+          <PbrMat preset="ssDark" />
+        </mesh>
       </CadPartGroup>
 
       <CadPartGroup partId="cv_actuator" basePos={[0, 0.98, 0]} explodeOffset={[0, 0.95, 0]} isCutawayShell>
         <mesh>
           <cylinderGeometry args={[0.88, 0.88, 0.32, 36]} />
-          <PbrMat preset="ssDark" />
+          <meshStandardMaterial color="#2a9fd6" metalness={0.25} roughness={0.42} />
         </mesh>
         <HelicalTube position={[0, -0.22, 0]} radius={0.18} height={0.32} turns={4} tubeRadius={0.025} preset="brass" />
       </CadPartGroup>
@@ -458,118 +463,6 @@ export function VfdDriveAssembly() {
           <PbrMat preset="alnicoRed" />
         </mesh>
       </CadPartGroup>
-    </group>
-  );
-}
-
-function ValveFlanges() {
-  return (
-    <group>
-      <mesh rotation={[0, 0, Math.PI / 2]}>
-        <cylinderGeometry args={[0.14, 0.14, 2.1, 20]} />
-        <PbrMat preset="ss316" />
-      </mesh>
-      <FlangeWithBolts outerR={0.42} innerR={0.16} thickness={0.08} boltCount={6} position={[-1.05, 0, 0]} rotation={[0, 0, Math.PI / 2]} />
-      <FlangeWithBolts outerR={0.42} innerR={0.16} thickness={0.08} boltCount={6} position={[1.05, 0, 0]} rotation={[0, 0, Math.PI / 2]} />
-    </group>
-  );
-}
-
-export function ValveFamilyModel({ kind }: { kind: string }) {
-  const sim = useCadSim();
-  const lift = sim.primaryNorm;
-
-  return (
-    <group>
-      <ValveFlanges />
-      {kind === 'butterfly' && (
-        <mesh position={[0, 0, 0]} rotation={[0, 0, lift * 1.2]}>
-          <cylinderGeometry args={[0.34, 0.34, 0.06, 28]} />
-          <PbrMat preset="blueHousing" />
-        </mesh>
-      )}
-      {kind === 'needle' && (
-        <mesh position={[0, 0.35 - lift * 0.25, 0]}>
-          <cylinderGeometry args={[0.02, 0.12, 0.7, 16]} />
-          <PbrMat preset="ss316" />
-        </mesh>
-      )}
-      {kind === 'gate' && (
-        <mesh position={[0, -0.15 + lift * 0.45, 0]}>
-          <boxGeometry args={[0.08, 0.55, 0.42]} />
-          <PbrMat preset="ss316" />
-        </mesh>
-      )}
-      {kind === 'slide' && (
-        <mesh position={[lift * 0.35, 0, 0]}>
-          <boxGeometry args={[0.55, 0.08, 0.4]} />
-          <PbrMat preset="castIron" />
-        </mesh>
-      )}
-      {kind === 'ball' && (
-        <mesh>
-          <sphereGeometry args={[0.28, 24, 16]} />
-          <PbrMat preset="ss316" />
-        </mesh>
-      )}
-      {kind === 'diaphragm' && (
-        <mesh position={[0, 0.12, 0]} rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.32, 0.32, 0.06, 24]} />
-          <PbrMat preset="rubber" />
-        </mesh>
-      )}
-      {kind === 'y-type' && (
-        <mesh position={[0.15, 0.28, 0]} rotation={[0, 0, -0.7]}>
-          <cylinderGeometry args={[0.16, 0.2, 0.7, 20]} />
-          <PbrMat preset="blueHousing" />
-        </mesh>
-      )}
-      {kind === 'angle' && (
-        <mesh position={[0.28, -0.22, 0]}>
-          <boxGeometry args={[0.55, 0.28, 0.28]} />
-          <PbrMat preset="blueHousing" />
-        </mesh>
-      )}
-      {kind === 'swing-nrv' && (
-        <mesh position={[0.05, 0.08, 0]} rotation={[0, 0, -0.4 - lift * 0.8]}>
-          <boxGeometry args={[0.28, 0.05, 0.32]} />
-          <PbrMat preset="brass" />
-        </mesh>
-      )}
-      {kind === 'piston-nrv' && (
-        <mesh position={[ -0.15 + lift * 0.35, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[0.16, 0.16, 0.22, 20]} />
-          <PbrMat preset="brass" />
-        </mesh>
-      )}
-      {(kind === 'bpr' || kind === 'pr' || kind === 'flow-reg') && (
-        <mesh position={[0, 0.42, 0]}>
-          <cylinderGeometry args={[0.28, 0.32, 0.36, 24]} />
-          <PbrMat preset={kind === 'pr' ? 'alnicoRed' : 'blueHousing'} />
-        </mesh>
-      )}
-      {kind === 'piston' && (
-        <mesh position={[0, 0.15 + lift * 0.2, 0]}>
-          <cylinderGeometry args={[0.18, 0.18, 0.4, 20]} />
-          <PbrMat preset="brass" />
-        </mesh>
-      )}
-      {kind === 'flush-bottom' && (
-        <mesh position={[0, -0.35, 0]}>
-          <cylinderGeometry args={[0.22, 0.14, 0.45, 20]} />
-          <PbrMat preset="blueHousing" />
-        </mesh>
-      )}
-      {(kind === 'globe' || kind === 'flow-reg' || kind === 'diaphragm' || kind === 'y-type' || kind === 'angle' || kind === 'piston') && (
-        <mesh position={[0, 0.05, 0]}>
-          <sphereGeometry args={[0.32, 24, 16]} />
-          <PbrMat preset="blueHousing" />
-        </mesh>
-      )}
-      <mesh position={[0.55, 0.55, 0]} rotation={[0, 0, 0.6]}>
-        <torusGeometry args={[0.16, 0.035, 10, 18]} />
-        <PbrMat preset="castIron" />
-      </mesh>
     </group>
   );
 }
