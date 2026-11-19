@@ -1,6 +1,6 @@
 import { useFrame } from '@react-three/fiber';
-import { useRef } from 'react';
-import type * as THREE from 'three';
+import { useMemo, useRef, type MutableRefObject } from 'react';
+import * as THREE from 'three';
 import { CadPartGroup, useCadSim } from '../CadPart';
 import { FlangeWithBolts } from '../primitives';
 
@@ -29,12 +29,45 @@ function Wheel({ position }: { position: [number, number, number] }) {
   );
 }
 
-function FlowArrow({ position, flip = false }: { position: [number, number, number]; flip?: boolean }) {
+function LiquidStream({ opening }: { opening: MutableRefObject<number> }) {
+  const mesh = useRef<THREE.InstancedMesh>(null);
+  const bore = useRef<THREE.Mesh>(null);
+  const dummy = useMemo(() => new THREE.Object3D(), []);
+  const count = 28;
+
+  useFrame(({ clock }) => {
+    const open = opening.current;
+    const speed = 0.08 + open * 0.22;
+    if (bore.current) {
+      bore.current.scale.set(0.35 + open * 0.65, 0.35 + open * 0.65, 0.45 + open * 0.55);
+      const mat = bore.current.material as THREE.MeshStandardMaterial;
+      mat.opacity = 0.18 + open * 0.28;
+    }
+    if (!mesh.current) return;
+    for (let i = 0; i < count; i += 1) {
+      const phase = i / count;
+      let x = ((phase + clock.elapsedTime * speed) % 1) * 2.05 - 1.02;
+      if (open < 0.22 && x > -0.02) x = -0.08 - (i % 6) * 0.05;
+      const wobble = Math.sin(clock.elapsedTime * 1.4 + i) * 0.012;
+      dummy.position.set(x, wobble, 0);
+      dummy.scale.set(0.055 + open * 0.03, 0.04 + open * 0.02, 0.04);
+      dummy.updateMatrix();
+      mesh.current.setMatrixAt(i, dummy.matrix);
+    }
+    mesh.current.instanceMatrix.needsUpdate = true;
+  });
+
   return (
-    <mesh position={position} rotation={[0, 0, flip ? Math.PI / 2 : -Math.PI / 2]}>
-      <coneGeometry args={[0.07, 0.16, 12]} />
-      <meshStandardMaterial color="#7dffb3" emissive="#1d6b45" emissiveIntensity={0.4} />
-    </mesh>
+    <group>
+      <mesh ref={bore} rotation={[0, 0, Math.PI / 2]}>
+        <cylinderGeometry args={[0.09, 0.09, 1.7, 16]} />
+        <meshStandardMaterial color="#3d92c9" transparent opacity={0.28} roughness={0.08} metalness={0.02} depthWrite={false} />
+      </mesh>
+      <instancedMesh ref={mesh} args={[undefined, undefined, count]}>
+        <sphereGeometry args={[1, 8, 6]} />
+        <meshStandardMaterial color="#8ec8ea" transparent opacity={0.72} roughness={0.12} metalness={0.02} depthWrite={false} />
+      </instancedMesh>
+    </group>
   );
 }
 
@@ -124,33 +157,28 @@ export function ValveFamilyModel({ kind }: { kind: string }) {
   const sim = useCadSim();
   const stem = useRef<THREE.Group>(null);
   const diaphragm = useRef<THREE.Mesh>(null);
-  const flowIn = useRef<THREE.Group>(null);
-  const flowOut = useRef<THREE.Group>(null);
-  const signal = useRef<THREE.Mesh>(null);
+  const opening = useRef(0.5);
 
   useFrame(({ clock }) => {
-    const wave = (Math.sin(clock.elapsedTime * 0.9) + 1) / 2;
-    const command = sim.primaryNorm * 0.6 + wave * 0.4;
+    const wave = (Math.sin(clock.elapsedTime * 0.38) + 1) / 2;
+    const command = wave * 0.72 + sim.primaryNorm * 0.28;
+    opening.current = command;
     const rotary = kind === 'ball' || kind === 'butterfly' || kind === 'swing-nrv';
     if (stem.current) {
       if (rotary) {
-        stem.current.rotation.x = command * 1.2;
+        stem.current.rotation.x = command * 1.05;
         stem.current.position.y = 0;
+        stem.current.position.x = 0;
       } else if (kind === 'slide') {
-        stem.current.position.x = (0.5 - command) * 0.22;
-        stem.current.position.y = 0.15;
+        stem.current.position.x = (0.5 - command) * 0.16;
+        stem.current.position.y = 0.12;
       } else {
-        stem.current.position.y = command * 0.28;
+        stem.current.position.y = command * 0.18;
+        stem.current.position.x = 0;
       }
     }
-    if (diaphragm.current) diaphragm.current.scale.y = 1.15 - command * 0.55;
-    const flow = 0.35 + command * 0.9;
-    flowIn.current?.scale.setScalar(flow);
-    flowOut.current?.scale.setScalar(flow);
-    if (signal.current) signal.current.scale.y = 0.2 + command;
+    if (diaphragm.current) diaphragm.current.scale.y = 1.05 - command * 0.28;
   });
-
-  const outlet: [number, number, number] = kind === 'angle' || kind === 'flush-bottom' ? [0.15, -0.85, 0] : [1.05, 0.22, 0];
 
   return (
     <group>
@@ -182,13 +210,9 @@ export function ValveFamilyModel({ kind }: { kind: string }) {
         {kind === 'flush-bottom' && (
           <FlangeWithBolts outerR={0.42} innerR={0.15} thickness={0.07} boltCount={8} position={[0, 0.62, 0]} />
         )}
-        <group ref={flowIn} position={[-1.05, 0.22, 0]}>
-          <FlowArrow position={[0, 0, 0]} />
-        </group>
-        <group ref={flowOut} position={outlet}>
-          <FlowArrow position={[0, 0, 0]} flip={kind === 'angle' || kind === 'flush-bottom'} />
-        </group>
       </CadPartGroup>
+
+      <LiquidStream opening={opening} />
 
       <CadPartGroup partId={`${id}-body`} basePos={[0, 0, 0]} explodeOffset={[0, -0.35, 0]} isCutawayShell>
         <BodyShell kind={kind} />
@@ -218,10 +242,6 @@ export function ValveFamilyModel({ kind }: { kind: string }) {
         <mesh position={[0.34, 0.02, 0]}>
           <boxGeometry args={[0.16, 0.18, 0.12]} />
           <Paint color={BLACK} metal={0.2} />
-        </mesh>
-        <mesh ref={signal} position={[0.34, 0.16, 0]}>
-          <boxGeometry args={[0.06, 0.12, 0.04]} />
-          <meshStandardMaterial color="#7dffb3" emissive="#1d6b45" emissiveIntensity={0.6} />
         </mesh>
         <mesh position={[0.18, 0.08, 0]} rotation={[0, 0, Math.PI / 2]}>
           <cylinderGeometry args={[0.015, 0.015, 0.22, 8]} />

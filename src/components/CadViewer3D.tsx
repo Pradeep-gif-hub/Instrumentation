@@ -30,6 +30,7 @@ export interface CadViewerConfigLike {
   proceduralKey?: string;
   supportsExplode?: boolean;
   supportsCutaway?: boolean;
+  cutawayOnly?: boolean;
   defaultCameraPos: [number, number, number];
   target: [number, number, number];
   parts: CadPartMeta[];
@@ -488,9 +489,11 @@ export function CadViewer3D({
 }: CadViewer3DProps) {
   const supportsExplode = config.supportsExplode ?? true;
   const supportsCutaway = config.supportsCutaway ?? true;
+  const cutawayOnly = Boolean(config.cutawayOnly);
 
   const [explodeAmount, setExplodeAmount] = useState(0);
-  const [crossSection, setCrossSection] = useState(supportsCutaway);
+  const [crossSection, setCrossSection] = useState(supportsCutaway || cutawayOnly);
+  const sectionOn = cutawayOnly || crossSection;
   const [showLabels, setShowLabels] = useState(false);
   const [cameraPreset, setCameraPreset] = useState<CameraPreset>('iso');
   const [presetNonce, setPresetNonce] = useState(0);
@@ -563,7 +566,7 @@ export function CadViewer3D({
               onSelectPart={onSelectPart}
               hiddenPartIds={hiddenPartIds}
               explodeAmount={explodeAmount}
-              crossSection={crossSection}
+              crossSection={sectionOn}
               showLabels={showLabels}
               cameraPreset={cameraPreset}
               presetNonce={presetNonce}
@@ -607,7 +610,7 @@ export function CadViewer3D({
             </>
           )}
 
-          {supportsCutaway && (
+          {supportsCutaway && !cutawayOnly && (
             <button
               type="button"
               onClick={() => setCrossSection((s) => !s)}
