@@ -29,42 +29,65 @@ function Wheel({ position }: { position: [number, number, number] }) {
   );
 }
 
-function LiquidStream({ opening }: { opening: MutableRefObject<number> }) {
-  const upstream = useRef<THREE.Mesh>(null);
-  const throat = useRef<THREE.Mesh>(null);
-  const downstream = useRef<THREE.Mesh>(null);
+function WaterSurface() {
+  return (
+    <meshPhysicalMaterial
+      color="#d5f3ff"
+      transmission={0.86}
+      thickness={0.45}
+      roughness={0.035}
+      metalness={0}
+      ior={1.33}
+      transparent
+      opacity={0.92}
+      depthWrite={false}
+    />
+  );
+}
 
-  useFrame(() => {
+function LiquidStream({ opening }: { opening: MutableRefObject<number> }) {
+  const throat = useRef<THREE.Mesh>(null);
+  const downstream = useRef<THREE.Group>(null);
+  const sheen = useRef<THREE.Mesh>(null);
+
+  useFrame(({ clock }) => {
     const open = opening.current;
     if (throat.current) {
-      const radius = 0.012 + open * 0.055;
-      throat.current.scale.set(radius / 0.07, radius / 0.07, 1);
+      const radius = 0.015 + open * 0.05;
+      throat.current.scale.set(radius / 0.05, 1, radius / 0.05);
     }
     if (downstream.current) {
-      downstream.current.scale.x = Math.max(0.04, open);
-      downstream.current.position.x = 0.12 + open * 0.38;
-      const mat = downstream.current.material as THREE.MeshStandardMaterial;
-      mat.opacity = 0.08 + open * 0.4;
+      downstream.current.scale.x = Math.max(0.05, open);
+      const mat = (downstream.current.children[0] as THREE.Mesh).material as THREE.MeshPhysicalMaterial;
+      mat.opacity = 0.15 + open * 0.8;
+    }
+    if (sheen.current) {
+      const travel = (clock.elapsedTime * (0.12 + open * 0.35)) % 1;
+      const x = open < 0.18 ? -0.55 + travel * 0.4 : -0.85 + travel * 1.7;
+      sheen.current.position.x = x;
+      sheen.current.scale.setScalar(0.55 + open * 0.7);
     }
   });
 
-  const water = (
-    <meshStandardMaterial color="#4aa3d8" transparent opacity={0.42} roughness={0.06} metalness={0.02} depthWrite={false} />
-  );
-
   return (
     <group>
-      <mesh ref={upstream} position={[-0.42, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-        <cylinderGeometry args={[0.055, 0.055, 0.72, 16]} />
-        {water}
+      <mesh position={[-0.46, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+        <cylinderGeometry args={[0.05, 0.05, 0.78, 24]} />
+        <WaterSurface />
       </mesh>
       <mesh ref={throat} position={[0, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-        <cylinderGeometry args={[0.07, 0.07, 0.16, 14]} />
-        <meshStandardMaterial color="#7ec8ee" transparent opacity={0.5} roughness={0.05} depthWrite={false} />
+        <cylinderGeometry args={[0.05, 0.05, 0.18, 20]} />
+        <WaterSurface />
       </mesh>
-      <mesh ref={downstream} position={[0.42, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-        <cylinderGeometry args={[0.055, 0.055, 0.72, 16]} />
-        <meshStandardMaterial color="#4aa3d8" transparent opacity={0.4} roughness={0.06} metalness={0.02} depthWrite={false} />
+      <group ref={downstream} position={[0.1, 0, 0]}>
+        <mesh position={[0.38, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.05, 0.05, 0.76, 24]} />
+          <WaterSurface />
+        </mesh>
+      </group>
+      <mesh ref={sheen}>
+        <sphereGeometry args={[0.045, 16, 12]} />
+        <meshPhysicalMaterial color="#ffffff" transmission={0.95} thickness={0.2} roughness={0} ior={1.33} transparent opacity={0.55} depthWrite={false} />
       </mesh>
     </group>
   );
