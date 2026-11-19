@@ -2161,6 +2161,31 @@ export const INSTRUMENT_SIMULATIONS: Record<string, InstrumentSimulationConfig> 
   },
 
   // ======================= H. CONTROL & PROCESS =======================
+  'valve-stroke': {
+    id: 'valve-stroke',
+    title: 'Controller Signal to Valve Stroke',
+    governingFormulaLatex: 'I_{\\text{mA}} \\xrightarrow{\\text{I/P}} P_{\\text{air}} \\xrightarrow{\\text{diaphragm}} x_{\\text{stem}} \\propto Q',
+    assumptions: 'A 4–20 mA controller output is converted to air. The diaphragm moves the stem and the trim. Flow through the valve follows that opening.',
+    isEducationalApproximation: true,
+    primaryParam: { key: 'primary', label: 'Controller output', unit: 'mA', min: 4, max: 20, step: 0.5, defaultValue: 12 },
+    evaluate: (ma) => {
+      const open = ((ma - 4) / 16) * 100;
+      const flow = open;
+      return {
+        outputValue: `${open.toFixed(0)}% open`,
+        outputNumeric: Number(open.toFixed(1)),
+        outputUnit: '% stroke',
+        secondaryOutput: `I/P air follows ${ma.toFixed(1)} mA. Flow out is about ${flow.toFixed(0)}% of full flow.`,
+        normalizedPrimary: normOf(ma, 4, 20),
+        observation: `At ${ma.toFixed(1)} mA the I/P loads the diaphragm, the stem moves, and the trim is ${open.toFixed(0)}% open. Flow in equals flow out at that opening.`,
+        curve: sweepCurve(4, 20, (x) => ((x - 4) / 16) * 100),
+        xLabel: 'Controller signal',
+        xUnit: 'mA',
+        yLabel: 'Valve opening',
+        yUnit: '%',
+      };
+    },
+  },
   'control-valves': {
     id: 'control-valves',
     title: 'Equal-Percentage vs Linear Inherent Flow Characteristic',

@@ -40,7 +40,8 @@ export const CONTROL_VALVE_TYPE_ENTRIES = VALVES.map((valve) =>
     categoryLabel: 'Final Control Elements',
     family: 'control-actuator',
     standardRef: 'IEC 60534 · ISA S75',
-    proceduralKey: `valve-${valve.kind}`,
+    proceduralKey: valve.id,
+    simulationId: 'valve-stroke',
     overview: `${valve.duty} ${valve.how} ${SHARED}`,
     measurementQuantity: 'Valve opening and the flow or pressure it sets',
     physicalPhenomenon: valve.how,
@@ -66,9 +67,10 @@ export const CONTROL_VALVE_TYPE_ENTRIES = VALVES.map((valve) =>
       relatedInstrumentIds: ['control-valves', 'actuators', 'positioners'],
     },
     parts: [
-      p({ id: `${valve.id}-body`, code: '01', name: 'Valve body', material: 'Cast steel or stainless', function: valve.how, anchor: [0, 0, 0], explodeOffset: [0, -0.4, 0], isCutawayShell: true }),
-      p({ id: `${valve.id}-flange`, code: '02', name: 'Flanges and gasket', material: 'Raised-face flanges and gasket', function: 'Bolted pipe joint that can be opened for cleaning or inspection', anchor: [-1, 0, 0], explodeOffset: [-0.4, 0, 0] }),
-      p({ id: `${valve.id}-trim`, code: '03', name: 'Trim, actuator, or positioner', material: 'Plug, disc, piston, or diaphragm', function: 'Sets the opening. A positioner is the brain on a modulating valve.', anchor: [0, 0.4, 0], explodeOffset: [0, 0.55, 0] }),
+      p({ id: `${valve.id}-body`, code: '01', name: 'Valve body', material: 'Cast steel, shown in section', function: 'Holds the seat. The cutaway shows the plug, disc, or piston inside.', anchor: [0, 0, 0], explodeOffset: [0, -0.35, 0], isCutawayShell: true }),
+      p({ id: `${valve.id}-flange`, code: '02', name: 'Inlet and outlet flanges', material: 'Raised-face flanges and gasket', function: 'Flow enters one flange and leaves the other. The arrows grow as the valve opens.', anchor: [-0.95, 0.15, 0], explodeOffset: [-0.45, 0, 0] }),
+      p({ id: `${valve.id}-plug`, code: '03', name: 'Plug, disc, or piston', material: 'Hard trim', function: 'This is the part that opens and closes the seat.', anchor: [0, 0.05, 0.15], explodeOffset: [0.35, 0.2, 0.35] }),
+      p({ id: `${valve.id}-actuator`, code: '04', name: 'I/P, diaphragm, and stem', material: 'Diaphragm case, stem, and I/P relay', function: 'The controller signal reaches the I/P. Air moves the diaphragm, the stem follows, and the plug moves with the stem.', anchor: [0.35, 0.85, 0], explodeOffset: [0.3, 0.55, 0] }),
     ],
   }),
 );
