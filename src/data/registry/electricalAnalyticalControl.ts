@@ -1,4 +1,5 @@
 import type { CanonicalInstrumentEntry } from '@/types/cad';
+import { CONTROL_VALVE_TYPE_ENTRIES } from './controlValveCatalog';
 import { buildProceduralInstrument, p } from './partHelper';
 
 export const ELECTRICAL_ANALYTICAL_CONTROL_ENTRIES: CanonicalInstrumentEntry[] = [
@@ -2126,4 +2127,5 @@ export const ELECTRICAL_ANALYTICAL_CONTROL_ENTRIES: CanonicalInstrumentEntry[] =
       p({ id: 'lc_test_jacks', code: '03', name: 'Shrouded mA/24V/HART Test Jacks & Leads', material: 'Gold/Brass 4 mm Sockets + Silicone Leads', function: 'Connects cleanly in Source, Simulate, or Measure modes', anchor: [0, -0.82, 0.12], explodeOffset: [0, -0.65, 0.45] }),
     ],
   }),
+  ...CONTROL_VALVE_TYPE_ENTRIES,
 ];
