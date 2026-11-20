@@ -620,21 +620,14 @@ function PlantScene({
 }
 
 const CREW = [
-  { name: 'Pradeep Awasthi', detail: 'GET · Instrumentation', home: [-1.7, 0, 0.2] as [number, number, number] },
-  { name: 'Shanmukh Datta', detail: 'GET · Instrumentation', home: [1.5, 0, -0.3] as [number, number, number] },
-  { name: 'Elon Musk', detail: 'SpaceX', home: [-0.3, 0, 1] as [number, number, number] },
-  { name: 'Jensen Huang', detail: 'Fresher', home: [0.9, 0, 0.7] as [number, number, number] },
+  { name: 'Pradeep Awasthi', detail: 'GET · Instrumentation', home: [-2.3, 0, 0] as [number, number, number] },
+  { name: 'Shanmukh Datta', detail: 'GET · Instrumentation', home: [-0.7, 0, 0] as [number, number, number] },
+  { name: 'Elon Musk', detail: 'SpaceX', home: [0.8, 0, 0] as [number, number, number] },
+  { name: 'Jensen Huang', detail: 'Fresher', home: [2.3, 0, 0] as [number, number, number] },
 ];
 
 const JOBS = ['walk', 'gauge', 'valve', 'round'] as const;
 type CrewJob = (typeof JOBS)[number];
-
-const JOB_LABEL: Record<CrewJob, string> = {
-  walk: 'Walking the floor',
-  gauge: 'Checking a gauge',
-  valve: 'Working a valve',
-  round: 'On a plant round',
-};
 
 function CrewMember({
   person,
@@ -644,7 +637,6 @@ function CrewMember({
   home: [number, number, number];
 }) {
   const [open, setOpen] = useState(false);
-  const [jobLabel, setJobLabel] = useState(person.detail);
   const group = useRef<THREE.Group>(null);
   const arm = useRef<THREE.Group>(null);
   const leftLeg = useRef<THREE.Mesh>(null);
@@ -664,18 +656,17 @@ function CrewMember({
       const next = JOBS[Math.floor(Math.random() * JOBS.length)];
       job.current = next;
       until.current = now + 3.5 + Math.random() * 4;
-      dest.current.set(home[0] + (Math.random() - 0.5) * 2.8, 0, home[2] + (Math.random() - 0.5) * 1.8);
-      setJobLabel(JOB_LABEL[next]);
+      dest.current.set(home[0] + (Math.random() - 0.5) * 1.4, 0, 0);
     }
     const current = group.current.position;
     const dx = dest.current.x - current.x;
     const dz = dest.current.z - current.z;
     const dist = Math.hypot(dx, dz);
+    current.y = 0;
     if (!reduce && dist > 0.05) {
-      current.x += (dx / dist) * 0.012;
-      current.z += (dz / dist) * 0.012;
-      current.y = Math.abs(stride) * 0.03;
-      group.current.rotation.y = Math.atan2(dx, dz);
+      current.x += (dx / dist) * 0.01;
+      current.z = 0;
+      group.current.rotation.y = dx >= 0 ? 0.4 : -0.4;
     }
     if (arm.current) {
       arm.current.rotation.x =
@@ -727,25 +718,41 @@ function CrewMember({
         <cylinderGeometry args={[0.2, 0.2, 0.025, 14]} />
         <meshStandardMaterial color="#f2c14b" roughness={0.45} />
       </mesh>
-      <Html position={[0, 1.72, 0]} center distanceFactor={7} zIndexRange={[30, 0]} style={{ pointerEvents: 'auto' }}>
+      <Html position={[0, 0.85, 0]} center distanceFactor={8} zIndexRange={[30, 0]} style={{ pointerEvents: 'auto' }}>
         <button
           type="button"
+          aria-label={person.name}
           onClick={() => setOpen((value) => !value)}
           style={{
-            background: '#f7f4ec',
-            color: '#1a242e',
-            border: '1px solid #c84b31',
-            borderRadius: 8,
-            padding: '4px 8px',
-            minWidth: 108,
-            textAlign: 'center',
-            fontFamily: 'IBM Plex Sans, sans-serif',
+            width: 52,
+            height: 92,
+            background: 'transparent',
+            border: 'none',
+            padding: 0,
             cursor: 'pointer',
           }}
-        >
-          <div style={{ fontWeight: 700, fontSize: 14 }}>{person.name}</div>
-          <div style={{ fontSize: 14, marginTop: 2 }}>{open ? person.detail : jobLabel}</div>
-        </button>
+        />
+        {open && (
+          <div
+            style={{
+              position: 'absolute',
+              left: '50%',
+              bottom: '100%',
+              transform: 'translateX(-50%)',
+              whiteSpace: 'nowrap',
+              background: '#f7f4ec',
+              color: '#1a242e',
+              border: '1px solid #c84b31',
+              borderRadius: 8,
+              padding: '6px 10px',
+              fontFamily: 'IBM Plex Sans, sans-serif',
+              fontSize: 14,
+              fontWeight: 700,
+            }}
+          >
+            {person.name}
+          </div>
+        )}
       </Html>
     </group>
   );
@@ -877,15 +884,15 @@ export function PlantBackdrop({ live = true }: { live?: boolean }) {
         allow="autoplay; fullscreen; xr-spatial-tracking"
         allowFullScreen
       />
-      <div className="pointer-events-none absolute inset-x-0 bottom-16 top-[34%] z-20">
+      <div className="pointer-events-none absolute inset-x-[8%] bottom-14 z-20 h-[34%]">
         <Canvas
           className="pointer-events-none"
           dpr={1}
           gl={{ alpha: true, antialias: true }}
-          camera={{ position: [0, 3.4, 6.4], fov: 36 }}
+          camera={{ position: [0, 1.35, 6.8], fov: 32 }}
           onCreated={({ gl, camera }) => {
             gl.setClearColor(0x000000, 0);
-            camera.lookAt(0, 0.4, 0);
+            camera.lookAt(0, 0.55, 0);
           }}
           style={{ pointerEvents: 'none', background: 'transparent' }}
         >
