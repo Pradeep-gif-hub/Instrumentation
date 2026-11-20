@@ -619,8 +619,6 @@ function PlantScene({
   );
 }
 
-const FACTORY_MODEL = 'https://sketchfab.com/3d-models/old-factory-free-9d0acdbe78944c098689c0d34853e57b';
-
 function factoryEmbedSrc(): string {
   return 'https://sketchfab.com/models/9d0acdbe78944c098689c0d34853e57b/embed?autostart=1&autospin=0&preload=1&ui_infos=0&ui_stop=0&ui_inspector=0&ui_help=0&ui_settings=0&ui_vr=0&ui_fullscreen=0&ui_annotations=0&ui_watermark=1';
 }
@@ -638,14 +636,6 @@ export function PlantBackdrop({ live = true }: { live?: boolean }) {
           allowFullScreen
         />
       </div>
-      <a
-        href={FACTORY_MODEL}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="pointer-events-auto fixed bottom-20 left-4 z-30 rounded bg-black/75 px-2 py-1 text-[14px] text-white underline"
-      >
-        Old factory by dasy444
-      </a>
     </>
   );
 }
