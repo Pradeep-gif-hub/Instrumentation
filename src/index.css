@@ -237,15 +237,9 @@ html:has(.studio.light) {
   backdrop-filter: none;
 }
 
-.plant-veil {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: rgba(12, 14, 18, 0.22);
-}
-
-.studio.light .plant-veil {
-  background: rgba(214, 208, 198, 0.46);
+.studio.light .rail.rail-clear {
+  background: #f7f5f1;
+  border-right: 1px solid rgba(22, 20, 16, 0.12);
 }
 
 .studio .rail.rail-clear a,
@@ -256,17 +250,15 @@ html:has(.studio.light) {
 
 .studio .home-title {
   font-size: clamp(18px, 2vw, 30px);
-  line-height: 1.25;
-  font-weight: 600;
+  line-height: 1.3;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
 }
 
-.studio.light .home-title,
-.studio.light h1,
-.studio.light h2,
-.studio.light h3 {
-  color: #161410;
-  text-shadow: 0 1px 0 rgba(243, 241, 236, 0.85);
+.studio.light .home-title {
+  color: #12100e;
+  text-shadow: 0 1px 0 #fff, 0 0 16px rgba(255, 255, 255, 0.9);
 }
 
 @media (max-width: 720px) {
@@ -279,7 +271,7 @@ html:has(.studio.light) {
 .studio.light .rail.rail-clear a,
 .studio.light .rail.rail-clear button {
   color: #161410;
-  text-shadow: 0 1px 0 rgba(243, 241, 236, 0.9);
+  text-shadow: none;
 }
 
 .studio .topbar {
@@ -289,11 +281,20 @@ html:has(.studio.light) {
   border-bottom: 1px solid var(--st-line);
 }
 
-.studio.light .topbar {
-  background: rgba(246, 244, 239, 0.94);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(28, 25, 21, 0.12);
+.studio.light .topbar,
+.studio.light footer {
+  background: #f7f5f1;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border-color: rgba(22, 20, 16, 0.12);
+}
+
+.studio .page-sheet {
+  background: var(--st-0);
+}
+
+.studio.light .page-sheet {
+  background: #f3f1ec;
 }
 
 /* Cards & Sub-surfaces */

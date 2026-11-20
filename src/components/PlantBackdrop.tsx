@@ -582,13 +582,13 @@ function PlantScene({
 }) {
   return (
     <>
-      <color attach="background" args={[light ? '#b7b3aa' : '#10161d']} />
-      <fog attach="fog" args={[light ? '#b7b3aa' : '#10161d', 12, 30]} />
-      <hemisphereLight args={[light ? '#e4e0d8' : '#1c2a3a', light ? '#a39888' : '#12100e', light ? 0.55 : 0.38]} />
-      <directionalLight position={[8, 14, 10]} intensity={light ? 0.72 : 0.42} />
+      <color attach="background" args={[light ? '#d7e0ea' : '#10161d']} />
+      <fog attach="fog" args={[light ? '#d7e0ea' : '#10161d', 18, 40]} />
+      <hemisphereLight args={[light ? '#f7fafc' : '#1c2a3a', light ? '#c9beae' : '#12100e', light ? 0.82 : 0.38]} />
+      <directionalLight position={[8, 14, 10]} intensity={light ? 1.2 : 0.42} />
       <mesh rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[46, 30]} />
-        <meshStandardMaterial color={light ? '#b3ab9e' : '#242b32'} roughness={1} />
+        <meshStandardMaterial color={light ? '#cfc6b4' : '#242b32'} roughness={1} />
       </mesh>
       <Road />
       <TankFarm />
@@ -637,7 +637,6 @@ export function PlantBackdrop() {
             <PlantScene light={theme === 'light'} labelRoot={labelRoot} />
           </Canvas>
         </Suspense>
-        <div className="plant-veil" aria-hidden="true" />
       </div>
       <div ref={labelRoot} className="pointer-events-none fixed inset-0 z-30" />
     </>

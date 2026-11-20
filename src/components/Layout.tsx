@@ -514,7 +514,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </button>
         </header>
 
-        <main className={`min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8 ${location.pathname === '/' ? 'pointer-events-none' : ''}`}>{children}</main>
+        <main className={`min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8 ${location.pathname === '/' ? 'pointer-events-none' : 'page-sheet'}`}>{children}</main>
 
         <footer className={`flex min-h-[48px] flex-wrap items-center justify-between gap-x-6 gap-y-2 border-t border-[var(--st-line)] bg-[color-mix(in_srgb,var(--st-0)_92%,transparent)] px-4 py-2.5 text-[14px] text-[var(--st-on-var)] sm:px-8 ${location.pathname === '/' ? 'pointer-events-auto' : ''}`}>
           <div className="flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1">
