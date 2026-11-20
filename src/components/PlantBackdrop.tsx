@@ -2,7 +2,6 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import { Suspense, useMemo, useRef, useState, type RefObject } from 'react';
 import * as THREE from 'three';
-import { useApp } from '@/context/AppContext';
 
 const STEAM_COUNT = 48;
 
@@ -620,26 +619,36 @@ function PlantScene({
   );
 }
 
+const FACTORY_MODEL = 'https://sketchfab.com/3d-models/old-factory-free-9d0acdbe78944c098689c0d34853e57b';
+
+function factoryEmbedSrc(): string {
+  const reduce =
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const spin = reduce ? '0' : '0.2';
+  return `https://sketchfab.com/models/9d0acdbe78944c098689c0d34853e57b/embed?autostart=1&autospin=${spin}&preload=1&ui_infos=0&ui_stop=0&ui_inspector=0&ui_help=0&ui_settings=0&ui_vr=0&ui_fullscreen=0&ui_annotations=0&ui_hint=0&ui_watermark=1`;
+}
+
 export function PlantBackdrop({ live = true }: { live?: boolean }) {
-  const { theme } = useApp();
-  const labelRoot = useRef<HTMLDivElement>(null);
+  if (!live) return null;
   return (
     <>
-      <div className="pointer-events-none fixed inset-0 z-0">
-        <Suspense fallback={null}>
-          <Canvas
-            frameloop={live ? 'always' : 'never'}
-            style={{ pointerEvents: live ? 'auto' : 'none' }}
-            camera={{ position: [0.4, 5.8, 13.2], fov: 36 }}
-            dpr={1}
-            gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
-            onCreated={({ camera }) => camera.lookAt(0.2, 1.3, 0)}
-          >
-            <PlantScene light={theme === 'light'} labelRoot={labelRoot} />
-          </Canvas>
-        </Suspense>
+      <div className="pointer-events-none fixed inset-0 z-0 bg-[#141816]">
+        <iframe
+          title="Old factory by dasy444 on Sketchfab"
+          src={factoryEmbedSrc()}
+          className="h-full w-full border-0"
+          allow="autoplay; fullscreen; xr-spatial-tracking"
+          allowFullScreen
+        />
       </div>
-      <div ref={labelRoot} className="pointer-events-none fixed inset-0 z-30" />
+      <a
+        href={FACTORY_MODEL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="pointer-events-auto fixed bottom-20 left-4 z-30 rounded bg-black/75 px-2 py-1 text-[14px] text-white underline"
+      >
+        Old factory by dasy444
+      </a>
     </>
   );
 }
