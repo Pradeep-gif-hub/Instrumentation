@@ -79,8 +79,8 @@ body,
   --st-3: #e7e2d8;
   --st-4: #ddd6ca;
   --st-bright: #d3cdc2;
-  --st-on: #1c1915;
-  --st-on-var: #3f3a33;
+  --st-on: #161410;
+  --st-on-var: #2c2823;
   --st-outline: #4a453d;
   --st-line: rgba(28, 25, 21, 0.12);
   --st-edge: rgba(28, 25, 21, 0.2);
@@ -237,9 +237,15 @@ html:has(.studio.light) {
   backdrop-filter: none;
 }
 
-.studio.light aside.rail.rail-clear {
-  background: linear-gradient(90deg, rgba(246, 244, 239, 0.96) 0%, rgba(246, 244, 239, 0.88) 100%);
-  border-right: 1px solid rgba(28, 25, 21, 0.1);
+.plant-veil {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: rgba(12, 14, 18, 0.22);
+}
+
+.studio.light .plant-veil {
+  background: rgba(214, 208, 198, 0.46);
 }
 
 .studio .rail.rail-clear a,
@@ -251,12 +257,16 @@ html:has(.studio.light) {
 .studio .home-title {
   font-size: clamp(18px, 2vw, 30px);
   line-height: 1.25;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.75);
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
 }
 
-.studio.light .home-title {
-  color: #1c1915;
-  text-shadow: 0 0 10px rgba(255, 252, 248, 0.95), 0 1px 0 #fff;
+.studio.light .home-title,
+.studio.light h1,
+.studio.light h2,
+.studio.light h3 {
+  color: #161410;
+  text-shadow: 0 1px 0 rgba(243, 241, 236, 0.85);
 }
 
 @media (max-width: 720px) {
@@ -268,14 +278,8 @@ html:has(.studio.light) {
 
 .studio.light .rail.rail-clear a,
 .studio.light .rail.rail-clear button {
-  color: #1c1915;
-  text-shadow:
-    0 0 8px #fff,
-    0 0 2px #fff,
-    1px 0 0 #fff,
-    -1px 0 0 #fff,
-    0 1px 0 #fff,
-    0 -1px 0 #fff;
+  color: #161410;
+  text-shadow: 0 1px 0 rgba(243, 241, 236, 0.9);
 }
 
 .studio .topbar {
