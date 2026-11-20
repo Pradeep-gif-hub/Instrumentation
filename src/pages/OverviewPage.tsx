@@ -53,7 +53,7 @@ export function OverviewPage() {
 
   return (
     <>
-      <div className="pointer-events-none w-full text-center">
+      <div className="pointer-events-none mx-auto w-full max-w-[640px] text-center">
         <h1 className="home-title px-3 text-[var(--st-on)]">
           Welcome to the ICE Factory of NITJ where Engineers are produced.. 😭😭
         </h1>

@@ -159,7 +159,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <div className="flex h-full flex-col justify-between overflow-y-auto px-4 py-5">
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <p className="font-[family-name:var(--font-display)] text-[28px] uppercase tracking-wide text-[var(--st-on)]">Plant menu</p>
+          <p className="text-[20px] font-semibold text-[var(--st-on)]">Plant menu</p>
           <button type="button" onClick={onNavigate} aria-label="Close plant menu" className="icon-btn">
             <X className="size-5" />
           </button>
@@ -290,7 +290,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
         {!isHome && <PlantHorizon />}
 
-        <div className={`flex min-w-0 items-center gap-2 border-b border-[var(--st-line)] bg-[var(--st-0)] px-3 py-2 sm:px-4 ${isHome ? 'pointer-events-auto' : ''}`}>
+        {!isHome && <div className="flex min-w-0 items-center gap-2 border-b border-[var(--st-line)] bg-[var(--st-0)] px-3 py-2 sm:px-4">
           {location.pathname !== '/' && (
             <button type="button" onClick={() => navigate(-1)} className="icon-btn size-9!" aria-label="Go back">
               <ArrowLeft className="size-4" />
@@ -328,9 +328,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
               ))
             )}
           </nav>
-        </div>
+        </div>}
 
-        <main className={`min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8 ${isHome ? 'pointer-events-none' : 'page-sheet'}`}>{children}</main>
+        <main className={`min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8 ${isHome ? 'pointer-events-none pt-6' : 'page-sheet'}`}>{children}</main>
 
         <footer className={`plant-status flex min-h-[56px] flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-3 text-[14px] sm:px-8 ${isHome ? 'pointer-events-auto' : ''}`}>
           <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">

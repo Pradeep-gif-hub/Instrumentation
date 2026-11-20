@@ -199,7 +199,7 @@ export function LearnPage() {
                     <span className="mono text-[14px] tracking-wide text-[var(--st-iris)]">{tag}</span>
                     <span className="status-lamp" aria-hidden="true" />
                   </span>
-                  <span className="mt-3 block font-[family-name:var(--font-display)] text-[28px] uppercase leading-none text-[var(--st-on)]">
+                  <span className="mt-3 block text-[20px] font-semibold leading-snug text-[var(--st-on)]">
                     {sem.label}
                   </span>
                   <span className="mono mt-3 block text-[14px] text-[var(--st-on-var)]">
