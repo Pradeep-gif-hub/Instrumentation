@@ -1,6 +1,6 @@
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
-import { Suspense, useMemo, useRef, useState, type RefObject } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import * as THREE from 'three';
 
 const STEAM_COUNT = 48;
@@ -619,23 +619,120 @@ function PlantScene({
   );
 }
 
-function factoryEmbedSrc(): string {
-  return 'https://sketchfab.com/models/9d0acdbe78944c098689c0d34853e57b/embed?autostart=1&autospin=0&preload=1&ui_infos=0&ui_stop=0&ui_inspector=0&ui_help=0&ui_settings=0&ui_vr=0&ui_fullscreen=0&ui_annotations=0&ui_watermark=1';
+const FACTORY_UID = '9d0acdbe78944c098689c0d34853e57b';
+
+type SketchfabCamera = { position: [number, number, number]; target: [number, number, number] };
+
+type SketchfabApi = {
+  start: () => void;
+  addEventListener: (event: string, cb: () => void) => void;
+  getCameraLookAt: (cb: (err: unknown, camera: SketchfabCamera) => void) => void;
+  setCameraLookAt: (position: number[], target: number[], duration: number) => void;
+  setCameraConstraints: (options: Record<string, unknown>, cb?: (err: unknown) => void) => void;
+  setEnableCameraConstraints: (enable: boolean, options: Record<string, unknown>) => void;
+};
+
+declare global {
+  interface Window {
+    Sketchfab?: new (version: string, iframe: HTMLIFrameElement) => {
+      init: (uid: string, options: Record<string, unknown>) => void;
+    };
+  }
+}
+
+function loadSketchfabViewer(): Promise<void> {
+  if (window.Sketchfab) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector<HTMLScriptElement>('script[data-sketchfab-viewer]');
+    if (existing) {
+      existing.addEventListener('load', () => resolve(), { once: true });
+      existing.addEventListener('error', () => reject(new Error('Sketchfab failed')), { once: true });
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://static.sketchfab.com/api/sketchfab-viewer-1.12.1.js';
+    script.async = true;
+    script.dataset.sketchfabViewer = '1';
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('Sketchfab failed'));
+    document.head.appendChild(script);
+  });
+}
+
+function holdInsideHall(api: SketchfabApi) {
+  api.getCameraLookAt((err, camera) => {
+    if (err || !camera) return;
+    const position = camera.position;
+    const target = camera.target;
+    api.setCameraLookAt(position, target, 0);
+    const distance = Math.hypot(
+      position[0] - target[0],
+      position[1] - target[1],
+      position[2] - target[2],
+    );
+    api.setCameraConstraints(
+      {
+        useZoomConstraints: true,
+        zoomIn: Math.max(distance * 0.45, 0.2),
+        zoomOut: distance * 1.2,
+        usePanConstraints: true,
+        target,
+      },
+      () => {
+        api.setEnableCameraConstraints(true, { preventCameraConstraintsFocus: true });
+      },
+    );
+  });
 }
 
 export function PlantBackdrop({ live = true }: { live?: boolean }) {
+  const frameRef = useRef<HTMLIFrameElement>(null);
+
+  useEffect(() => {
+    if (!live) return;
+    const iframe = frameRef.current;
+    if (!iframe) return;
+    let cancelled = false;
+    void loadSketchfabViewer()
+      .then(() => {
+        if (cancelled || !window.Sketchfab || !frameRef.current) return;
+        const client = new window.Sketchfab('1.12.1', frameRef.current);
+        client.init(FACTORY_UID, {
+          autostart: 1,
+          autospin: 0,
+          camera: 0,
+          preload: 1,
+          ui_infos: 0,
+          ui_inspector: 0,
+          ui_help: 0,
+          ui_settings: 0,
+          ui_vr: 0,
+          ui_fullscreen: 0,
+          ui_annotations: 0,
+          ui_watermark: 1,
+          success: (api: SketchfabApi) => {
+            api.start();
+            api.addEventListener('viewerready', () => holdInsideHall(api));
+          },
+          error: () => undefined,
+        });
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [live]);
+
   if (!live) return null;
   return (
-    <>
-      <div className="pointer-events-auto fixed inset-0 z-0 bg-[#141816]">
-        <iframe
-          title="Old factory by dasy444 on Sketchfab"
-          src={factoryEmbedSrc()}
-          className="pointer-events-auto h-full w-full border-0"
-          allow="autoplay; fullscreen; xr-spatial-tracking"
-          allowFullScreen
-        />
-      </div>
-    </>
+    <div className="pointer-events-auto fixed inset-0 z-0 bg-[#2a2a28]">
+      <iframe
+        ref={frameRef}
+        title="Factory hall"
+        className="pointer-events-auto h-full w-full border-0"
+        allow="autoplay; fullscreen; xr-spatial-tracking"
+        allowFullScreen
+      />
+    </div>
   );
 }
