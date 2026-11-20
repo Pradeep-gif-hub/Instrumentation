@@ -622,21 +622,18 @@ function PlantScene({
 const FACTORY_MODEL = 'https://sketchfab.com/3d-models/old-factory-free-9d0acdbe78944c098689c0d34853e57b';
 
 function factoryEmbedSrc(): string {
-  const reduce =
-    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const spin = reduce ? '0' : '0.2';
-  return `https://sketchfab.com/models/9d0acdbe78944c098689c0d34853e57b/embed?autostart=1&autospin=${spin}&preload=1&ui_infos=0&ui_stop=0&ui_inspector=0&ui_help=0&ui_settings=0&ui_vr=0&ui_fullscreen=0&ui_annotations=0&ui_hint=0&ui_watermark=1`;
+  return 'https://sketchfab.com/models/9d0acdbe78944c098689c0d34853e57b/embed?autostart=1&autospin=0&preload=1&ui_infos=0&ui_stop=0&ui_inspector=0&ui_help=0&ui_settings=0&ui_vr=0&ui_fullscreen=0&ui_annotations=0&ui_watermark=1';
 }
 
 export function PlantBackdrop({ live = true }: { live?: boolean }) {
   if (!live) return null;
   return (
     <>
-      <div className="pointer-events-none fixed inset-0 z-0 bg-[#141816]">
+      <div className="pointer-events-auto fixed inset-0 z-0 bg-[#141816]">
         <iframe
           title="Old factory by dasy444 on Sketchfab"
           src={factoryEmbedSrc()}
-          className="h-full w-full border-0"
+          className="pointer-events-auto h-full w-full border-0"
           allow="autoplay; fullscreen; xr-spatial-tracking"
           allowFullScreen
         />
