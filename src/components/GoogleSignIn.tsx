@@ -94,9 +94,9 @@ export function GoogleSignIn({ readDetails }: { readDetails?: () => SignupDetail
     return (
       <div className="space-y-1 px-3">
         <p className="truncate text-[14px] font-semibold text-[var(--st-on)]">{user.name}</p>
-        {notice && <p className="text-[14px] leading-snug text-[var(--st-on-var)]">{notice}</p>}
-        {error && <p className="text-[14px] leading-snug text-[var(--st-accent-text)]">{error}</p>}
-        <button type="button" onClick={() => void signOut()} className="text-[14px] font-semibold text-[var(--st-accent-text)]">
+        {notice && <p className="text-[13px] leading-snug text-[var(--st-on-var)]">{notice}</p>}
+        {error && <p className="text-[13px] leading-snug text-[var(--st-accent-text)]">{error}</p>}
+        <button type="button" onClick={() => void signOut()} className="text-[13px] font-semibold text-[var(--st-accent-text)]">
           Sign out
         </button>
       </div>

@@ -88,9 +88,9 @@ const AppContext = createContext<AppContextValue | null>(null);
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<ThemeMode>(() => {
     try {
-      return localStorage.getItem(STORAGE_KEYS.theme) === 'dark' ? 'dark' : 'light';
+      return localStorage.getItem(STORAGE_KEYS.theme) === 'light' ? 'light' : 'dark';
     } catch {
-      return 'light';
+      return 'dark';
     }
   });
 

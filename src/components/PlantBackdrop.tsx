@@ -1,7 +1,8 @@
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
-import { Suspense, useEffect, useMemo, useRef, useState, type RefObject } from 'react';
+import { Suspense, useMemo, useRef, useState, type RefObject } from 'react';
 import * as THREE from 'three';
+import { useApp } from '@/context/AppContext';
 
 const STEAM_COUNT = 48;
 
@@ -581,10 +582,10 @@ function PlantScene({
 }) {
   return (
     <>
-      <color attach="background" args={[light ? '#d7e0ea' : '#10161d']} />
-      <fog attach="fog" args={[light ? '#d7e0ea' : '#10161d', 18, 40]} />
-      <hemisphereLight args={[light ? '#f7fafc' : '#1c2a3a', light ? '#c9beae' : '#12100e', light ? 0.82 : 0.38]} />
-      <directionalLight position={[8, 14, 10]} intensity={light ? 1.2 : 0.42} />
+      <color attach="background" args={[light ? '#d5e6f3' : '#10161d']} />
+      <fog attach="fog" args={[light ? '#d5e6f3' : '#10161d', 14, 36]} />
+      <hemisphereLight args={[light ? '#f4f8fc' : '#1c2a3a', light ? '#c8bfb0' : '#12100e', light ? 0.9 : 0.38]} />
+      <directionalLight position={[8, 14, 10]} intensity={light ? 1.55 : 0.42} />
       <mesh rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[46, 30]} />
         <meshStandardMaterial color={light ? '#cfc6b4' : '#242b32'} roughness={1} />
@@ -619,286 +620,25 @@ function PlantScene({
   );
 }
 
-const CREW = [
-  { name: 'Pradeep Awasthi', detail: 'GET · Instrumentation', home: [-2.3, 0, 0] as [number, number, number] },
-  { name: 'Shanmukh Datta', detail: 'GET · Instrumentation', home: [-0.7, 0, 0] as [number, number, number] },
-  { name: 'Elon Musk', detail: 'SpaceX', home: [0.8, 0, 0] as [number, number, number] },
-  { name: 'Jensen Huang', detail: 'Fresher', home: [2.3, 0, 0] as [number, number, number] },
-];
-
-const JOBS = ['walk', 'gauge', 'valve', 'round'] as const;
-type CrewJob = (typeof JOBS)[number];
-
-function CrewMember({
-  person,
-  home,
-}: {
-  person: { name: string; detail: string };
-  home: [number, number, number];
-}) {
-  const [open, setOpen] = useState(false);
-  const group = useRef<THREE.Group>(null);
-  const arm = useRef<THREE.Group>(null);
-  const leftLeg = useRef<THREE.Mesh>(null);
-  const rightLeg = useRef<THREE.Mesh>(null);
-  const job = useRef<CrewJob>('walk');
-  const until = useRef(0);
-  const dest = useRef(new THREE.Vector3(home[0], 0, home[2]));
-
-  useFrame(({ clock }) => {
-    const now = clock.elapsedTime + home[0];
-    if (!group.current) return;
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const stride = reduce ? 0 : Math.sin(now * 3.4);
-    if (leftLeg.current) leftLeg.current.rotation.x = stride * 0.5;
-    if (rightLeg.current) rightLeg.current.rotation.x = -stride * 0.5;
-    if (!reduce && now > until.current) {
-      const next = JOBS[Math.floor(Math.random() * JOBS.length)];
-      job.current = next;
-      until.current = now + 3.5 + Math.random() * 4;
-      dest.current.set(home[0] + (Math.random() - 0.5) * 1.4, 0, 0);
-    }
-    const current = group.current.position;
-    const dx = dest.current.x - current.x;
-    const dz = dest.current.z - current.z;
-    const dist = Math.hypot(dx, dz);
-    current.y = 0;
-    if (!reduce && dist > 0.05) {
-      current.x += (dx / dist) * 0.01;
-      current.z = 0;
-      group.current.rotation.y = dx >= 0 ? 0.4 : -0.4;
-    }
-    if (arm.current) {
-      arm.current.rotation.x =
-        job.current === 'valve'
-          ? Math.sin(now * 2.6) * 0.9
-          : job.current === 'gauge'
-            ? -1 + Math.sin(now * 2) * 0.2
-            : -0.35 + stride * 0.25;
-    }
-  });
-
-  return (
-    <group ref={group} position={home}>
-      <mesh ref={leftLeg} position={[0, 0.42, 0.08]}>
-        <capsuleGeometry args={[0.07, 0.34, 4, 8]} />
-        <meshStandardMaterial color="#243e56" roughness={0.75} />
-      </mesh>
-      <mesh ref={rightLeg} position={[0, 0.42, -0.08]}>
-        <capsuleGeometry args={[0.07, 0.34, 4, 8]} />
-        <meshStandardMaterial color="#243e56" roughness={0.75} />
-      </mesh>
-      <mesh position={[0, 0.92, 0]}>
-        <capsuleGeometry args={[0.2, 0.42, 4, 8]} />
-        <meshStandardMaterial color="#3c6e96" roughness={0.62} />
-      </mesh>
-      <mesh position={[0, 0.95, 0.16]}>
-        <boxGeometry args={[0.34, 0.16, 0.04]} />
-        <meshStandardMaterial color="#e07a2f" roughness={0.55} />
-      </mesh>
-      <group ref={arm} position={[0.22, 1.05, 0]}>
-        <mesh position={[0.12, -0.12, 0.08]} rotation={[0.5, 0, -0.4]}>
-          <capsuleGeometry args={[0.05, 0.28, 3, 6]} />
-          <meshStandardMaterial color="#3c6e96" roughness={0.62} />
-        </mesh>
-      </group>
-      <mesh position={[-0.22, 0.95, 0]} rotation={[0.2, 0, 0.5]}>
-        <capsuleGeometry args={[0.05, 0.26, 3, 6]} />
-        <meshStandardMaterial color="#3c6e96" roughness={0.62} />
-      </mesh>
-      <mesh position={[0, 1.32, 0]}>
-        <sphereGeometry args={[0.13, 16, 12]} />
-        <meshStandardMaterial color="#e4c2a2" roughness={0.7} />
-      </mesh>
-      <mesh position={[0, 1.44, 0]}>
-        <cylinderGeometry args={[0.15, 0.16, 0.08, 14]} />
-        <meshStandardMaterial color="#f2c14b" roughness={0.45} />
-      </mesh>
-      <mesh position={[0, 1.4, 0]}>
-        <cylinderGeometry args={[0.2, 0.2, 0.025, 14]} />
-        <meshStandardMaterial color="#f2c14b" roughness={0.45} />
-      </mesh>
-      <Html position={[0, 0.85, 0]} center distanceFactor={8} zIndexRange={[30, 0]} style={{ pointerEvents: 'auto' }}>
-        <button
-          type="button"
-          aria-label={person.name}
-          onClick={() => setOpen((value) => !value)}
-          style={{
-            width: 52,
-            height: 92,
-            background: 'transparent',
-            border: 'none',
-            padding: 0,
-            cursor: 'pointer',
-          }}
-        />
-        {open && (
-          <div
-            style={{
-              position: 'absolute',
-              left: '50%',
-              bottom: '100%',
-              transform: 'translateX(-50%)',
-              whiteSpace: 'nowrap',
-              background: '#f7f4ec',
-              color: '#1a242e',
-              border: '1px solid #c84b31',
-              borderRadius: 8,
-              padding: '6px 10px',
-              fontFamily: 'IBM Plex Sans, sans-serif',
-              fontSize: 14,
-              fontWeight: 700,
-            }}
-          >
-            {person.name}
-          </div>
-        )}
-      </Html>
-    </group>
-  );
-}
-
-function FloorCrew() {
+export function PlantBackdrop() {
+  const { theme } = useApp();
+  const labelRoot = useRef<HTMLDivElement>(null);
   return (
     <>
-      <ambientLight intensity={0.85} />
-      <directionalLight position={[3, 8, 5]} intensity={1.15} />
-      {CREW.map((person) => (
-        <CrewMember key={person.name} person={person} home={person.home} />
-      ))}
-    </>
-  );
-}
-
-const FACTORY_UID = '9d0acdbe78944c098689c0d34853e57b';
-
-type SketchfabCamera = { position: [number, number, number]; target: [number, number, number] };
-
-type SketchfabApi = {
-  start: () => void;
-  addEventListener: (event: string, cb: () => void) => void;
-  getCameraLookAt: (cb: (err: unknown, camera: SketchfabCamera) => void) => void;
-  setCameraLookAt: (position: number[], target: number[], duration: number) => void;
-  setCameraConstraints: (options: Record<string, unknown>, cb?: (err: unknown) => void) => void;
-  setEnableCameraConstraints: (enable: boolean, options: Record<string, unknown>) => void;
-};
-
-declare global {
-  interface Window {
-    Sketchfab?: new (version: string, iframe: HTMLIFrameElement) => {
-      init: (uid: string, options: Record<string, unknown>) => void;
-    };
-  }
-}
-
-function loadSketchfabViewer(): Promise<void> {
-  if (window.Sketchfab) return Promise.resolve();
-  return new Promise((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>('script[data-sketchfab-viewer]');
-    if (existing) {
-      existing.addEventListener('load', () => resolve(), { once: true });
-      existing.addEventListener('error', () => reject(new Error('Sketchfab failed')), { once: true });
-      return;
-    }
-    const script = document.createElement('script');
-    script.src = 'https://static.sketchfab.com/api/sketchfab-viewer-1.12.1.js';
-    script.async = true;
-    script.dataset.sketchfabViewer = '1';
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error('Sketchfab failed'));
-    document.head.appendChild(script);
-  });
-}
-
-function holdInsideHall(api: SketchfabApi) {
-  api.getCameraLookAt((err, camera) => {
-    if (err || !camera) return;
-    const position = camera.position;
-    const target = camera.target;
-    api.setCameraLookAt(position, target, 0);
-    const distance = Math.hypot(
-      position[0] - target[0],
-      position[1] - target[1],
-      position[2] - target[2],
-    );
-    api.setCameraConstraints(
-      {
-        useZoomConstraints: true,
-        zoomIn: Math.max(distance * 0.45, 0.2),
-        zoomOut: distance * 1.2,
-        usePanConstraints: true,
-        target,
-      },
-      () => {
-        api.setEnableCameraConstraints(true, { preventCameraConstraintsFocus: true });
-      },
-    );
-  });
-}
-
-export function PlantBackdrop({ live = true }: { live?: boolean }) {
-  const frameRef = useRef<HTMLIFrameElement>(null);
-
-  useEffect(() => {
-    if (!live) return;
-    const iframe = frameRef.current;
-    if (!iframe) return;
-    let cancelled = false;
-    void loadSketchfabViewer()
-      .then(() => {
-        if (cancelled || !window.Sketchfab || !frameRef.current) return;
-        const client = new window.Sketchfab('1.12.1', frameRef.current);
-        client.init(FACTORY_UID, {
-          autostart: 1,
-          autospin: 0,
-          camera: 0,
-          preload: 1,
-          ui_infos: 0,
-          ui_inspector: 0,
-          ui_help: 0,
-          ui_settings: 0,
-          ui_vr: 0,
-          ui_fullscreen: 0,
-          ui_annotations: 0,
-          ui_watermark: 1,
-          success: (api: SketchfabApi) => {
-            api.start();
-            api.addEventListener('viewerready', () => holdInsideHall(api));
-          },
-          error: () => undefined,
-        });
-      })
-      .catch(() => undefined);
-    return () => {
-      cancelled = true;
-    };
-  }, [live]);
-
-  if (!live) return null;
-  return (
-    <div className="pointer-events-auto fixed inset-0 z-0 bg-[#2a2a28]">
-      <iframe
-        ref={frameRef}
-        title="Factory hall"
-        className="pointer-events-auto h-full w-full border-0"
-        allow="autoplay; fullscreen; xr-spatial-tracking"
-        allowFullScreen
-      />
-      <div className="pointer-events-none absolute inset-x-[8%] bottom-14 z-20 h-[34%]">
-        <Canvas
-          className="pointer-events-none"
-          dpr={1}
-          gl={{ alpha: true, antialias: true }}
-          camera={{ position: [0, 1.35, 6.8], fov: 32 }}
-          onCreated={({ gl, camera }) => {
-            gl.setClearColor(0x000000, 0);
-            camera.lookAt(0, 0.55, 0);
-          }}
-          style={{ pointerEvents: 'none', background: 'transparent' }}
-        >
-          <FloorCrew />
-        </Canvas>
+      <div className="pointer-events-none fixed inset-0 z-0">
+        <Suspense fallback={null}>
+          <Canvas
+            style={{ pointerEvents: 'auto' }}
+            camera={{ position: [0.4, 5.8, 13.2], fov: 36 }}
+            dpr={1}
+            gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
+            onCreated={({ camera }) => camera.lookAt(0.2, 1.3, 0)}
+          >
+            <PlantScene light={theme === 'light'} labelRoot={labelRoot} />
+          </Canvas>
+        </Suspense>
       </div>
-    </div>
+      <div ref={labelRoot} className="pointer-events-none fixed inset-0 z-30" />
+    </>
   );
 }

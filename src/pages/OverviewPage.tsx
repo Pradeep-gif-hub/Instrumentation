@@ -53,8 +53,16 @@ export function OverviewPage() {
 
   return (
     <>
-      <div className="pointer-events-none mx-auto w-full max-w-[640px] text-center">
-        <h1 className="home-title px-3 text-[var(--st-on)]">
+      <div className="pointer-events-none w-full text-center">
+        <h1
+          className="text-[var(--st-on)]"
+          style={{
+            fontSize: 'clamp(15px, 1.7vw, 30px)',
+            lineHeight: 1.2,
+            whiteSpace: 'nowrap',
+            textShadow: '0 2px 8px rgba(0,0,0,0.85)',
+          }}
+        >
           Welcome to the ICE Factory of NITJ where Engineers are produced.. 😭😭
         </h1>
         <button
@@ -64,7 +72,8 @@ export function OverviewPage() {
             setError('');
             setOpen(true);
           }}
-          className="home-cta pointer-events-auto mt-4 inline-flex min-h-11 cursor-pointer items-center px-2 text-[var(--st-on)] underline"
+          className="pointer-events-auto mt-3 cursor-pointer text-[16px] text-[var(--st-on)] underline decoration-2 underline-offset-4"
+          style={{ textShadow: '0 2px 8px rgba(0,0,0,0.85)' }}
         >
           You wanna be one of those engineers?
         </button>
@@ -72,7 +81,7 @@ export function OverviewPage() {
 
       {open && (
         <div className="pointer-events-auto fixed inset-0 z-40 grid place-items-center bg-black/45 px-4">
-          <section className="glass max-h-[90dvh] w-full max-w-[440px] overflow-y-auto px-5 py-5 sm:px-6 sm:py-6">
+          <section className="glass w-full max-w-[440px] px-6 py-6">
             {thanks ? (
               <p className="text-center text-[18px] font-semibold leading-snug text-[var(--st-on)]">
                 Thanks, now your dummy character will be added on the site.

@@ -15,7 +15,7 @@ import { getPlainDisplayName, getPlainSummaryLine } from '@/data/simpleGuides';
 export function LearnPage() {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const semKey = searchParams.get('sem') as 'sem1' | 'sem3' | 'sem4' | 'sem5' | 'additional' | null;
+  const semKey = searchParams.get('sem') as 'sem3' | 'sem4' | 'sem5' | 'additional' | null;
   const subjectId = searchParams.get('subject');
   const familyKey = searchParams.get('family') as TopicFamilyKey | null;
   const unitParam = searchParams.get('unit');
@@ -185,29 +185,20 @@ export function LearnPage() {
       {currentLevel === 1 && (
         <section className="space-y-4">
           <h1>Choose your semester</h1>
-          <div className="process-line">
-            {LEARN_SEMESTERS.map((sem) => {
-              const tag = sem.key === 'additional' ? 'QC-01' : `SEM-${sem.key.replace('sem', '').padStart(2, '0')}`;
-              return (
-                <button
-                  key={sem.key}
-                  type="button"
-                  onClick={() => selectSemester(sem.key)}
-                  className="station"
-                >
-                  <span className="flex items-center justify-between gap-3">
-                    <span className="mono text-[14px] tracking-wide text-[var(--st-iris)]">{tag}</span>
-                    <span className="status-lamp" aria-hidden="true" />
-                  </span>
-                  <span className="mt-3 block text-[20px] font-semibold leading-snug text-[var(--st-on)]">
-                    {sem.label}
-                  </span>
-                  <span className="mono mt-3 block text-[14px] text-[var(--st-on-var)]">
-                    {sem.subjectIds.length} {sem.subjectIds.length === 1 ? 'subject' : 'subjects'}
-                  </span>
-                </button>
-              );
-            })}
+          <div className="space-y-2.5">
+            {LEARN_SEMESTERS.map((sem) => (
+              <button
+                key={sem.key}
+                type="button"
+                onClick={() => selectSemester(sem.key)}
+                className="ui-card flex w-full cursor-pointer items-center justify-between px-5 py-4 text-left"
+              >
+                <span className="text-[20px] font-semibold text-[var(--st-on)]">
+                  {sem.label}
+                </span>
+                <ChevronRight className="size-5 text-[var(--st-on-var)]" />
+              </button>
+            ))}
           </div>
         </section>
       )}
@@ -216,16 +207,6 @@ export function LearnPage() {
       {currentLevel === 2 && activeSemester && (
         <section className="space-y-4">
           <h1>{activeSemester.label}</h1>
-          {activeSemester.notesHref && (
-            <a
-              href={activeSemester.notesHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="ui-card block px-5 py-4 text-[16px] font-semibold text-[var(--st-accent-text)]"
-            >
-              Open the {activeSemester.label} notes
-            </a>
-          )}
           <div className="space-y-2.5">
             {visibleSubjectsInSem.map((subjNode) => {
               const codeText =
@@ -264,17 +245,6 @@ export function LearnPage() {
                 : activeSubjectNode.subject.code}
             </p>
           </div>
-
-          {activeSubjectNode.subject.notesHref && (
-            <a
-              href={activeSubjectNode.subject.notesHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="ui-card block px-5 py-4 text-[16px] font-semibold text-[var(--st-accent-text)]"
-            >
-              Open {activeSubjectNode.subject.shortName} in the semester notes
-            </a>
-          )}
 
           {activeSubjectNode.families.length > 0 && (
             <div className="space-y-3">
