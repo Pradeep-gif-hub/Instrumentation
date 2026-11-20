@@ -15,7 +15,7 @@ import { getPlainDisplayName, getPlainSummaryLine } from '@/data/simpleGuides';
 export function LearnPage() {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const semKey = searchParams.get('sem') as 'sem3' | 'sem4' | 'sem5' | 'additional' | null;
+  const semKey = searchParams.get('sem') as 'sem1' | 'sem3' | 'sem4' | 'sem5' | 'additional' | null;
   const subjectId = searchParams.get('subject');
   const familyKey = searchParams.get('family') as TopicFamilyKey | null;
   const unitParam = searchParams.get('unit');
@@ -207,6 +207,16 @@ export function LearnPage() {
       {currentLevel === 2 && activeSemester && (
         <section className="space-y-4">
           <h1>{activeSemester.label}</h1>
+          {activeSemester.notesHref && (
+            <a
+              href={activeSemester.notesHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ui-card block px-5 py-4 text-[16px] font-semibold text-[var(--st-accent-text)]"
+            >
+              Open the {activeSemester.label} notes
+            </a>
+          )}
           <div className="space-y-2.5">
             {visibleSubjectsInSem.map((subjNode) => {
               const codeText =
@@ -245,6 +255,17 @@ export function LearnPage() {
                 : activeSubjectNode.subject.code}
             </p>
           </div>
+
+          {activeSubjectNode.subject.notesHref && (
+            <a
+              href={activeSubjectNode.subject.notesHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ui-card block px-5 py-4 text-[16px] font-semibold text-[var(--st-accent-text)]"
+            >
+              Open {activeSubjectNode.subject.shortName} in the semester notes
+            </a>
+          )}
 
           {activeSubjectNode.families.length > 0 && (
             <div className="space-y-3">

@@ -48,12 +48,27 @@ export const MORE_BROWSE_FAMILIES: TopicFamilyMeta[] = TOPIC_FAMILIES.filter((f)
 );
 
 export interface LearnSemesterMeta {
-  key: 'sem3' | 'sem4' | 'sem5' | 'additional';
+  key: 'sem1' | 'sem3' | 'sem4' | 'sem5' | 'additional';
   label: string;
   subjectIds: string[];
+  notesHref?: string;
 }
 
 export const LEARN_SEMESTERS: LearnSemesterMeta[] = [
+  {
+    key: 'sem1',
+    label: 'Semester 1',
+    notesHref: 'https://drive.google.com/drive/folders/1p49STgJqpYccV_EAPbOXggUUQut-Omdj?usp=sharing',
+    subjectIds: [
+      'nitj-sem1-math',
+      'nitj-sem1-es-lab',
+      'nitj-sem1-evs',
+      'nitj-sem1-english',
+      'nitj-sem1-cp',
+      'nitj-sem1-bee',
+      'nitj-sem1-physics',
+    ],
+  },
   {
     key: 'sem3',
     label: 'Semester 3',
@@ -81,7 +96,8 @@ export interface TreeSubjectMeta {
   code: string;
   name: string;
   shortName: string;
-  semesterKey: 'sem3' | 'sem4' | 'sem5' | 'additional';
+  semesterKey: 'sem1' | 'sem3' | 'sem4' | 'sem5' | 'additional';
+  notesHref?: string;
   semesterLabel: string;
   badgeText: string;
   isSupplementary?: boolean;
@@ -91,7 +107,79 @@ export interface TreeSubjectMeta {
  * Official NITJ ICE course order:
  * Semester III -> Semester IV -> Semester V -> Additional Learning (Supplementary).
  */
+const SEM1_NOTES = 'https://drive.google.com/drive/folders/1p49STgJqpYccV_EAPbOXggUUQut-Omdj?usp=sharing';
+
 export const TREE_SUBJECTS: TreeSubjectMeta[] = [
+  {
+    id: 'nitj-sem1-math',
+    code: 'Mathematics',
+    name: 'Mathematics',
+    shortName: 'Mathematics',
+    semesterKey: 'sem1',
+    semesterLabel: 'Semester I',
+    badgeText: 'Sem I',
+    notesHref: SEM1_NOTES,
+  },
+  {
+    id: 'nitj-sem1-es-lab',
+    code: 'ES Lab',
+    name: 'ES Lab',
+    shortName: 'ES Lab',
+    semesterKey: 'sem1',
+    semesterLabel: 'Semester I',
+    badgeText: 'Sem I',
+    notesHref: SEM1_NOTES,
+  },
+  {
+    id: 'nitj-sem1-evs',
+    code: 'EVS',
+    name: 'Environmental Science',
+    shortName: 'Environmental Science',
+    semesterKey: 'sem1',
+    semesterLabel: 'Semester I',
+    badgeText: 'Sem I',
+    notesHref: SEM1_NOTES,
+  },
+  {
+    id: 'nitj-sem1-english',
+    code: 'English',
+    name: 'English Communication',
+    shortName: 'English Communication',
+    semesterKey: 'sem1',
+    semesterLabel: 'Semester I',
+    badgeText: 'Sem I',
+    notesHref: SEM1_NOTES,
+  },
+  {
+    id: 'nitj-sem1-cp',
+    code: 'CP',
+    name: 'Computer Programming',
+    shortName: 'CP',
+    semesterKey: 'sem1',
+    semesterLabel: 'Semester I',
+    badgeText: 'Sem I',
+    notesHref: SEM1_NOTES,
+  },
+  {
+    id: 'nitj-sem1-bee',
+    code: 'BEE',
+    name: 'Basic Electrical Engineering',
+    shortName: 'Basic Electrical Engineering',
+    semesterKey: 'sem1',
+    semesterLabel: 'Semester I',
+    badgeText: 'Sem I',
+    notesHref: SEM1_NOTES,
+  },
+  {
+    id: 'nitj-sem1-physics',
+    code: 'Physics',
+    name: 'Applied Physics',
+    shortName: 'Applied Physics',
+    semesterKey: 'sem1',
+    semesterLabel: 'Semester I',
+    badgeText: 'Sem I',
+    notesHref: SEM1_NOTES,
+  },
   {
     id: 'nitj-sem3-tsc',
     code: 'ICDC0205',
