@@ -619,6 +619,150 @@ function PlantScene({
   );
 }
 
+const CREW = [
+  { name: 'Pradeep Awasthi', detail: 'GET · Instrumentation', home: [-1.7, 0, 0.2] as [number, number, number] },
+  { name: 'Shanmukh Datta', detail: 'GET · Instrumentation', home: [1.5, 0, -0.3] as [number, number, number] },
+  { name: 'Elon Musk', detail: 'SpaceX', home: [-0.3, 0, 1] as [number, number, number] },
+  { name: 'Jensen Huang', detail: 'Fresher', home: [0.9, 0, 0.7] as [number, number, number] },
+];
+
+const JOBS = ['walk', 'gauge', 'valve', 'round'] as const;
+type CrewJob = (typeof JOBS)[number];
+
+const JOB_LABEL: Record<CrewJob, string> = {
+  walk: 'Walking the floor',
+  gauge: 'Checking a gauge',
+  valve: 'Working a valve',
+  round: 'On a plant round',
+};
+
+function CrewMember({
+  person,
+  home,
+}: {
+  person: { name: string; detail: string };
+  home: [number, number, number];
+}) {
+  const [open, setOpen] = useState(false);
+  const [jobLabel, setJobLabel] = useState(person.detail);
+  const group = useRef<THREE.Group>(null);
+  const arm = useRef<THREE.Group>(null);
+  const leftLeg = useRef<THREE.Mesh>(null);
+  const rightLeg = useRef<THREE.Mesh>(null);
+  const job = useRef<CrewJob>('walk');
+  const until = useRef(0);
+  const dest = useRef(new THREE.Vector3(home[0], 0, home[2]));
+
+  useFrame(({ clock }) => {
+    const now = clock.elapsedTime + home[0];
+    if (!group.current) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const stride = reduce ? 0 : Math.sin(now * 3.4);
+    if (leftLeg.current) leftLeg.current.rotation.x = stride * 0.5;
+    if (rightLeg.current) rightLeg.current.rotation.x = -stride * 0.5;
+    if (!reduce && now > until.current) {
+      const next = JOBS[Math.floor(Math.random() * JOBS.length)];
+      job.current = next;
+      until.current = now + 3.5 + Math.random() * 4;
+      dest.current.set(home[0] + (Math.random() - 0.5) * 2.8, 0, home[2] + (Math.random() - 0.5) * 1.8);
+      setJobLabel(JOB_LABEL[next]);
+    }
+    const current = group.current.position;
+    const dx = dest.current.x - current.x;
+    const dz = dest.current.z - current.z;
+    const dist = Math.hypot(dx, dz);
+    if (!reduce && dist > 0.05) {
+      current.x += (dx / dist) * 0.012;
+      current.z += (dz / dist) * 0.012;
+      current.y = Math.abs(stride) * 0.03;
+      group.current.rotation.y = Math.atan2(dx, dz);
+    }
+    if (arm.current) {
+      arm.current.rotation.x =
+        job.current === 'valve'
+          ? Math.sin(now * 2.6) * 0.9
+          : job.current === 'gauge'
+            ? -1 + Math.sin(now * 2) * 0.2
+            : -0.35 + stride * 0.25;
+    }
+  });
+
+  return (
+    <group ref={group} position={home}>
+      <mesh ref={leftLeg} position={[0, 0.42, 0.08]}>
+        <capsuleGeometry args={[0.07, 0.34, 4, 8]} />
+        <meshStandardMaterial color="#243e56" roughness={0.75} />
+      </mesh>
+      <mesh ref={rightLeg} position={[0, 0.42, -0.08]}>
+        <capsuleGeometry args={[0.07, 0.34, 4, 8]} />
+        <meshStandardMaterial color="#243e56" roughness={0.75} />
+      </mesh>
+      <mesh position={[0, 0.92, 0]}>
+        <capsuleGeometry args={[0.2, 0.42, 4, 8]} />
+        <meshStandardMaterial color="#3c6e96" roughness={0.62} />
+      </mesh>
+      <mesh position={[0, 0.95, 0.16]}>
+        <boxGeometry args={[0.34, 0.16, 0.04]} />
+        <meshStandardMaterial color="#e07a2f" roughness={0.55} />
+      </mesh>
+      <group ref={arm} position={[0.22, 1.05, 0]}>
+        <mesh position={[0.12, -0.12, 0.08]} rotation={[0.5, 0, -0.4]}>
+          <capsuleGeometry args={[0.05, 0.28, 3, 6]} />
+          <meshStandardMaterial color="#3c6e96" roughness={0.62} />
+        </mesh>
+      </group>
+      <mesh position={[-0.22, 0.95, 0]} rotation={[0.2, 0, 0.5]}>
+        <capsuleGeometry args={[0.05, 0.26, 3, 6]} />
+        <meshStandardMaterial color="#3c6e96" roughness={0.62} />
+      </mesh>
+      <mesh position={[0, 1.32, 0]}>
+        <sphereGeometry args={[0.13, 16, 12]} />
+        <meshStandardMaterial color="#e4c2a2" roughness={0.7} />
+      </mesh>
+      <mesh position={[0, 1.44, 0]}>
+        <cylinderGeometry args={[0.15, 0.16, 0.08, 14]} />
+        <meshStandardMaterial color="#f2c14b" roughness={0.45} />
+      </mesh>
+      <mesh position={[0, 1.4, 0]}>
+        <cylinderGeometry args={[0.2, 0.2, 0.025, 14]} />
+        <meshStandardMaterial color="#f2c14b" roughness={0.45} />
+      </mesh>
+      <Html position={[0, 1.72, 0]} center distanceFactor={7} zIndexRange={[30, 0]} style={{ pointerEvents: 'auto' }}>
+        <button
+          type="button"
+          onClick={() => setOpen((value) => !value)}
+          style={{
+            background: '#f7f4ec',
+            color: '#1a242e',
+            border: '1px solid #c84b31',
+            borderRadius: 8,
+            padding: '4px 8px',
+            minWidth: 108,
+            textAlign: 'center',
+            fontFamily: 'IBM Plex Sans, sans-serif',
+            cursor: 'pointer',
+          }}
+        >
+          <div style={{ fontWeight: 700, fontSize: 14 }}>{person.name}</div>
+          <div style={{ fontSize: 14, marginTop: 2 }}>{open ? person.detail : jobLabel}</div>
+        </button>
+      </Html>
+    </group>
+  );
+}
+
+function FloorCrew() {
+  return (
+    <>
+      <ambientLight intensity={0.85} />
+      <directionalLight position={[3, 8, 5]} intensity={1.15} />
+      {CREW.map((person) => (
+        <CrewMember key={person.name} person={person} home={person.home} />
+      ))}
+    </>
+  );
+}
+
 const FACTORY_UID = '9d0acdbe78944c098689c0d34853e57b';
 
 type SketchfabCamera = { position: [number, number, number]; target: [number, number, number] };
@@ -733,6 +877,21 @@ export function PlantBackdrop({ live = true }: { live?: boolean }) {
         allow="autoplay; fullscreen; xr-spatial-tracking"
         allowFullScreen
       />
+      <div className="pointer-events-none absolute inset-x-0 bottom-16 top-[34%] z-20">
+        <Canvas
+          className="pointer-events-none"
+          dpr={1}
+          gl={{ alpha: true, antialias: true }}
+          camera={{ position: [0, 3.4, 6.4], fov: 36 }}
+          onCreated={({ gl, camera }) => {
+            gl.setClearColor(0x000000, 0);
+            camera.lookAt(0, 0.4, 0);
+          }}
+          style={{ pointerEvents: 'none', background: 'transparent' }}
+        >
+          <FloorCrew />
+        </Canvas>
+      </div>
     </div>
   );
 }
