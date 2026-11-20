@@ -1,26 +1,16 @@
 import {
   ArrowLeft,
   Bookmark,
-  BookOpen,
-  Briefcase,
-  Calculator,
-  ChevronDown,
-  ChevronRight,
-  Compass,
   Github,
   Globe,
-  Home,
-  Library,
   Linkedin,
   Menu,
   Moon,
-  Notebook,
-  Plus,
   Search,
   Sun,
   X,
 } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, matchPath, useLocation, useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { resolveCanonicalPath } from '@/data/navigationTree';
@@ -34,71 +24,64 @@ import { CursorDotField } from './CursorDotField';
 import { SearchModal } from './SearchModal';
 import { SuggestInstrumentModal } from './SuggestInstrumentModal';
 
-const SIDEBAR_WIDTH_KEY = 'instrument-ai:sidebar-width';
-const DEFAULT_SIDEBAR_WIDTH = 230;
-const MIN_SIDEBAR_WIDTH = 200;
-const MAX_SIDEBAR_WIDTH = 360;
-
-function clampSidebarWidth(value: number): number {
-  if (!Number.isFinite(value)) return DEFAULT_SIDEBAR_WIDTH;
-  return Math.min(MAX_SIDEBAR_WIDTH, Math.max(MIN_SIDEBAR_WIDTH, Math.round(value)));
+function BrandMark({ size = 28 }: { size?: number }) {
+  return <img src="/favicon.svg" width={size} height={size} alt="" className="shrink-0" />;
 }
 
-function readStoredSidebarWidth(): number {
-  try {
-    const raw = localStorage.getItem(SIDEBAR_WIDTH_KEY);
-    if (!raw) return DEFAULT_SIDEBAR_WIDTH;
-    return clampSidebarWidth(Number(raw));
-  } catch {
-    return DEFAULT_SIDEBAR_WIDTH;
-  }
-}
-
-function BrandMark({ size = 32 }: { size?: number }) {
+function MiniGauge() {
   return (
-    <img
-      src="/favicon.svg"
-      width={size}
-      height={size}
-      alt=""
-      className="shrink-0"
-    />
+    <svg className="mini-gauge shrink-0 text-[var(--st-accent-text)]" width="28" height="28" viewBox="0 0 32 32" aria-hidden="true">
+      <path d="M6 22 A10 10 0 1 1 26 22" fill="none" stroke="currentColor" strokeWidth="2" />
+      <line className="mini-gauge-needle" x1="16" y1="20" x2="23" y2="12" stroke="currentColor" strokeWidth="2" />
+      <circle cx="16" cy="20" r="2" fill="currentColor" />
+    </svg>
+  );
+}
+
+function PlantHorizon() {
+  return (
+    <div className="plant-horizon pointer-events-none" aria-hidden="true">
+      <svg viewBox="0 0 1200 72" preserveAspectRatio="xMidYMax slice">
+        <rect width="1200" height="72" fill="#14181c" />
+        <g fill="#232a31" stroke="#3c6e96" strokeWidth="1.5">
+          <rect x="40" y="18" width="46" height="54" />
+          <rect x="98" y="28" width="36" height="44" />
+          <rect x="150" y="8" width="18" height="64" />
+          <rect x="190" y="34" width="220" height="8" />
+          <rect x="190" y="48" width="220" height="6" />
+          <rect x="430" y="22" width="70" height="50" />
+          <path d="M470 22 L500 4 L500 22" fill="#2d353d" />
+          <rect x="540" y="16" width="40" height="56" />
+          <rect x="600" y="30" width="180" height="8" />
+          <rect x="820" y="12" width="16" height="60" />
+          <rect x="860" y="26" width="50" height="46" />
+          <rect x="930" y="20" width="42" height="52" />
+          <rect x="990" y="36" width="160" height="6" />
+        </g>
+        <path className="plant-flow" d="M190 38 H410" fill="none" stroke="#ffb000" strokeWidth="2" />
+        <path className="plant-flow" d="M600 34 H780" fill="none" stroke="#f25c1f" strokeWidth="2" />
+        <path className="plant-flow" d="M990 39 H1150" fill="none" stroke="#3c6e96" strokeWidth="2" />
+      </svg>
+    </div>
   );
 }
 
 const MAIN_LINKS = [
-  { id: 'home', label: 'Home', path: '/', icon: Home },
-  { id: 'learn', label: 'Learn', path: '/learn', icon: BookOpen },
-  { id: 'browse', label: 'Browse', path: '/browse', icon: Compass },
-  { id: 'interview', label: 'Interview Prep', path: '/interview', icon: Briefcase },
-  { id: 'toolbox', label: 'Toolbox', path: '/toolbox', icon: Calculator },
+  { id: 'home', label: 'Home', path: '/' },
+  { id: 'learn', label: 'Learn', path: '/learn' },
+  { id: 'browse', label: 'Browse', path: '/browse' },
+  { id: 'interview', label: 'Interview Prep', path: '/interview' },
+  { id: 'toolbox', label: 'Toolbox', path: '/toolbox' },
+  { id: 'resources', label: 'Resources', path: '/resources' },
 ];
 
 const NOTE_LINKS = [
-  {
-    label: 'Semester 1',
-    href: 'https://drive.google.com/drive/folders/1p49STgJqpYccV_EAPbOXggUUQut-Omdj?usp=sharing',
-  },
-  {
-    label: 'Semester 2',
-    href: 'https://drive.google.com/drive/folders/1qKgMco_DMXC6CNVOgyZC95FfZtWE074b?usp=sharing',
-  },
-  {
-    label: 'Semester 3',
-    href: 'https://drive.google.com/drive/folders/14sL1xKHOQUE1i2ULdxyNv29PgsN2ZJIZ?usp=sharing',
-  },
-  {
-    label: 'Semester 4',
-    href: 'https://drive.google.com/drive/folders/1Ek8sYBgBtd_RQM2V-9lPstkOca5vQSNV?usp=sharing',
-  },
-  {
-    label: 'Semester 5',
-    href: 'https://drive.google.com/drive/folders/1uP6ZAVXDa25fUbJ7sSw7qcr3EO-CM2RZ?usp=sharing',
-  },
-  {
-    label: 'Additional semesters',
-    href: 'https://drive.google.com/drive/folders/1p49STgJqpYccV_EAPbOXggUUQut-Omdj?usp=sharing',
-  },
+  { label: 'Semester 1', href: 'https://drive.google.com/drive/folders/1p49STgJqpYccV_EAPbOXggUUQut-Omdj?usp=sharing' },
+  { label: 'Semester 2', href: 'https://drive.google.com/drive/folders/1qKgMco_DMXC6CNVOgyZC95FfZtWE074b?usp=sharing' },
+  { label: 'Semester 3', href: 'https://drive.google.com/drive/folders/14sL1xKHOQUE1i2ULdxyNv29PgsN2ZJIZ?usp=sharing' },
+  { label: 'Semester 4', href: 'https://drive.google.com/drive/folders/1Ek8sYBgBtd_RQM2V-9lPstkOca5vQSNV?usp=sharing' },
+  { label: 'Semester 5', href: 'https://drive.google.com/drive/folders/1uP6ZAVXDa25fUbJ7sSw7qcr3EO-CM2RZ?usp=sharing' },
+  { label: 'Additional semesters', href: 'https://drive.google.com/drive/folders/1p49STgJqpYccV_EAPbOXggUUQut-Omdj?usp=sharing' },
 ];
 
 const MORE_LINKS = [
@@ -113,9 +96,7 @@ const MORE_LINKS = [
 function buildPlainBreadcrumb(pathname: string): { label: string; to?: string }[] {
   if (pathname === '/') return [{ label: 'Home' }];
   if (pathname.startsWith('/learn')) return [{ label: 'Learn' }];
-  if (pathname.startsWith('/browse') || pathname.startsWith('/instrumentation')) {
-    return [{ label: 'Browse' }];
-  }
+  if (pathname.startsWith('/browse') || pathname.startsWith('/instrumentation')) return [{ label: 'Browse' }];
   if (pathname.startsWith('/interview')) return [{ label: 'Interview Prep' }];
   if (pathname.startsWith('/toolbox')) return [{ label: 'Toolbox' }];
   if (pathname.startsWith('/automation/ladder')) {
@@ -131,405 +112,238 @@ function buildPlainBreadcrumb(pathname: string): { label: string; to?: string }[
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { theme, toggleTheme, setSearchOpen, bookmarks, setBookmarksOpen } = useApp();
-  const [moreOpen, setMoreOpen] = useState(false);
-  const [notesOpen, setNotesOpen] = useState(false);
+  const [plantMenuOpen, setPlantMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [suggestOpen, setSuggestOpen] = useState(false);
 
-  const [sidebarWidth, setSidebarWidth] = useState<number>(readStoredSidebarWidth);
-  const [isResizing, setIsResizing] = useState(false);
-
-  const desktopSuggestBtnRef = useRef<HTMLButtonElement | null>(null);
+  const plantMenuBtnRef = useRef<HTMLButtonElement | null>(null);
   const mobileMenuBtnRef = useRef<HTMLButtonElement | null>(null);
   const activeSuggestTriggerRef = useRef<HTMLElement | null>(null);
 
   const location = useLocation();
   const navigate = useNavigate();
+  const isHome = location.pathname === '/';
 
   const instMatch = matchPath('/instrument/:instrumentId', location.pathname);
   const activeInstrumentId = instMatch?.params.instrumentId;
   const canonicalPath = activeInstrumentId ? resolveCanonicalPath(activeInstrumentId) : undefined;
-
-  const updateSidebarWidth = useCallback((nextWidth: number) => {
-    const clamped = clampSidebarWidth(nextWidth);
-    setSidebarWidth(clamped);
-    try {
-      localStorage.setItem(SIDEBAR_WIDTH_KEY, String(clamped));
-    } catch {
-      // ignore storage errors
-    }
-  }, []);
-
-  const handleResizePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (e.button !== 0) return;
-    e.preventDefault();
-    const startX = e.clientX;
-    const startWidth = sidebarWidth;
-    setIsResizing(true);
-
-    const prevSelect = document.body.style.userSelect;
-    const prevCursor = document.body.style.cursor;
-    document.body.style.userSelect = 'none';
-    document.body.style.cursor = 'col-resize';
-
-    const onMove = (moveEvt: PointerEvent) => {
-      updateSidebarWidth(startWidth + (moveEvt.clientX - startX));
-    };
-
-    const onUp = () => {
-      setIsResizing(false);
-      document.body.style.userSelect = prevSelect;
-      document.body.style.cursor = prevCursor;
-      window.removeEventListener('pointermove', onMove);
-      window.removeEventListener('pointerup', onUp);
-      window.removeEventListener('pointercancel', onUp);
-    };
-
-    window.addEventListener('pointermove', onMove);
-    window.addEventListener('pointerup', onUp);
-    window.addEventListener('pointercancel', onUp);
-  };
+  const fallbackCrumbs = canonicalPath ? null : buildPlainBreadcrumb(location.pathname);
 
   useEffect(() => {
     setMobileMenuOpen(false);
+    setPlantMenuOpen(false);
   }, [location.pathname, location.search]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && mobileMenuOpen) setMobileMenuOpen(false);
+      if (e.key === 'Escape') {
+        setMobileMenuOpen(false);
+        setPlantMenuOpen(false);
+      }
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [mobileMenuOpen]);
+  }, []);
 
   const isNavActive = (path: string) =>
     path === '/' ? location.pathname === '/' : location.pathname.startsWith(path);
 
-  const fallbackCrumbs = canonicalPath ? null : buildPlainBreadcrumb(location.pathname);
-
-  const openSuggestFromSidebar = (isMobileDrawer: boolean) => {
-    activeSuggestTriggerRef.current = isMobileDrawer
-      ? mobileMenuBtnRef.current
-      : desktopSuggestBtnRef.current;
-    if (isMobileDrawer) setMobileMenuOpen(false);
+  const openSuggest = (fromMobile: boolean) => {
+    activeSuggestTriggerRef.current = fromMobile ? mobileMenuBtnRef.current : plantMenuBtnRef.current;
+    setPlantMenuOpen(false);
+    setMobileMenuOpen(false);
     setSuggestOpen(true);
   };
 
-  const renderSidebarContents = (onNavigate?: () => void) => {
-    const isMobileDrawer = Boolean(onNavigate);
-    return (
-      <div className="flex h-full flex-col justify-between overflow-y-auto px-2 py-4">
-        <div className="space-y-6">
-          <div className="flex items-center justify-between gap-2 px-1.5">
-            <Link
-              to="/"
-              onClick={onNavigate}
-              className="flex min-w-0 items-center gap-2.5 font-[family-name:var(--font-display)] text-[20px] font-semibold tracking-[-0.03em] text-[var(--st-on)]"
-            >
-              <BrandMark size={32} />
-              <span className="truncate">Instrument-AI</span>
-            </Link>
-            {onNavigate && (
-              <button
-                type="button"
-                onClick={onNavigate}
-                aria-label="Close navigation menu"
-                className="icon-btn"
-              >
-                <X className="size-5" />
-              </button>
-            )}
-          </div>
-
-          <nav aria-label="Main navigation" className="space-y-1">
-            {MAIN_LINKS.map((item) => {
-              const Icon = item.icon;
-              const active = isNavActive(item.path);
-              return (
-                <Link
-                  key={item.id}
-                  to={item.path}
+  const menuBody = (onNavigate: () => void, fromMobile: boolean) => (
+    <div className="flex h-full flex-col justify-between overflow-y-auto px-4 py-5">
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <p className="font-[family-name:var(--font-display)] text-[28px] uppercase tracking-wide text-[var(--st-on)]">Plant menu</p>
+          <button type="button" onClick={onNavigate} aria-label="Close plant menu" className="icon-btn">
+            <X className="size-5" />
+          </button>
+        </div>
+        <nav aria-label="Plant menu" className="space-y-5">
+          <div>
+            <p className="eyebrow">Notes</p>
+            <div className="mt-2 space-y-1">
+              {NOTE_LINKS.map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   onClick={onNavigate}
-                  aria-current={active ? 'page' : undefined}
-                  className={`flex items-center gap-2.5 rounded-xl border px-2.5 py-2.5 text-[16px] transition ${active
-                    ? 'border-[var(--st-accent)]/60 bg-[var(--st-3)] font-semibold text-[var(--st-on)]'
-                    : 'border-transparent font-normal text-[var(--st-on-var)] hover:bg-[var(--st-2)] hover:text-[var(--st-on)]'
-                    }`}
+                  className="block px-2 py-2 text-[16px] text-[var(--st-on)] hover:bg-[var(--st-2)]"
                 >
-                  <Icon
-                    className={`size-[18px] shrink-0 ${active ? 'text-[var(--st-accent-text)]' : ''}`}
-                  />
-                  <span className="truncate">{item.label}</span>
+                  {link.label}
+                </a>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="eyebrow">More</p>
+            <div className="mt-2 space-y-1">
+              {MORE_LINKS.map((link) => (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  onClick={onNavigate}
+                  className="block px-2 py-2 text-[16px] text-[var(--st-on)] hover:bg-[var(--st-2)]"
+                >
+                  {link.label}
                 </Link>
-              );
-            })}
-
-            <button
-              ref={!isMobileDrawer ? desktopSuggestBtnRef : undefined}
-              type="button"
-              onClick={() => openSuggestFromSidebar(isMobileDrawer)}
-              className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl border border-transparent px-2.5 py-2.5 text-left text-[16px] font-normal leading-snug text-[var(--st-on-var)] transition hover:bg-[var(--st-2)] hover:text-[var(--st-on)]"
-            >
-              <Plus className="size-[18px] shrink-0" />
-              <span>Make a suggestion</span>
-            </button>
-
-            <div className="pt-2">
-              <button
-                type="button"
-                aria-expanded={notesOpen}
-                onClick={() => setNotesOpen((v) => !v)}
-                className="flex w-full cursor-pointer items-center justify-between rounded-xl px-3 py-2.5 text-[16px] font-normal text-[var(--st-on-var)] transition hover:bg-[var(--st-2)] hover:text-[var(--st-on)]"
-              >
-                <span className="flex items-center gap-2.5">
-                  <Notebook className="size-4" />
-                  Notes
-                </span>
-                {notesOpen ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
-              </button>
-              {notesOpen && (
-                <div className="mt-1 space-y-1 border-l border-[var(--st-line)] pl-3">
-                  {NOTE_LINKS.map((link) => (
-                    <a
-                      key={link.href}
-                      href={link.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={onNavigate}
-                      className="block rounded-lg px-3 py-2 text-[14px] font-normal text-[var(--st-on-var)] transition hover:bg-[var(--st-2)] hover:text-[var(--st-on)]"
-                    >
-                      {link.label}
-                    </a>
-                  ))}
-                </div>
-              )}
+              ))}
             </div>
-
-            <Link
-              to="/resources"
-              onClick={onNavigate}
-              aria-current={isNavActive('/resources') ? 'page' : undefined}
-              className={`flex items-center gap-2.5 rounded-xl border px-2.5 py-2.5 text-[16px] transition ${
-                isNavActive('/resources')
-                  ? 'border-[var(--st-accent)]/60 bg-[var(--st-3)] font-semibold text-[var(--st-on)]'
-                  : 'border-transparent font-normal text-[var(--st-on-var)] hover:bg-[var(--st-2)] hover:text-[var(--st-on)]'
-              }`}
-            >
-              <Library className="size-[18px] shrink-0" />
-              <span>Resources</span>
-            </Link>
-
-            <div className="pt-2">
-              <button
-                type="button"
-                aria-expanded={moreOpen}
-                onClick={() => setMoreOpen((v) => !v)}
-                className="flex w-full cursor-pointer items-center justify-between rounded-xl px-3 py-2.5 text-[16px] font-normal text-[var(--st-on-var)] transition hover:bg-[var(--st-2)] hover:text-[var(--st-on)]"
-              >
-                <span>More</span>
-                {moreOpen ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
-              </button>
-
-              {moreOpen && (
-                <div className="mt-1 space-y-1 border-l border-[var(--st-line)] pl-3">
-                  {MORE_LINKS.map((link) => (
-                    <Link
-                      key={link.to}
-                      to={link.to}
-                      onClick={onNavigate}
-                      className="block rounded-lg px-3 py-2 text-[14px] font-normal text-[var(--st-on-var)] transition hover:bg-[var(--st-2)] hover:text-[var(--st-on)]"
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-          </nav>
-        </div>
-
-        <div className="space-y-2 pt-4">
-          <GoogleSignIn />
+          </div>
           <button
             type="button"
-            onClick={() => {
-              onNavigate?.();
-              setBookmarksOpen(true);
-            }}
-            className="flex w-full cursor-pointer items-center justify-between rounded-xl px-3 py-2.5 text-[14px] font-normal text-[var(--st-on-var)] transition hover:bg-[var(--st-2)] hover:text-[var(--st-on)]"
+            onClick={() => openSuggest(fromMobile)}
+            className="block w-full px-2 py-2 text-left text-[16px] text-[var(--st-on)] hover:bg-[var(--st-2)]"
           >
-            <span className="flex items-center gap-2.5">
-              <Bookmark className="size-4" />
-              Saved
-            </span>
-            {bookmarks.length > 0 && (
-              <span className="rounded-full bg-[var(--st-3)] px-2 py-0.5 text-[14px] font-semibold text-[var(--st-on)]">
-                {bookmarks.length}
-              </span>
-            )}
+            Make a suggestion
           </button>
-
-          <button
-            type="button"
-            onClick={toggleTheme}
-            aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
-            className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2.5 text-[14px] font-normal text-[var(--st-on-var)] transition hover:bg-[var(--st-2)] hover:text-[var(--st-on)]"
-          >
-            {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
-            <span>{theme === 'dark' ? 'Light theme' : 'Dark theme'}</span>
-          </button>
-        </div>
+        </nav>
       </div>
-    );
-  };
+      <div className="space-y-3 border-t border-[var(--st-line)] pt-4">
+        <GoogleSignIn />
+      </div>
+    </div>
+  );
 
   return (
-    <div
-      className={`studio ${theme === 'light' ? 'light' : ''}`}
-      style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
-    >
+    <div className={`studio ${theme === 'light' ? 'light' : ''}`}>
       <CursorDotField theme={theme} />
-      <PlantBackdrop />
-      {/* ONE Sidebar (Desktop lg+) */}
-      <aside
-        aria-label="Sidebar navigation"
-        className="rail rail-clear fixed inset-y-0 left-0 z-20 hidden w-[var(--sidebar-width)] lg:block"
-      >
-        {renderSidebarContents()}
+      <PlantBackdrop live={isHome} />
 
-        {/* Vertical divider drag handle (desktop only >= 1024px) */}
-        <div
-          role="separator"
-          aria-orientation="vertical"
-          aria-label="Resize sidebar"
-          aria-valuemin={MIN_SIDEBAR_WIDTH}
-          aria-valuemax={MAX_SIDEBAR_WIDTH}
-          aria-valuenow={sidebarWidth}
-          tabIndex={0}
-          onPointerDown={handleResizePointerDown}
-          onDoubleClick={() => updateSidebarWidth(DEFAULT_SIDEBAR_WIDTH)}
-          onKeyDown={(e) => {
-            if (e.key === 'ArrowLeft') {
-              e.preventDefault();
-              updateSidebarWidth(sidebarWidth - 8);
-            } else if (e.key === 'ArrowRight') {
-              e.preventDefault();
-              updateSidebarWidth(sidebarWidth + 8);
-            } else if (e.key === 'Home') {
-              e.preventDefault();
-              updateSidebarWidth(MIN_SIDEBAR_WIDTH);
-            } else if (e.key === 'End') {
-              e.preventDefault();
-              updateSidebarWidth(MAX_SIDEBAR_WIDTH);
-            }
-          }}
-          title="Drag to resize sidebar (double-click to reset)"
-          className="group absolute inset-y-0 -right-1 z-30 flex w-2.5 cursor-col-resize items-center justify-center focus-visible:outline-none"
-        >
-          <span
-            className={`h-full w-[2px] transition-colors ${isResizing
-              ? 'bg-[var(--st-accent)]'
-              : 'bg-transparent group-hover:bg-[var(--st-accent)] group-focus-visible:bg-[var(--st-accent)]'
-              }`}
-          />
-        </div>
-      </aside>
-
-      {/* Main Column */}
-      <div className={`relative z-10 flex min-h-screen min-w-0 flex-col overflow-x-hidden lg:pl-[var(--sidebar-width)] ${location.pathname === '/' ? 'pointer-events-none' : ''}`}>
-        <header className={`topbar sticky top-0 z-10 flex min-h-16 items-center gap-3 px-4 py-3 sm:px-6 ${location.pathname === '/' ? 'pointer-events-auto' : ''}`}>
-          {/* Mobile Menu Button */}
+      <div className={`relative z-10 flex min-h-screen min-w-0 flex-col overflow-x-hidden ${isHome ? 'pointer-events-none' : ''}`}>
+        <header className={`control-bar sticky top-0 z-40 flex min-h-16 flex-wrap items-center gap-2 px-3 py-2 sm:px-4 ${isHome ? 'pointer-events-auto' : ''}`}>
           <button
             ref={mobileMenuBtnRef}
             type="button"
             onClick={() => setMobileMenuOpen(true)}
             aria-label="Open menu"
             aria-expanded={mobileMenuOpen}
-            className="btn shrink-0 lg:hidden!"
+            className="btn shrink-0 md:hidden!"
           >
             <Menu className="size-4" />
             <span>Menu</span>
           </button>
 
-          {/* Back + Plain Breadcrumb */}
-          <div className="flex min-w-0 flex-1 items-center gap-2.5">
-            {location.pathname !== '/' && (
-              <button
-                type="button"
-                onClick={() => navigate(-1)}
-                className="icon-btn size-9! hidden sm:grid"
-                aria-label="Go back"
+          <Link to="/" className="flex shrink-0 items-center gap-2 text-[var(--st-on)]">
+            <BrandMark />
+            <MiniGauge />
+            <span className="hidden font-[family-name:var(--font-display)] text-[22px] font-semibold uppercase tracking-wide lg:inline">
+              Instrument-AI
+            </span>
+          </Link>
+
+          <nav aria-label="Primary" className="hidden min-w-0 items-center gap-1 md:flex">
+            {MAIN_LINKS.map((item) => (
+              <Link
+                key={item.id}
+                to={item.path}
+                aria-current={isNavActive(item.path) ? 'page' : undefined}
+                className="nav-tag"
               >
-                <ArrowLeft className="size-4" />
-              </button>
-            )}
+                {item.label}
+              </Link>
+            ))}
+          </nav>
 
-            <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-2 overflow-hidden text-[14px]">
-              {canonicalPath ? (
-                <>
-                  <Link
-                    to={`/learn?sem=${canonicalPath.subject.semesterKey}&subject=${encodeURIComponent(canonicalPath.subject.id)}`}
-                    className="hidden shrink-0 text-[var(--st-on-var)] hover:text-[var(--st-on)] md:inline"
-                  >
-                    {canonicalPath.subject.shortName}
-                  </Link>
-                  <span className="hidden shrink-0 text-[var(--st-outline)] md:inline">›</span>
-                  <Link
-                    to={`/learn?sem=${canonicalPath.subject.semesterKey}&subject=${encodeURIComponent(canonicalPath.subject.id)}&family=${encodeURIComponent(canonicalPath.family.key)}`}
-                    className="shrink-0 text-[var(--st-on-var)] hover:text-[var(--st-on)]"
-                  >
-                    {canonicalPath.family.label}
-                  </Link>
-                  <span className="shrink-0 text-[var(--st-outline)]">›</span>
-                  <span className="truncate font-semibold text-[var(--st-on)]">
-                    {getPlainDisplayName(canonicalPath.entry)}
-                  </span>
-                </>
-              ) : (
-                fallbackCrumbs?.map((c, idx) => (
-                  <span key={`${c.label}-${idx}`} className="flex min-w-0 items-center gap-2">
-                    {idx > 0 && <span className="text-[var(--st-outline)]">›</span>}
-                    {c.to ? (
-                      <Link to={c.to} className="truncate text-[var(--st-on-var)] hover:text-[var(--st-on)]">
-                        {c.label}
-                      </Link>
-                    ) : (
-                      <span className="truncate font-semibold text-[var(--st-on)]">{c.label}</span>
-                    )}
-                  </span>
-                ))
-              )}
-            </nav>
+          <div className="ml-auto flex shrink-0 items-center gap-1.5">
+            <button type="button" onClick={() => setSearchOpen(true)} aria-label="Search instruments" className="btn">
+              <Search className="size-4" />
+              <span className="hidden sm:inline">Search</span>
+              <kbd className="hidden border border-[var(--st-line)] px-1.5 py-0.5 text-[14px] lg:inline">⌘K</kbd>
+            </button>
+            <button
+              type="button"
+              onClick={() => setBookmarksOpen(true)}
+              aria-label="Saved"
+              className="btn"
+            >
+              <Bookmark className="size-4" />
+              <span className="hidden xl:inline">Saved</span>
+              {bookmarks.length > 0 && <span>{bookmarks.length}</span>}
+            </button>
+            <button
+              type="button"
+              onClick={toggleTheme}
+              aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+              className="icon-btn"
+            >
+              {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
+            </button>
+            <button
+              ref={plantMenuBtnRef}
+              type="button"
+              onClick={() => setPlantMenuOpen(true)}
+              aria-expanded={plantMenuOpen}
+              className="btn hidden md:inline-flex!"
+            >
+              Plant menu
+            </button>
           </div>
-
-          {/* Search Button */}
-          <button
-            type="button"
-            onClick={() => setSearchOpen(true)}
-            aria-label="Search instruments"
-            className="btn shrink-0"
-          >
-            <Search className="size-4" />
-            <span className="hidden sm:inline">Search</span>
-          </button>
         </header>
 
-        <main className={`min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8 ${location.pathname === '/' ? 'pointer-events-none' : 'page-sheet'}`}>{children}</main>
+        {!isHome && <PlantHorizon />}
 
-        <footer className={`flex min-h-[48px] flex-wrap items-center justify-between gap-x-6 gap-y-2 border-t border-[var(--st-line)] bg-[color-mix(in_srgb,var(--st-0)_92%,transparent)] px-4 py-2.5 text-[14px] text-[var(--st-on-var)] sm:px-8 ${location.pathname === '/' ? 'pointer-events-auto' : ''}`}>
-          <div className="flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1">
+        <div className={`flex min-w-0 items-center gap-2 border-b border-[var(--st-line)] bg-[var(--st-0)] px-3 py-2 sm:px-4 ${isHome ? 'pointer-events-auto' : ''}`}>
+          {location.pathname !== '/' && (
+            <button type="button" onClick={() => navigate(-1)} className="icon-btn size-9!" aria-label="Go back">
+              <ArrowLeft className="size-4" />
+            </button>
+          )}
+          <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-2 overflow-x-auto text-[14px]">
+            {canonicalPath ? (
+              <>
+                <Link
+                  to={`/learn?sem=${canonicalPath.subject.semesterKey}&subject=${encodeURIComponent(canonicalPath.subject.id)}`}
+                  className="shrink-0 text-[var(--st-on-var)] hover:text-[var(--st-on)]"
+                >
+                  {canonicalPath.subject.shortName}
+                </Link>
+                <span className="shrink-0 text-[var(--st-iris)]" aria-hidden="true">—</span>
+                <Link
+                  to={`/learn?sem=${canonicalPath.subject.semesterKey}&subject=${encodeURIComponent(canonicalPath.subject.id)}&family=${encodeURIComponent(canonicalPath.family.key)}`}
+                  className="shrink-0 text-[var(--st-on-var)] hover:text-[var(--st-on)]"
+                >
+                  {canonicalPath.family.label}
+                </Link>
+                <span className="shrink-0 text-[var(--st-iris)]" aria-hidden="true">—</span>
+                <span className="truncate font-semibold text-[var(--st-on)]">{getPlainDisplayName(canonicalPath.entry)}</span>
+              </>
+            ) : (
+              fallbackCrumbs?.map((c, idx) => (
+                <span key={`${c.label}-${idx}`} className="flex min-w-0 items-center gap-2">
+                  {idx > 0 && <span className="text-[var(--st-iris)]" aria-hidden="true">—</span>}
+                  {c.to ? (
+                    <Link to={c.to} className="truncate text-[var(--st-on-var)] hover:text-[var(--st-on)]">{c.label}</Link>
+                  ) : (
+                    <span className="truncate font-semibold text-[var(--st-on)]">{c.label}</span>
+                  )}
+                </span>
+              ))
+            )}
+          </nav>
+        </div>
+
+        <main className={`min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8 ${isHome ? 'pointer-events-none' : 'page-sheet'}`}>{children}</main>
+
+        <footer className={`plant-status flex min-h-[56px] flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-3 text-[14px] sm:px-8 ${isHome ? 'pointer-events-auto' : ''}`}>
+          <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
+            <span className="status-lamp" aria-hidden="true" />
             <UserCountButton />
-            <span className="font-medium text-[var(--st-on)]">&copy; {new Date().getFullYear()} Instrument-AI</span>
-            <span className="text-[var(--st-edge)]" aria-hidden="true">·</span>
+            <span className="font-medium">&copy; {new Date().getFullYear()} Instrument-AI</span>
+            <span aria-hidden="true">·</span>
             <span>Meet the Developers</span>
           </div>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
-            {DEVELOPERS.map((dev, idx) => (
+            {DEVELOPERS.map((dev) => (
               <div key={dev.name} className="flex items-center gap-2">
-                {idx > 0 && (
-                  <span className="mr-1.5 hidden h-3.5 w-px bg-[var(--st-edge)] sm:inline-block" aria-hidden="true" />
-                )}
-                <span className="whitespace-nowrap font-medium text-[var(--st-on-var)]">{dev.name}</span>
+                <span className="whitespace-nowrap font-medium">{dev.name}</span>
                 <div className="flex shrink-0 items-center gap-1">
                   {[
                     { label: `${dev.name} — GitHub`, href: dev.githubUrl, Icon: Github },
@@ -543,7 +357,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       rel="noopener noreferrer"
                       aria-label={label}
                       title={label}
-                      className="inline-flex items-center justify-center rounded-md p-1.5 text-[var(--st-on-var)] transition hover:bg-[var(--st-1)] hover:text-[var(--st-accent)]"
+                      className="inline-flex items-center justify-center p-1.5"
                     >
                       <Icon size={16} aria-hidden="true" />
                     </a>
@@ -555,15 +369,38 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </footer>
       </div>
 
-      {/* Mobile Full-Screen Navigation Drawer */}
+      {plantMenuOpen && (
+        <div className="fixed inset-0 z-50 flex justify-end bg-black/40" role="presentation" onClick={() => setPlantMenuOpen(false)}>
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Plant menu"
+            className="h-full w-full max-w-md bg-[var(--st-0)] shadow-xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            {menuBody(() => setPlantMenuOpen(false), false)}
+          </div>
+        </div>
+      )}
+
       {mobileMenuOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-[var(--st-0)] lg:hidden"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Navigation menu"
-        >
-          {renderSidebarContents(() => setMobileMenuOpen(false))}
+        <div className="fixed inset-0 z-50 bg-[var(--st-0)] md:hidden" role="dialog" aria-modal="true" aria-label="Navigation menu">
+          <div className="border-b border-[var(--st-line)] px-4 py-3">
+            <nav aria-label="Primary mobile" className="grid gap-1">
+              {MAIN_LINKS.map((item) => (
+                <Link
+                  key={item.id}
+                  to={item.path}
+                  onClick={() => setMobileMenuOpen(false)}
+                  aria-current={isNavActive(item.path) ? 'page' : undefined}
+                  className="nav-tag"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+          {menuBody(() => setMobileMenuOpen(false), true)}
         </div>
       )}
 

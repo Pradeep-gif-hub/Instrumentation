@@ -620,7 +620,7 @@ function PlantScene({
   );
 }
 
-export function PlantBackdrop() {
+export function PlantBackdrop({ live = true }: { live?: boolean }) {
   const { theme } = useApp();
   const labelRoot = useRef<HTMLDivElement>(null);
   return (
@@ -628,7 +628,8 @@ export function PlantBackdrop() {
       <div className="pointer-events-none fixed inset-0 z-0">
         <Suspense fallback={null}>
           <Canvas
-            style={{ pointerEvents: 'auto' }}
+            frameloop={live ? 'always' : 'never'}
+            style={{ pointerEvents: live ? 'auto' : 'none' }}
             camera={{ position: [0.4, 5.8, 13.2], fov: 36 }}
             dpr={1}
             gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}

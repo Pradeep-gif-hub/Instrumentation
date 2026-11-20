@@ -185,20 +185,29 @@ export function LearnPage() {
       {currentLevel === 1 && (
         <section className="space-y-4">
           <h1>Choose your semester</h1>
-          <div className="space-y-2.5">
-            {LEARN_SEMESTERS.map((sem) => (
-              <button
-                key={sem.key}
-                type="button"
-                onClick={() => selectSemester(sem.key)}
-                className="ui-card flex w-full cursor-pointer items-center justify-between px-5 py-4 text-left"
-              >
-                <span className="text-[20px] font-semibold text-[var(--st-on)]">
-                  {sem.label}
-                </span>
-                <ChevronRight className="size-5 text-[var(--st-on-var)]" />
-              </button>
-            ))}
+          <div className="process-line">
+            {LEARN_SEMESTERS.map((sem) => {
+              const tag = sem.key === 'additional' ? 'QC-01' : `SEM-${sem.key.replace('sem', '').padStart(2, '0')}`;
+              return (
+                <button
+                  key={sem.key}
+                  type="button"
+                  onClick={() => selectSemester(sem.key)}
+                  className="station"
+                >
+                  <span className="flex items-center justify-between gap-3">
+                    <span className="mono text-[14px] tracking-wide text-[var(--st-iris)]">{tag}</span>
+                    <span className="status-lamp" aria-hidden="true" />
+                  </span>
+                  <span className="mt-3 block font-[family-name:var(--font-display)] text-[28px] uppercase leading-none text-[var(--st-on)]">
+                    {sem.label}
+                  </span>
+                  <span className="mono mt-3 block text-[14px] text-[var(--st-on-var)]">
+                    {sem.subjectIds.length} {sem.subjectIds.length === 1 ? 'subject' : 'subjects'}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </section>
       )}

@@ -7,20 +7,21 @@ function isYoutube(href: string): boolean {
 
 export function ResourcesPage() {
   return (
-    <div className="glass pointer-events-auto relative z-10 mx-auto flex h-auto w-full max-w-[1080px] flex-col gap-3 overflow-visible px-3 py-3 sm:-my-8 sm:h-[calc(100dvh-7.5rem)] sm:gap-2 sm:overflow-hidden sm:px-5">
-      <header className="flex shrink-0 items-center justify-between gap-3">
-        <h1 style={{ fontSize: '1.45rem', lineHeight: 1.15 }}>Resources</h1>
-        <Youtube className="size-7 shrink-0 text-[#ff0033]" aria-label="YouTube" />
+    <div className="pointer-events-auto relative z-10 mx-auto flex w-full max-w-[1100px] flex-col gap-4">
+      <header className="flex items-end justify-between gap-3">
+        <h1>Resources</h1>
+        <Youtube className="size-7 shrink-0 text-[var(--st-signal)]" aria-label="YouTube" />
       </header>
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-2 sm:grid-cols-2 sm:grid-rows-9 lg:grid-cols-3 lg:grid-rows-6">
-        {STUDY_RESOURCES.map((group) => (
-          <section
-            key={group.subject}
-            className="flex min-h-0 items-center justify-between gap-2 rounded-xl border border-[var(--st-line)] bg-[var(--st-0)] px-3"
-          >
-            <p className="line-clamp-2 text-[13px] font-semibold leading-tight text-[var(--st-on)]">{group.subject}</p>
-            <div className="flex shrink-0 items-center gap-0.5">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {STUDY_RESOURCES.map((group, index) => (
+          <section key={group.subject} className="tag-plate">
+            <header className="flex items-center justify-between gap-2">
+              <span className="mono text-[14px] text-[var(--st-iris)]">RES-{String(index + 1).padStart(2, '0')}</span>
+              <span className="status-lamp" aria-hidden="true" />
+            </header>
+            <p className="text-[16px] font-semibold leading-snug text-[var(--st-on)]">{group.subject}</p>
+            <div className="mt-auto flex items-center gap-1">
               {group.links.map((link) => (
                 <a
                   key={link.href}
@@ -29,7 +30,7 @@ export function ResourcesPage() {
                   rel="noopener noreferrer"
                   aria-label={`${group.subject} video`}
                   title={group.subject}
-                  className="grid size-8 place-items-center rounded-lg text-[#ff0033] transition hover:bg-[var(--st-2)]"
+                  className="grid size-10 place-items-center text-[var(--st-signal)] hover:bg-[var(--st-2)]"
                 >
                   {isYoutube(link.href) ? <Youtube className="size-5" /> : <Globe className="size-4 text-[var(--st-on)]" />}
                 </a>
@@ -39,7 +40,7 @@ export function ResourcesPage() {
         ))}
       </div>
 
-      <p className="shrink-0 text-[12px] leading-snug text-[var(--st-on-var)]">
+      <p className="text-[15px] leading-snug text-[var(--st-on-var)]">
         Do visit the mentioned notes as per the faculty teaching styles. All the relevant books are very well illustrated.
       </p>
     </div>

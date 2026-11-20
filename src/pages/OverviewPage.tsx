@@ -64,7 +64,7 @@ export function OverviewPage() {
             setError('');
             setOpen(true);
           }}
-          className="home-title pointer-events-auto mt-3 inline-flex min-h-11 cursor-pointer items-center px-4 font-semibold text-[var(--st-on)] underline decoration-2 underline-offset-4"
+          className="home-cta pointer-events-auto mt-4 inline-flex min-h-11 cursor-pointer items-center px-2 text-[var(--st-on)] underline"
         >
           You wanna be one of those engineers?
         </button>

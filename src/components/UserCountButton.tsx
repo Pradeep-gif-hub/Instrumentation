@@ -26,21 +26,21 @@ export function UserCountButton() {
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
-        className="rounded-full border border-[var(--st-line)] bg-[var(--st-1)] px-3 py-1 text-[13px] font-semibold text-[var(--st-on)] transition hover:border-[var(--st-accent)]"
+        className="border border-[#ffb000] bg-[#1b2026] px-3 py-1 text-[14px] font-semibold text-[#f4f1ea] transition hover:bg-[#232a31]"
       >
         {label}
       </button>
       {open && (
         <div className="absolute bottom-full left-0 z-40 mb-2 w-72 rounded-2xl border border-[var(--st-line)] bg-[var(--st-1)] p-3 shadow-lg">
-          <p className="text-[13px] font-semibold text-[var(--st-on)]">{label} signed in</p>
-          {notice && <p className="mt-1 text-[12px] leading-snug text-[var(--st-on-var)]">{notice}</p>}
+          <p className="text-[14px] font-semibold text-[var(--st-on)]">{label} signed in</p>
+          {notice && <p className="mt-1 text-[14px] leading-snug text-[var(--st-on-var)]">{notice}</p>}
           <ul className="mt-2 max-h-48 space-y-1 overflow-auto">
-            {users.length === 0 && <li className="text-[13px] text-[var(--st-on-var)]">No accounts saved yet.</li>}
+            {users.length === 0 && <li className="text-[14px] text-[var(--st-on-var)]">No accounts saved yet.</li>}
             {users.map((person) => (
               <li key={person.id}>
-                <p className="truncate text-[13px] font-medium text-[var(--st-on)]">{person.name}</p>
-                <p className="truncate text-[12px] text-[var(--st-on-var)]">{person.email}</p>
-                <p className="truncate text-[12px] text-[var(--st-on-var)]">
+                <p className="truncate text-[14px] font-medium text-[var(--st-on)]">{person.name}</p>
+                <p className="truncate text-[14px] text-[var(--st-on-var)]">{person.email}</p>
+                <p className="truncate text-[14px] text-[var(--st-on-var)]">
                   {[person.branch, person.year, person.college].filter(Boolean).join(' · ')}
                 </p>
               </li>

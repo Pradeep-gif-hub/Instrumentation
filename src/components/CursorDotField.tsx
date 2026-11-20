@@ -17,7 +17,7 @@ interface DashParticle {
   alpha: number;
 }
 
-const DASH_COLORS = ['#7FB3DE', '#3C6E96', '#A9D1F0', '#C84B31'] as const;
+const DASH_COLORS = ['#FFB000', '#3C6E96', '#F25C1F', '#22435E'] as const;
 const PARTICLE_COUNT = 180;
 const DASH_WIDTH = 1.5;
 const EDGE_MARGIN = 12;
