@@ -54,15 +54,7 @@ export function OverviewPage() {
   return (
     <>
       <div className="pointer-events-none w-full text-center">
-        <h1
-          className="text-[var(--st-on)]"
-          style={{
-            fontSize: 'clamp(15px, 1.7vw, 30px)',
-            lineHeight: 1.2,
-            whiteSpace: 'nowrap',
-            textShadow: '0 2px 8px rgba(0,0,0,0.85)',
-          }}
-        >
+        <h1 className="home-title px-3 text-[var(--st-on)]">
           Welcome to the ICE Factory of NITJ where Engineers are produced.. 😭😭
         </h1>
         <button
@@ -72,8 +64,7 @@ export function OverviewPage() {
             setError('');
             setOpen(true);
           }}
-          className="pointer-events-auto mt-3 cursor-pointer text-[16px] text-[var(--st-on)] underline decoration-2 underline-offset-4"
-          style={{ textShadow: '0 2px 8px rgba(0,0,0,0.85)' }}
+          className="home-title pointer-events-auto mt-3 cursor-pointer px-4 text-[17px] font-semibold text-[var(--st-on)] underline decoration-2 underline-offset-4"
         >
           You wanna be one of those engineers?
         </button>

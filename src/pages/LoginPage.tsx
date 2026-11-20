@@ -10,9 +10,9 @@ const inputClass =
 
 function savedTheme(): 'dark' | 'light' {
   try {
-    return localStorage.getItem('instrument-ai:theme-v2') === 'light' ? 'light' : 'dark';
+    return localStorage.getItem('instrument-ai:theme-v2') === 'dark' ? 'dark' : 'light';
   } catch {
-    return 'dark';
+    return 'light';
   }
 }
 

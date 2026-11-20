@@ -7,13 +7,13 @@ function isYoutube(href: string): boolean {
 
 export function ResourcesPage() {
   return (
-    <div className="glass pointer-events-auto relative z-10 mx-auto -my-6 flex h-[calc(100dvh-7.5rem)] w-full max-w-[1080px] flex-col gap-2 overflow-hidden px-4 py-3 sm:-my-8 sm:px-5">
+    <div className="glass pointer-events-auto relative z-10 mx-auto flex h-auto w-full max-w-[1080px] flex-col gap-3 overflow-visible px-3 py-3 sm:-my-8 sm:h-[calc(100dvh-7.5rem)] sm:gap-2 sm:overflow-hidden sm:px-5">
       <header className="flex shrink-0 items-center justify-between gap-3">
         <h1 style={{ fontSize: '1.45rem', lineHeight: 1.15 }}>Resources</h1>
         <Youtube className="size-7 shrink-0 text-[#ff0033]" aria-label="YouTube" />
       </header>
 
-      <div className="grid min-h-0 flex-1 grid-cols-2 grid-rows-9 gap-2 lg:grid-cols-3 lg:grid-rows-6">
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-2 sm:grid-cols-2 sm:grid-rows-9 lg:grid-cols-3 lg:grid-rows-6">
         {STUDY_RESOURCES.map((group) => (
           <section
             key={group.subject}
