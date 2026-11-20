@@ -64,7 +64,7 @@ export function OverviewPage() {
             setError('');
             setOpen(true);
           }}
-          className="home-title pointer-events-auto mt-3 cursor-pointer px-4 text-[17px] font-semibold text-[var(--st-on)] underline decoration-2 underline-offset-4"
+          className="home-title pointer-events-auto mt-3 inline-flex min-h-11 cursor-pointer items-center px-4 font-semibold text-[var(--st-on)] underline decoration-2 underline-offset-4"
         >
           You wanna be one of those engineers?
         </button>
@@ -72,7 +72,7 @@ export function OverviewPage() {
 
       {open && (
         <div className="pointer-events-auto fixed inset-0 z-40 grid place-items-center bg-black/45 px-4">
-          <section className="glass w-full max-w-[440px] px-6 py-6">
+          <section className="glass max-h-[90dvh] w-full max-w-[440px] overflow-y-auto px-5 py-5 sm:px-6 sm:py-6">
             {thanks ? (
               <p className="text-center text-[18px] font-semibold leading-snug text-[var(--st-on)]">
                 Thanks, now your dummy character will be added on the site.

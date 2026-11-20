@@ -133,8 +133,15 @@ html:has(.studio.light) {
 
   .studio .btn,
   .studio button.ui-card,
-  .studio a.ui-card {
+  .studio a.ui-card,
+  .studio .home-title {
     min-height: 44px;
+  }
+
+  .studio footer {
+    flex-direction: column;
+    align-items: flex-start;
+    font-size: 14px;
   }
 }
 
@@ -230,6 +237,11 @@ html:has(.studio.light) {
   backdrop-filter: none;
 }
 
+.studio.light aside.rail.rail-clear {
+  background: linear-gradient(90deg, rgba(246, 244, 239, 0.96) 0%, rgba(246, 244, 239, 0.88) 100%);
+  border-right: 1px solid rgba(28, 25, 21, 0.1);
+}
+
 .studio .rail.rail-clear a,
 .studio .rail.rail-clear button {
   color: var(--st-on);
@@ -257,7 +269,13 @@ html:has(.studio.light) {
 .studio.light .rail.rail-clear a,
 .studio.light .rail.rail-clear button {
   color: #1c1915;
-  text-shadow: 0 0 6px rgba(255, 252, 248, 0.95), 0 1px 0 #fff;
+  text-shadow:
+    0 0 8px #fff,
+    0 0 2px #fff,
+    1px 0 0 #fff,
+    -1px 0 0 #fff,
+    0 1px 0 #fff,
+    0 -1px 0 #fff;
 }
 
 .studio .topbar {
@@ -268,10 +286,10 @@ html:has(.studio.light) {
 }
 
 .studio.light .topbar {
-  background: rgba(255, 255, 255, 0.45);
+  background: rgba(246, 244, 239, 0.94);
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+  border-bottom: 1px solid rgba(28, 25, 21, 0.12);
 }
 
 /* Cards & Sub-surfaces */
@@ -282,7 +300,8 @@ html:has(.studio.light) {
 }
 
 .studio.light .glass {
-  border-color: rgba(255, 255, 255, 0.6);
+  background: #fffcf8;
+  border-color: rgba(28, 25, 21, 0.12);
   box-shadow: var(--st-shadow);
 }
 
@@ -294,7 +313,8 @@ html:has(.studio.light) {
 }
 
 .studio.light .ui-card {
-  border-color: rgba(255, 255, 255, 0.6);
+  background: #fffcf8;
+  border-color: rgba(28, 25, 21, 0.12);
   box-shadow: var(--st-shadow);
 }
 
@@ -346,6 +366,10 @@ html:has(.studio.light) {
   backdrop-filter: blur(12px);
   border: 1px solid var(--st-edge);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+
+.studio.light .pod {
+  box-shadow: var(--st-shadow);
 }
 
 /* Plain sentence-case secondary & labels (14px minimum, normal weight/spacing) */
@@ -524,7 +548,7 @@ html:has(.studio.light) {
   align-items: center;
   gap: 0.5rem;
   padding: 0.55rem 1.05rem;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   display: inline-flex;
   color: var(--st-on);
