@@ -77,6 +77,10 @@ const MAIN_LINKS = [
 
 const NOTE_LINKS = [
   {
+    label: 'Semester 1',
+    href: 'https://drive.google.com/drive/folders/1p49STgJqpYccV_EAPbOXggUUQut-Omdj?usp=sharing',
+  },
+  {
     label: 'Semester 2',
     href: 'https://drive.google.com/drive/folders/1qKgMco_DMXC6CNVOgyZC95FfZtWE074b?usp=sharing',
   },

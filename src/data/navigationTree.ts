@@ -48,12 +48,25 @@ export const MORE_BROWSE_FAMILIES: TopicFamilyMeta[] = TOPIC_FAMILIES.filter((f)
 );
 
 export interface LearnSemesterMeta {
-  key: 'sem3' | 'sem4' | 'sem5' | 'additional';
+  key: 'sem1' | 'sem2' | 'sem3' | 'sem4' | 'sem5' | 'additional';
   label: string;
   subjectIds: string[];
+  notesHref?: string;
 }
 
 export const LEARN_SEMESTERS: LearnSemesterMeta[] = [
+  {
+    key: 'sem1',
+    label: 'Semester 1',
+    notesHref: 'https://drive.google.com/drive/folders/1p49STgJqpYccV_EAPbOXggUUQut-Omdj?usp=sharing',
+    subjectIds: [],
+  },
+  {
+    key: 'sem2',
+    label: 'Semester 2',
+    notesHref: 'https://drive.google.com/drive/folders/1qKgMco_DMXC6CNVOgyZC95FfZtWE074b?usp=sharing',
+    subjectIds: [],
+  },
   {
     key: 'sem3',
     label: 'Semester 3',

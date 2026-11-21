@@ -15,14 +15,14 @@ import { getPlainDisplayName, getPlainSummaryLine } from '@/data/simpleGuides';
 export function LearnPage() {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const semKey = searchParams.get('sem') as 'sem3' | 'sem4' | 'sem5' | 'additional' | null;
+  const semKey = searchParams.get('sem') as (typeof LEARN_SEMESTERS)[number]['key'] | null;
   const subjectId = searchParams.get('subject');
   const familyKey = searchParams.get('family') as TopicFamilyKey | null;
   const unitParam = searchParams.get('unit');
   const conceptId = searchParams.get('concept');
 
   const fullTree = useMemo(() => buildUnifiedNavigationTree(), []);
-  const activeSemester = LEARN_SEMESTERS.find((s) => s.key === semKey) ?? null;
+  const activeSemester = LEARN_SEMESTERS.find((s) => s.key === semKey && !s.notesHref) ?? null;
   const activeSubjectNode = subjectId
     ? fullTree.find((n) => n.subject.id === subjectId) ?? null
     : null;
@@ -186,19 +186,30 @@ export function LearnPage() {
         <section className="space-y-4">
           <h1>Choose your semester</h1>
           <div className="space-y-2.5">
-            {LEARN_SEMESTERS.map((sem) => (
-              <button
-                key={sem.key}
-                type="button"
-                onClick={() => selectSemester(sem.key)}
-                className="ui-card flex w-full cursor-pointer items-center justify-between px-5 py-4 text-left"
-              >
-                <span className="text-[20px] font-semibold text-[var(--st-on)]">
-                  {sem.label}
-                </span>
-                <ChevronRight className="size-5 text-[var(--st-on-var)]" />
-              </button>
-            ))}
+            {LEARN_SEMESTERS.map((sem) =>
+              sem.notesHref ? (
+                <a
+                  key={sem.key}
+                  href={sem.notesHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ui-card flex w-full cursor-pointer items-center justify-between px-5 py-4 text-left"
+                >
+                  <span className="text-[20px] font-semibold text-[var(--st-on)]">{sem.label}</span>
+                  <ChevronRight className="size-5 text-[var(--st-on-var)]" />
+                </a>
+              ) : (
+                <button
+                  key={sem.key}
+                  type="button"
+                  onClick={() => selectSemester(sem.key)}
+                  className="ui-card flex w-full cursor-pointer items-center justify-between px-5 py-4 text-left"
+                >
+                  <span className="text-[20px] font-semibold text-[var(--st-on)]">{sem.label}</span>
+                  <ChevronRight className="size-5 text-[var(--st-on-var)]" />
+                </button>
+              ),
+            )}
           </div>
         </section>
       )}
