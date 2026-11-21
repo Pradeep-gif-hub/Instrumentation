@@ -1,5 +1,5 @@
 import { ChevronRight, Folder } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { SEMESTER_NOTES, semesterNote, type SemesterNoteKey } from '@/data/semesterNotes';
 
@@ -12,6 +12,25 @@ type NoteItem = {
 
 type Crumb = { id: string; name: string; proof?: string };
 
+const NOTES_LIST_KEY = 'instrument-ai:notes-list-width';
+const DEFAULT_LIST_WIDTH = 320;
+const MIN_LIST_WIDTH = 200;
+const MAX_LIST_WIDTH = 560;
+
+function clampListWidth(width: number, max = MAX_LIST_WIDTH) {
+  return Math.min(max, Math.max(MIN_LIST_WIDTH, Math.round(width)));
+}
+
+function storedListWidth() {
+  try {
+    const saved = Number(localStorage.getItem(NOTES_LIST_KEY));
+    if (Number.isFinite(saved)) return clampListWidth(saved);
+  } catch {
+    // ignore storage errors
+  }
+  return DEFAULT_LIST_WIDTH;
+}
+
 export function NotesReaderPage() {
   const { semesterKey } = useParams();
   const semester = semesterNote(semesterKey);
@@ -22,6 +41,9 @@ export function NotesReaderPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const requestId = useRef(0);
+  const splitRef = useRef<HTMLDivElement>(null);
+  const [listWidth, setListWidth] = useState(storedListWidth);
+  const [resizing, setResizing] = useState(false);
 
   const current = crumbs[crumbs.length - 1];
 
@@ -60,6 +82,37 @@ export function NotesReaderPage() {
         </Link>
       </div>
     );
+  }
+
+  function rememberListWidth(next: number) {
+    const max = splitRef.current ? Math.max(MIN_LIST_WIDTH, splitRef.current.clientWidth - 280) : MAX_LIST_WIDTH;
+    const width = clampListWidth(next, Math.min(MAX_LIST_WIDTH, max));
+    setListWidth(width);
+    try {
+      localStorage.setItem(NOTES_LIST_KEY, String(width));
+    } catch {
+      // ignore storage errors
+    }
+    return width;
+  }
+
+  function startListResize(event: ReactPointerEvent<HTMLDivElement>) {
+    if (event.button !== 0) return;
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setResizing(true);
+  }
+
+  function moveListResize(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!event.currentTarget.hasPointerCapture(event.pointerId) || !splitRef.current) return;
+    const bounds = splitRef.current.getBoundingClientRect();
+    rememberListWidth(event.clientX - bounds.left);
+  }
+
+  function endListResize(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!event.currentTarget.hasPointerCapture(event.pointerId)) return;
+    event.currentTarget.releasePointerCapture(event.pointerId);
+    setResizing(false);
   }
 
   async function openFolder(folder: Crumb) {
@@ -121,10 +174,11 @@ export function NotesReaderPage() {
         </nav>
       </header>
 
-      <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
+      <div ref={splitRef} className="flex min-h-0 flex-1 flex-col lg:flex-row">
         <aside
           aria-label="Note files"
-          className={`${selected ? 'hidden lg:flex' : 'flex'} min-h-0 w-full shrink-0 flex-col border-[var(--st-line)] lg:w-80 lg:border-r`}
+          style={{ '--notes-list-width': `${listWidth}px` } as CSSProperties}
+          className={`${selected ? 'hidden lg:flex' : 'flex'} relative min-h-0 w-full shrink-0 flex-col lg:w-[var(--notes-list-width)]`}
         >
           <div className="border-b border-[var(--st-line)] px-4 py-2 text-[12px] font-semibold tracking-wide text-[var(--st-on-var)]">
             {folderTitle || semester.label}
@@ -170,7 +224,43 @@ export function NotesReaderPage() {
           </div>
         </aside>
 
-        <div className={`${selected ? 'flex' : 'hidden lg:flex'} min-h-0 min-w-0 flex-1 flex-col bg-white`}>
+        <div
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize the notes list"
+          aria-valuemin={MIN_LIST_WIDTH}
+          aria-valuemax={MAX_LIST_WIDTH}
+          aria-valuenow={listWidth}
+          tabIndex={0}
+          title="Drag to make the list or the page wider"
+          onPointerDown={startListResize}
+          onPointerMove={moveListResize}
+          onPointerUp={endListResize}
+          onPointerCancel={endListResize}
+          onDoubleClick={() => rememberListWidth(DEFAULT_LIST_WIDTH)}
+          onKeyDown={(event) => {
+            if (event.key === 'ArrowLeft') {
+              event.preventDefault();
+              rememberListWidth(listWidth - 24);
+            } else if (event.key === 'ArrowRight') {
+              event.preventDefault();
+              rememberListWidth(listWidth + 24);
+            } else if (event.key === 'Home') {
+              event.preventDefault();
+              rememberListWidth(MIN_LIST_WIDTH);
+            } else if (event.key === 'End') {
+              event.preventDefault();
+              rememberListWidth(MAX_LIST_WIDTH);
+            }
+          }}
+          className="group relative hidden w-3 shrink-0 cursor-col-resize items-center justify-center focus-visible:outline-none lg:flex"
+        >
+          <span
+            className={`h-full w-[2px] ${resizing ? 'bg-[var(--st-accent)]' : 'bg-[var(--st-line)] group-hover:bg-[var(--st-accent)] group-focus-visible:bg-[var(--st-accent)]'}`}
+          />
+        </div>
+
+        <div className={`${selected ? 'flex' : 'hidden lg:flex'} min-h-0 min-w-0 flex-1 flex-col bg-white ${resizing ? 'pointer-events-none' : ''}`}>
           {selected ? (
             <>
               <div className="flex items-center gap-3 border-b border-neutral-200 px-3 py-2 lg:hidden">
@@ -189,9 +279,14 @@ export function NotesReaderPage() {
             </>
           ) : (
             <div className="grid flex-1 place-items-center px-6 text-center">
-              <p className="max-w-sm text-[16px] text-neutral-600">
-                {current ? `Choose a note in ${current.name}. It opens here, full size, so you can read it on this page.` : 'Choose a note.'}
-              </p>
+              <div className="max-w-sm">
+                <p className="text-[16px] text-neutral-600">
+                  {current ? `Choose a note in ${current.name}. It opens here, full size, so you can read it on this page.` : 'Choose a note.'}
+                </p>
+                <p className="mt-3 text-[15px] text-neutral-500">
+                  Drag the line between the file list and this page if you want more room to read.
+                </p>
+              </div>
             </div>
           )}
         </div>
