@@ -43,6 +43,9 @@ const ToolboxPage = lazy(() =>
 const ResourcesPage = lazy(() =>
   import('@/pages/ResourcesPage').then((m) => ({ default: m.ResourcesPage })),
 );
+const QuizzyPage = lazy(() =>
+  import('@/pages/QuizzyPage').then((m) => ({ default: m.QuizzyPage })),
+);
 
 const ALLOWED_TABS = new Set<string>(['simple', 'theory', '3d', 'sim', 'interview']);
 
@@ -127,6 +130,7 @@ function SignedInApp() {
               <Route path="/toolbox" element={<ToolboxPage />} />
               <Route path="/toolbox/:toolId" element={<ToolboxPage />} />
               <Route path="/resources" element={<ResourcesPage />} />
+              <Route path="/quizzy" element={<QuizzyPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>

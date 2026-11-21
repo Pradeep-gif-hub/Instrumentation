@@ -12,6 +12,7 @@ import {
   Home,
   Library,
   Linkedin,
+  ListChecks,
   Menu,
   Moon,
   Notebook,
@@ -122,6 +123,7 @@ function buildPlainBreadcrumb(pathname: string): { label: string; to?: string }[
   if (pathname.startsWith('/electronics')) return [{ label: 'Signal chain' }];
   if (pathname.startsWith('/roadmap')) return [{ label: 'Full syllabus notes' }];
   if (pathname.startsWith('/resources')) return [{ label: 'Resources' }];
+  if (pathname.startsWith('/quizzy')) return [{ label: 'Quizzy' }];
   return [{ label: 'Instrument-AI' }];
 }
 
@@ -497,6 +499,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
               )}
             </nav>
           </div>
+
+          <button
+            type="button"
+            onClick={() => navigate('/quizzy')}
+            aria-label="Quizzy"
+            aria-current={location.pathname.startsWith('/quizzy') ? 'page' : undefined}
+            className={`btn shrink-0 ${
+              location.pathname.startsWith('/quizzy')
+                ? 'border-[var(--st-accent)] text-[var(--st-accent-text)]'
+                : ''
+            }`}
+          >
+            <ListChecks className="size-4" />
+            <span className="hidden sm:inline">Quizzy</span>
+          </button>
 
           {/* Search Button */}
           <button
