@@ -39,6 +39,14 @@ ALTER TABLE suggestions ADD COLUMN IF NOT EXISTS site_rating SMALLINT;
 CREATE UNIQUE INDEX IF NOT EXISTS suggestions_one_site_feedback_per_user
   ON suggestions (user_id)
   WHERE family = 'Site feedback' AND user_id <> '';
+UPDATE users
+SET feedback_done = TRUE
+WHERE feedback_done = FALSE
+  AND created_at >= TIMESTAMPTZ '2026-11-21 18:00:00+00'
+  AND NOT EXISTS (
+    SELECT 1 FROM suggestions
+    WHERE suggestions.user_id = users.id AND suggestions.family = 'Site feedback'
+  );
 CREATE TABLE IF NOT EXISTS engineer_applications (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL,
@@ -112,8 +120,8 @@ export async function upsertUser(user: {
 }): Promise<void> {
   const current = await ready();
   await current.query(
-    `INSERT INTO users (id, email, name, picture, branch, study_year, college, mobile, gender)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    `INSERT INTO users (id, email, name, picture, branch, study_year, college, mobile, gender, feedback_done)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, TRUE)
      ON CONFLICT (id) DO UPDATE SET
        email = EXCLUDED.email,
        name = EXCLUDED.name,
