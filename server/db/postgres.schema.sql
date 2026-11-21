@@ -78,6 +78,7 @@ CREATE TABLE IF NOT EXISTS suggestions (
 ALTER TABLE users ADD COLUMN IF NOT EXISTS feedback_done BOOLEAN NOT NULL DEFAULT FALSE;
 ALTER TABLE suggestions ADD COLUMN IF NOT EXISTS study_year TEXT NOT NULL DEFAULT '';
 ALTER TABLE suggestions ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT '';
+ALTER TABLE suggestions ADD COLUMN IF NOT EXISTS site_rating SMALLINT;
 CREATE UNIQUE INDEX IF NOT EXISTS suggestions_one_site_feedback_per_user
   ON suggestions (user_id)
   WHERE family = 'Site feedback' AND user_id <> '';

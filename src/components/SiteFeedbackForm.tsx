@@ -12,6 +12,7 @@ export function SiteFeedbackForm() {
   const [email, setEmail] = useState(user?.email || '');
   const [year, setYear] = useState('');
   const [feedback, setFeedback] = useState('');
+  const [rating, setRating] = useState('');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -19,7 +20,7 @@ export function SiteFeedbackForm() {
     setError('');
     setSaving(true);
     try {
-      await submitFeedback({ name, email, year, feedback });
+      await submitFeedback({ name, email, year, feedback, rating });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'That could not be saved. Try again.');
     } finally {
@@ -68,6 +69,19 @@ export function SiteFeedbackForm() {
               value={feedback}
               onChange={(event) => setFeedback(event.target.value)}
               placeholder="What is working, and what should change?"
+            />
+          </label>
+          <label className="block text-[13px] font-semibold text-[var(--st-on)]">
+            Rate the site out of 10
+            <input
+              className={inputClass}
+              name="rating"
+              inputMode="numeric"
+              autoComplete="off"
+              maxLength={2}
+              value={rating}
+              onChange={(event) => setRating(event.target.value.replace(/\D/g, '').slice(0, 2))}
+              placeholder="1–10"
             />
           </label>
           {error && <p className="text-[14px] leading-snug text-[var(--st-accent-text)]">{error}</p>}

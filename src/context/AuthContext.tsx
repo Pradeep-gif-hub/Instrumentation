@@ -42,7 +42,7 @@ type AuthContextValue = {
   loading: boolean;
   signIn: (credential: string, details: SignupDetails) => Promise<void>;
   signOut: () => Promise<void>;
-  submitFeedback: (input: { name: string; email: string; year: string; feedback: string }) => Promise<void>;
+  submitFeedback: (input: { name: string; email: string; year: string; feedback: string; rating: string }) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -125,7 +125,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null);
   }, []);
 
-  const submitFeedback = useCallback(async (input: { name: string; email: string; year: string; feedback: string }) => {
+  const submitFeedback = useCallback(async (input: { name: string; email: string; year: string; feedback: string; rating: string }) => {
     const res = await fetch('/api/feedback', {
       method: 'POST',
       credentials: 'include',

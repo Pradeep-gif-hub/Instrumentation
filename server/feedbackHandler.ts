@@ -19,14 +19,21 @@ function clip(value: unknown, max: number): string {
   return String(value ?? '').replace(/\s+/g, ' ').trim().slice(0, max);
 }
 
-function readForm(body: unknown): { name: string; email: string; year: string; feedback: string } {
+function readRating(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isInteger(value)) return value;
+  const text = String(value ?? '').trim();
+  if (!/^\d{1,2}$/.test(text)) return null;
+  return Number(text);
+}
+
+function readForm(body: unknown): { name: string; email: string; year: string; feedback: string; rating: number | null } {
   let value = body;
   if (typeof Buffer !== 'undefined' && Buffer.isBuffer(value)) value = value.toString('utf8');
   if (typeof value === 'string') {
     try {
       value = JSON.parse(value) as unknown;
     } catch {
-      return { name: '', email: '', year: '', feedback: '' };
+      return { name: '', email: '', year: '', feedback: '', rating: null };
     }
   }
   const record = value && typeof value === 'object' ? (value as Record<string, unknown>) : {};
@@ -35,6 +42,7 @@ function readForm(body: unknown): { name: string; email: string; year: string; f
     email: clip(record.email, 120).toLowerCase(),
     year: clip(record.year, 20),
     feedback: String(record.feedback ?? '').replace(/\s+/g, ' ').trim().slice(0, 2000),
+    rating: readRating(record.rating),
   };
 }
 
@@ -67,6 +75,10 @@ export async function handleFeedbackHttp(req: FeedbackRequest, res: FeedbackResp
     res.status(400).json({ error: 'Write a short review of the site.' });
     return;
   }
+  if (form.rating === null || form.rating < 1 || form.rating > 10) {
+    res.status(400).json({ error: 'Rate the site with a whole number from 1 to 10.' });
+    return;
+  }
 
   try {
     await saveSiteFeedback({
@@ -77,6 +89,7 @@ export async function handleFeedbackHttp(req: FeedbackRequest, res: FeedbackResp
       email: form.email,
       year: form.year,
       feedback: form.feedback,
+      rating: form.rating,
     });
   } catch {
     res.status(503).json({ error: 'That could not be saved. Try again.' });

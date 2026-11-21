@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS suggestions (
 );
 ALTER TABLE suggestions ADD COLUMN IF NOT EXISTS study_year TEXT NOT NULL DEFAULT '';
 ALTER TABLE suggestions ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT '';
+ALTER TABLE suggestions ADD COLUMN IF NOT EXISTS site_rating SMALLINT;
 CREATE UNIQUE INDEX IF NOT EXISTS suggestions_one_site_feedback_per_user
   ON suggestions (user_id)
   WHERE family = 'Site feedback' AND user_id <> '';
@@ -171,6 +172,7 @@ export async function saveSiteFeedback(input: {
   email: string;
   year: string;
   feedback: string;
+  rating: number;
 }): Promise<'saved' | 'already'> {
   const current = await ready();
   const client = await current.connect();
@@ -191,9 +193,9 @@ export async function saveSiteFeedback(input: {
       return 'already';
     }
     await client.query(
-      `INSERT INTO suggestions (name, family, reason, link, contact_name, contact_email, status, study_year, user_id)
-       VALUES ($1, 'Site feedback', $2, '', $3, $4, 'new', $5, $6)`,
-      [input.name, input.feedback, input.name, input.email, input.year, input.userId],
+      `INSERT INTO suggestions (name, family, reason, link, contact_name, contact_email, status, study_year, user_id, site_rating)
+       VALUES ($1, 'Site feedback', $2, '', $3, $4, 'new', $5, $6, $7)`,
+      [input.name, input.feedback, input.name, input.email, input.year, input.userId, input.rating],
     );
     await client.query('UPDATE users SET feedback_done = TRUE WHERE id = $1', [input.userId]);
     await client.query('COMMIT');
