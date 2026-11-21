@@ -32,6 +32,7 @@ import { GoogleSignIn } from './GoogleSignIn';
 import { UserCountButton } from './UserCountButton';
 import { PlantBackdrop } from './PlantBackdrop';
 import { CursorDotField } from './CursorDotField';
+import { EndSemCountdown } from './EndSemCountdown';
 import { SearchModal } from './SearchModal';
 import { SuggestInstrumentModal } from './SuggestInstrumentModal';
 
@@ -439,7 +440,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Main Column */}
       <div className={`relative z-10 flex min-h-screen min-w-0 flex-col overflow-x-hidden lg:pl-[var(--sidebar-width)] ${location.pathname === '/' ? 'pointer-events-none' : ''}`}>
-        <header className={`topbar sticky top-0 z-10 flex min-h-16 items-center gap-3 px-4 py-3 sm:px-6 ${location.pathname === '/' ? 'pointer-events-auto' : ''}`}>
+        <header className={`topbar sticky top-0 z-10 flex min-h-16 items-center gap-2 px-4 py-3 sm:gap-3 sm:px-6 ${location.pathname === '/' ? 'pointer-events-auto' : ''}`}>
           {/* Mobile Menu Button */}
           <button
             ref={mobileMenuBtnRef}
@@ -450,7 +451,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             className="btn shrink-0 lg:hidden!"
           >
             <Menu className="size-4" />
-            <span>Menu</span>
+            <span className="hidden sm:inline">Menu</span>
           </button>
 
           {/* Back + Plain Breadcrumb */}
@@ -503,6 +504,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
               )}
             </nav>
           </div>
+
+          <EndSemCountdown />
 
           <button
             type="button"
