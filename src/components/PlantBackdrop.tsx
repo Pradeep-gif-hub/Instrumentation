@@ -52,18 +52,26 @@ function Worker({
   task = 'walk',
   person,
   labelRoot,
+  female = false,
 }: {
   position: [number, number, number];
-  task?: 'walk' | 'gauge' | 'valve' | 'furnace';
+  task?: 'walk' | 'gauge' | 'valve' | 'furnace' | 'roam';
   person: { name: string; detail: string };
   labelRoot: RefObject<HTMLDivElement | null>;
+  female?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const group = useRef<THREE.Group>(null);
   const arm = useRef<THREE.Group>(null);
   const leftLeg = useRef<THREE.Mesh>(null);
   const rightLeg = useRef<THREE.Mesh>(null);
-  useFrame(({ clock }) => {
+  const roam = useRef({
+    x: position[0],
+    z: position[2],
+    tx: position[0] + 1.6,
+    tz: position[2] + 0.8,
+  });
+  useFrame(({ clock }, delta) => {
     const t = clock.elapsedTime + position[0];
     if (!group.current) return;
     const stride = Math.sin(t * 3.6);
@@ -73,6 +81,23 @@ function Worker({
       const phase = (Math.sin(t * 0.38) + 1) / 2;
       group.current.position.set(-4.2 + phase * 6.6, Math.abs(stride) * 0.04, position[2]);
       group.current.rotation.y = Math.cos(t * 0.38) > 0 ? Math.PI / 2 : -Math.PI / 2;
+    } else if (task === 'roam') {
+      const step = Math.min(delta, 0.05) * 1.25;
+      let dx = roam.current.tx - roam.current.x;
+      let dz = roam.current.tz - roam.current.z;
+      let dist = Math.hypot(dx, dz);
+      if (dist < 0.22) {
+        roam.current.tx = -3.6 + Math.random() * 8.6;
+        roam.current.tz = 0.4 + Math.random() * 2.7;
+        dx = roam.current.tx - roam.current.x;
+        dz = roam.current.tz - roam.current.z;
+        dist = Math.hypot(dx, dz) || 1;
+      }
+      const move = Math.min(step, dist);
+      roam.current.x += (dx / dist) * move;
+      roam.current.z += (dz / dist) * move;
+      group.current.position.set(roam.current.x, Math.abs(stride) * 0.04, roam.current.z);
+      group.current.rotation.y = Math.atan2(dx, dz);
     } else if (task === 'gauge') {
       const phase = (Math.sin(t * 0.7) + 1) / 2;
       group.current.position.set(position[0] + phase * 1.3, Math.abs(stride) * 0.03, position[2]);
@@ -124,8 +149,8 @@ function Worker({
         <meshStandardMaterial color="#243e56" roughness={0.75} />
       </mesh>
       <mesh position={[0, 0.92, 0]}>
-        <capsuleGeometry args={[0.2, 0.42, 4, 8]} />
-        <meshStandardMaterial color="#3c6e96" roughness={0.62} />
+        <capsuleGeometry args={[female ? 0.18 : 0.2, 0.42, 4, 8]} />
+        <meshStandardMaterial color={female ? '#2f6f8a' : '#3c6e96'} roughness={0.62} />
       </mesh>
       <mesh position={[0, 0.95, 0.16]}>
         <boxGeometry args={[0.34, 0.16, 0.04]} />
@@ -134,17 +159,37 @@ function Worker({
       <group ref={arm} position={[0.22, 1.05, 0]}>
         <mesh position={[0.12, -0.12, 0.08]} rotation={[0.5, 0, -0.4]}>
           <capsuleGeometry args={[0.05, 0.28, 3, 6]} />
-          <meshStandardMaterial color="#3c6e96" roughness={0.62} />
+          <meshStandardMaterial color={female ? '#2f6f8a' : '#3c6e96'} roughness={0.62} />
         </mesh>
       </group>
       <mesh position={[-0.22, 0.95, 0]} rotation={[0.2, 0, 0.5]}>
         <capsuleGeometry args={[0.05, 0.26, 3, 6]} />
-        <meshStandardMaterial color="#3c6e96" roughness={0.62} />
+        <meshStandardMaterial color={female ? '#2f6f8a' : '#3c6e96'} roughness={0.62} />
       </mesh>
       <mesh position={[0, 1.32, 0]}>
         <sphereGeometry args={[0.13, 16, 12]} />
-        <meshStandardMaterial color="#e4c2a2" roughness={0.7} />
+        <meshStandardMaterial color={female ? '#e7b89a' : '#e4c2a2'} roughness={0.7} />
       </mesh>
+      {female && (
+        <group>
+          <mesh position={[0, 1.31, -0.02]}>
+            <sphereGeometry args={[0.16, 14, 12]} />
+            <meshStandardMaterial color="#241c18" roughness={0.82} />
+          </mesh>
+          <mesh position={[0.16, 1.24, 0.04]}>
+            <sphereGeometry args={[0.07, 10, 8]} />
+            <meshStandardMaterial color="#241c18" roughness={0.82} />
+          </mesh>
+          <mesh position={[-0.16, 1.24, 0.04]}>
+            <sphereGeometry args={[0.07, 10, 8]} />
+            <meshStandardMaterial color="#241c18" roughness={0.82} />
+          </mesh>
+          <mesh position={[0.2, 0.92, 0]} rotation={[0.25, 0, -0.7]}>
+            <capsuleGeometry args={[0.055, 0.62, 4, 6]} />
+            <meshStandardMaterial color="#241c18" roughness={0.82} />
+          </mesh>
+        </group>
+      )}
       <mesh position={[0, 1.44, 0]}>
         <cylinderGeometry args={[0.15, 0.16, 0.08, 14]} />
         <meshStandardMaterial color="#f2c14b" roughness={0.45} />
@@ -608,6 +653,13 @@ function PlantScene({
       <Worker position={[-5.4, 0, 1.15]} task="gauge" labelRoot={labelRoot} person={{ name: 'Shanmukh Datta', detail: 'GET · Instrumentation' }} />
       <Worker position={[1.15, 0, 1.15]} task="valve" labelRoot={labelRoot} person={{ name: 'Elon Musk', detail: 'SpaceX' }} />
       <Worker position={[4.6, 0, 1.35]} task="furnace" labelRoot={labelRoot} person={{ name: 'Jensen Huang', detail: 'Fresher' }} />
+      <Worker
+        position={[2.4, 0, 2.7]}
+        task="roam"
+        female
+        labelRoot={labelRoot}
+        person={{ name: 'ALISHA SHARMA', detail: 'Intern' }}
+      />
       <mesh position={[-7.4, 1.25, -3.1]}>
         <boxGeometry args={[1.5, 2.3, 1.35]} />
         <meshStandardMaterial color={light ? '#e7eef3' : '#243140'} roughness={0.6} />

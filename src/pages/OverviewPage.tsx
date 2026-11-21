@@ -53,7 +53,7 @@ export function OverviewPage() {
 
   return (
     <>
-      <div className="pointer-events-none w-full text-center">
+      <div className="pointer-events-none flex w-full flex-col items-center text-center">
         <h1
           className="text-[var(--st-on)]"
           style={{
@@ -65,6 +65,13 @@ export function OverviewPage() {
         >
           Welcome to the ICE Factory of NITJ where Engineers are produced.. 😭😭
         </h1>
+        <a
+          href="https://www.youtube.com/shorts/EtWmqkzEoKE"
+          className="pointer-events-auto mt-3 inline-block cursor-pointer text-[16px] font-semibold text-[var(--st-accent-text)] underline decoration-2 underline-offset-4"
+          style={{ textShadow: '0 2px 8px rgba(0,0,0,0.85)' }}
+        >
+          END Sem Discount and Special Offer...
+        </a>
         <button
           type="button"
           onClick={() => {
