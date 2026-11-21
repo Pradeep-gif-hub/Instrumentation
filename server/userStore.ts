@@ -19,6 +19,25 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS study_year TEXT NOT NULL DEFAULT '';
 ALTER TABLE users ADD COLUMN IF NOT EXISTS college TEXT NOT NULL DEFAULT '';
 ALTER TABLE users ADD COLUMN IF NOT EXISTS mobile TEXT NOT NULL DEFAULT '';
 ALTER TABLE users ADD COLUMN IF NOT EXISTS gender TEXT NOT NULL DEFAULT '';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS feedback_done BOOLEAN NOT NULL DEFAULT FALSE;
+CREATE TABLE IF NOT EXISTS suggestions (
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  family TEXT NOT NULL,
+  reason TEXT NOT NULL,
+  link TEXT NOT NULL DEFAULT '',
+  contact_name TEXT NOT NULL DEFAULT '',
+  contact_email TEXT NOT NULL DEFAULT '',
+  status TEXT NOT NULL DEFAULT 'new',
+  study_year TEXT NOT NULL DEFAULT '',
+  user_id TEXT NOT NULL DEFAULT '',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+ALTER TABLE suggestions ADD COLUMN IF NOT EXISTS study_year TEXT NOT NULL DEFAULT '';
+ALTER TABLE suggestions ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT '';
+CREATE UNIQUE INDEX IF NOT EXISTS suggestions_one_site_feedback_per_user
+  ON suggestions (user_id)
+  WHERE family = 'Site feedback' AND user_id <> '';
 CREATE TABLE IF NOT EXISTS engineer_applications (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL,
@@ -130,6 +149,61 @@ export async function getUser(id: string): Promise<StoredUser | null> {
   const row = result.rows[0];
   if (!row) return null;
   return mapUser(row);
+}
+
+/** True when this account already sent site feedback. Null when the account row is missing. */
+export async function hasSiteFeedback(id: string): Promise<boolean | null> {
+  const current = await ready();
+  const result = await current.query<{ feedback_done: boolean }>(
+    'SELECT feedback_done FROM users WHERE id = $1',
+    [id],
+  );
+  const row = result.rows[0];
+  if (!row) return null;
+  return Boolean(row.feedback_done);
+}
+
+export async function saveSiteFeedback(input: {
+  userId: string;
+  accountEmail: string;
+  accountName: string;
+  name: string;
+  email: string;
+  year: string;
+  feedback: string;
+}): Promise<'saved' | 'already'> {
+  const current = await ready();
+  const client = await current.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query(
+      `INSERT INTO users (id, email, name)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (id) DO NOTHING`,
+      [input.userId, input.accountEmail, input.accountName],
+    );
+    const locked = await client.query<{ feedback_done: boolean }>(
+      'SELECT feedback_done FROM users WHERE id = $1 FOR UPDATE',
+      [input.userId],
+    );
+    if (locked.rows[0]?.feedback_done) {
+      await client.query('COMMIT');
+      return 'already';
+    }
+    await client.query(
+      `INSERT INTO suggestions (name, family, reason, link, contact_name, contact_email, status, study_year, user_id)
+       VALUES ($1, 'Site feedback', $2, '', $3, $4, 'new', $5, $6)`,
+      [input.name, input.feedback, input.name, input.email, input.year, input.userId],
+    );
+    await client.query('UPDATE users SET feedback_done = TRUE WHERE id = $1', [input.userId]);
+    await client.query('COMMIT');
+    return 'saved';
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
 export async function countUsers(): Promise<number> {

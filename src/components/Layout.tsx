@@ -22,8 +22,9 @@ import {
   X,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link, matchPath, useLocation, useNavigate } from 'react-router-dom';
+import { Link, matchPath, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
+import { useAuth } from '@/context/AuthContext';
 import { resolveCanonicalPath } from '@/data/navigationTree';
 import { getPlainDisplayName } from '@/data/simpleGuides';
 import { DEVELOPERS } from '@/lib/siteConfig';
@@ -33,6 +34,7 @@ import { UserCountButton } from './UserCountButton';
 import { PlantBackdrop } from './PlantBackdrop';
 import { CursorDotField } from './CursorDotField';
 import { EndSemCountdown } from './EndSemCountdown';
+import { SiteFeedbackForm } from './SiteFeedbackForm';
 import { SearchModal } from './SearchModal';
 import { SuggestInstrumentModal } from './SuggestInstrumentModal';
 
@@ -133,6 +135,7 @@ function buildPlainBreadcrumb(pathname: string): { label: string; to?: string }[
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const { feedbackDone } = useAuth();
   const { theme, toggleTheme, setSearchOpen, bookmarks, setBookmarksOpen } = useApp();
   const [moreOpen, setMoreOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
@@ -594,6 +597,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         onClose={() => setSuggestOpen(false)}
         returnFocusRef={activeSuggestTriggerRef}
       />
+      {feedbackDone === false && location.pathname !== '/' && <Navigate to="/" replace />}
+      {feedbackDone === false && <SiteFeedbackForm />}
     </div>
   );
 }

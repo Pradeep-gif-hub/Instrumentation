@@ -24,6 +24,7 @@ export type SignedInAccount = {
 type AuthResponse = {
   user: AuthUser | null;
   isAdmin: boolean;
+  feedbackDone?: boolean;
   userCount?: number;
   users?: SignedInAccount[];
   notice?: string;
@@ -33,6 +34,7 @@ type AuthResponse = {
 type AuthContextValue = {
   user: AuthUser | null;
   isAdmin: boolean;
+  feedbackDone: boolean;
   userCount?: number;
   users: SignedInAccount[];
   notice: string | null;
@@ -40,6 +42,7 @@ type AuthContextValue = {
   loading: boolean;
   signIn: (credential: string, details: SignupDetails) => Promise<void>;
   signOut: () => Promise<void>;
+  submitFeedback: (input: { name: string; email: string; year: string; feedback: string }) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -55,6 +58,7 @@ async function readAuthResponse(res: Response): Promise<AuthResponse> {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [feedbackDone, setFeedbackDone] = useState(false);
   const [userCount, setUserCount] = useState<number | undefined>(undefined);
   const [users, setUsers] = useState<SignedInAccount[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
@@ -64,6 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const apply = useCallback((data: AuthResponse) => {
     setUser(data.user);
     setIsAdmin(Boolean(data.isAdmin));
+    setFeedbackDone(Boolean(data.feedbackDone));
     setUserCount(data.userCount);
     setUsers(Array.isArray(data.users) ? data.users : []);
     setNotice(data.notice || null);
@@ -113,15 +118,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await fetch('/api/auth', { method: 'DELETE', credentials: 'include' });
     setUser(null);
     setIsAdmin(false);
+    setFeedbackDone(false);
     setUserCount(undefined);
     setUsers([]);
     setNotice(null);
     setError(null);
   }, []);
 
+  const submitFeedback = useCallback(async (input: { name: string; email: string; year: string; feedback: string }) => {
+    const res = await fetch('/api/feedback', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input),
+    });
+    const data = await readAuthResponse(res);
+    if (data.feedbackDone) setFeedbackDone(true);
+  }, []);
+
   const value = useMemo(
-    () => ({ user, isAdmin, userCount, users, notice, error, loading, signIn, signOut }),
-    [user, isAdmin, userCount, users, notice, error, loading, signIn, signOut],
+    () => ({ user, isAdmin, feedbackDone, userCount, users, notice, error, loading, signIn, signOut, submitFeedback }),
+    [user, isAdmin, feedbackDone, userCount, users, notice, error, loading, signIn, signOut, submitFeedback],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

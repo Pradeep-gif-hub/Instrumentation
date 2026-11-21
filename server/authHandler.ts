@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import type { IncomingHttpHeaders } from 'node:http';
-import { countUsers, getUser, listUsers, upsertUser } from './userStore.ts';
+import { countUsers, getUser, hasSiteFeedback, listUsers, upsertUser } from './userStore.ts';
 
 const COOKIE = 'instrumenta_session';
 
@@ -52,7 +52,7 @@ function sign(payload: SessionPayload): string {
   return `${body}.${mac}`;
 }
 
-function readSession(cookieHeader: string | undefined): SessionPayload | null {
+export function readSession(cookieHeader: string | undefined): SessionPayload | null {
   if (!cookieHeader) return null;
   const pair = cookieHeader
     .split(';')
@@ -163,9 +163,11 @@ export async function handleAuthHttp(req: AuthRequest, res: AuthResponse) {
     const isAdmin = adminEmails().has(session.email.toLowerCase());
     try {
       const saved = await getUser(session.sub);
+      const feedback = await hasSiteFeedback(session.sub);
       res.status(200).json({
         user: { email: saved?.email || session.email, name: saved?.name || session.name },
         isAdmin,
+        feedbackDone: feedback === true,
         userCount: isAdmin ? await countUsers() : undefined,
         users: isAdmin ? await listUsers() : undefined,
       });
@@ -173,6 +175,7 @@ export async function handleAuthHttp(req: AuthRequest, res: AuthResponse) {
       res.status(200).json({
         user: { email: session.email, name: session.name },
         isAdmin,
+        feedbackDone: true,
         notice: 'Signed in, but the account list could not be loaded.',
       });
     }
@@ -243,19 +246,22 @@ export async function handleAuthHttp(req: AuthRequest, res: AuthResponse) {
   });
   writeSessionCookie(res, token);
   const isAdmin = adminEmails().has(profile.email.toLowerCase());
+  let feedbackDone = false;
   let userCount: number | undefined;
   let users: Awaited<ReturnType<typeof listUsers>> | undefined;
-  if (isAdmin) {
-    try {
+  try {
+    feedbackDone = (await hasSiteFeedback(profile.sub)) === true;
+    if (isAdmin) {
       userCount = await countUsers();
       users = await listUsers();
-    } catch {
-      userCount = undefined;
     }
+  } catch {
+    userCount = undefined;
   }
   res.status(200).json({
     user: { email: profile.email, name },
     isAdmin,
+    feedbackDone,
     userCount,
     users,
   });
