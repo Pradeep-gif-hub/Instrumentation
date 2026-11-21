@@ -188,16 +188,14 @@ export function LearnPage() {
           <div className="space-y-2.5">
             {LEARN_SEMESTERS.map((sem) =>
               sem.notesHref ? (
-                <a
+                <Link
                   key={sem.key}
-                  href={sem.notesHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  to={sem.notesHref}
                   className="ui-card flex w-full cursor-pointer items-center justify-between px-5 py-4 text-left"
                 >
                   <span className="text-[20px] font-semibold text-[var(--st-on)]">{sem.label}</span>
                   <ChevronRight className="size-5 text-[var(--st-on-var)]" />
-                </a>
+                </Link>
               ) : (
                 <button
                   key={sem.key}

@@ -58,13 +58,13 @@ export const LEARN_SEMESTERS: LearnSemesterMeta[] = [
   {
     key: 'sem1',
     label: 'Semester 1',
-    notesHref: 'https://drive.google.com/drive/folders/1p49STgJqpYccV_EAPbOXggUUQut-Omdj?usp=sharing',
+    notesHref: '/notes/sem1',
     subjectIds: [],
   },
   {
     key: 'sem2',
     label: 'Semester 2',
-    notesHref: 'https://drive.google.com/drive/folders/1qKgMco_DMXC6CNVOgyZC95FfZtWE074b?usp=sharing',
+    notesHref: '/notes/sem2',
     subjectIds: [],
   },
   {

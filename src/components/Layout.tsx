@@ -34,6 +34,7 @@ import { UserCountButton } from './UserCountButton';
 import { PlantBackdrop } from './PlantBackdrop';
 import { CursorDotField } from './CursorDotField';
 import { EndSemCountdown } from './EndSemCountdown';
+import { SEMESTER_NOTES, semesterNote } from '@/data/semesterNotes';
 import { SiteFeedbackForm } from './SiteFeedbackForm';
 import { SearchModal } from './SearchModal';
 import { SuggestInstrumentModal } from './SuggestInstrumentModal';
@@ -78,33 +79,6 @@ const MAIN_LINKS = [
   { id: 'toolbox', label: 'Toolbox', path: '/toolbox', icon: Calculator },
 ];
 
-const NOTE_LINKS = [
-  {
-    label: 'Semester 1',
-    href: 'https://drive.google.com/drive/folders/1p49STgJqpYccV_EAPbOXggUUQut-Omdj?usp=sharing',
-  },
-  {
-    label: 'Semester 2',
-    href: 'https://drive.google.com/drive/folders/1qKgMco_DMXC6CNVOgyZC95FfZtWE074b?usp=sharing',
-  },
-  {
-    label: 'Semester 3',
-    href: 'https://drive.google.com/drive/folders/14sL1xKHOQUE1i2ULdxyNv29PgsN2ZJIZ?usp=sharing',
-  },
-  {
-    label: 'Semester 4',
-    href: 'https://drive.google.com/drive/folders/1Ek8sYBgBtd_RQM2V-9lPstkOca5vQSNV?usp=sharing',
-  },
-  {
-    label: 'Semester 5',
-    href: 'https://drive.google.com/drive/folders/1uP6ZAVXDa25fUbJ7sSw7qcr3EO-CM2RZ?usp=sharing',
-  },
-  {
-    label: 'Additional semesters',
-    href: 'https://drive.google.com/drive/folders/1p49STgJqpYccV_EAPbOXggUUQut-Omdj?usp=sharing',
-  },
-];
-
 const MORE_LINKS = [
   { label: 'Automation & PLC', to: '/automation' },
   { label: 'Plant diagrams', to: '/applications' },
@@ -131,6 +105,10 @@ function buildPlainBreadcrumb(pathname: string): { label: string; to?: string }[
   if (pathname.startsWith('/roadmap')) return [{ label: 'Full syllabus notes' }];
   if (pathname.startsWith('/resources')) return [{ label: 'Resources' }];
   if (pathname.startsWith('/quizzy')) return [{ label: 'Quizzy' }];
+  if (pathname.startsWith('/notes')) {
+    const note = semesterNote(pathname.split('/')[2]);
+    return note ? [{ label: 'Notes' }, { label: note.label }] : [{ label: 'Notes' }];
+  }
   return [{ label: 'Instrument-AI' }];
 }
 
@@ -151,6 +129,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   const location = useLocation();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (location.pathname.startsWith('/notes')) setNotesOpen(true);
+  }, [location.pathname]);
 
   const instMatch = matchPath('/instrument/:instrumentId', location.pathname);
   const activeInstrumentId = instMatch?.params.instrumentId;
@@ -295,18 +277,22 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </button>
               {notesOpen && (
                 <div className="mt-1 space-y-1 border-l border-[var(--st-line)] pl-3">
-                  {NOTE_LINKS.map((link) => (
-                    <a
-                      key={link.href}
-                      href={link.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={onNavigate}
-                      className="block rounded-lg px-3 py-2 text-[14px] font-normal text-[var(--st-on-var)] transition hover:bg-[var(--st-2)] hover:text-[var(--st-on)]"
-                    >
-                      {link.label}
-                    </a>
-                  ))}
+                  {SEMESTER_NOTES.map((note) => {
+                    const active = location.pathname === `/notes/${note.key}`;
+                    return (
+                      <Link
+                        key={note.key}
+                        to={`/notes/${note.key}`}
+                        onClick={onNavigate}
+                        aria-current={active ? 'page' : undefined}
+                        className={`block rounded-lg px-3 py-2 text-[14px] font-normal transition hover:bg-[var(--st-2)] hover:text-[var(--st-on)] ${
+                          active ? 'bg-[var(--st-2)] font-semibold text-[var(--st-on)]' : 'text-[var(--st-on-var)]'
+                        }`}
+                      >
+                        {note.label}
+                      </Link>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -537,7 +523,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </button>
         </header>
 
-        <main className={`min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8 ${location.pathname === '/' ? 'pointer-events-none' : ''}`}>{children}</main>
+        <main
+          className={
+            location.pathname.startsWith('/notes')
+              ? 'flex h-[calc(100dvh-8rem)] min-h-0 flex-col overflow-hidden p-3'
+              : `min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8 ${location.pathname === '/' ? 'pointer-events-none' : ''}`
+          }
+        >
+          {children}
+        </main>
 
         <footer className={`flex min-h-[48px] flex-wrap items-center justify-between gap-x-6 gap-y-2 border-t border-[var(--st-line)] px-4 py-2.5 text-[13px] text-[var(--st-on-var)] sm:px-8 ${location.pathname === '/' ? 'pointer-events-auto' : ''}`}>
           <div className="flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1">

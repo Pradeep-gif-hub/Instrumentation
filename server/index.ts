@@ -6,6 +6,7 @@ import express from 'express';
 import { InstrumentaDatabase } from './db/database.ts';
 import { handleAuthHttp } from './authHandler.ts';
 import { handleFeedbackHttp } from './feedbackHandler.ts';
+import { handleNotesHttp } from './notesHandler.ts';
 import { handleEngineerHttp } from './engineerHandler.ts';
 import { handleSuggestionHttp } from './suggestionHandler.ts';
 import type { AcademicSubject } from '../src/types/engineering.ts';
@@ -147,6 +148,10 @@ app.all('/api/auth', async (req, res) => {
 
 app.all('/api/feedback', async (req, res) => {
   await handleFeedbackHttp(req, res);
+});
+
+app.all('/api/notes', async (req, res) => {
+  await handleNotesHttp(req, res);
 });
 
 app.post('/api/engineers', async (req, res) => {
