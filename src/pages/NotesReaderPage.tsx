@@ -4,13 +4,12 @@ import { Link, useParams } from 'react-router-dom';
 import { SEMESTER_NOTES, semesterNote, type SemesterNoteKey } from '@/data/semesterNotes';
 
 type NoteItem = {
-  id: string;
+  ref: string;
   name: string;
   kind: 'folder' | 'file';
-  proof?: string;
 };
 
-type Crumb = { id: string; name: string; proof?: string };
+type Crumb = { ref: string; name: string };
 
 const NOTES_LIST_KEY = 'instrument-ai:notes-list-width';
 const DEFAULT_LIST_WIDTH = 320;
@@ -49,7 +48,7 @@ export function NotesReaderPage() {
 
   useEffect(() => {
     if (!semester) return;
-    const root = { id: semester.folderId, name: semester.label };
+    const root = { ref: '', name: semester.label };
     const ticket = ++requestId.current;
     let cancelled = false;
     setCrumbs([root]);
@@ -57,7 +56,7 @@ export function NotesReaderPage() {
     setItems([]);
     setLoading(true);
     setError('');
-    void loadFolder(root).then((result) => {
+    void loadFolder(semester.key, root.ref).then((result) => {
       if (cancelled || ticket !== requestId.current) return;
       setLoading(false);
       if (result.error) {
@@ -121,7 +120,7 @@ export function NotesReaderPage() {
     setItems([]);
     setLoading(true);
     setError('');
-    const result = await loadFolder(folder);
+    const result = await loadFolder(semester?.key ?? '', folder.ref);
     if (ticket !== requestId.current) return;
     setLoading(false);
     if (result.error) {
@@ -131,7 +130,7 @@ export function NotesReaderPage() {
     setFolderTitle(result.title);
     setItems(result.items);
     setCrumbs((path) => {
-      const existing = path.findIndex((crumb) => crumb.id === folder.id);
+      const existing = path.findIndex((crumb) => crumb.ref === folder.ref && crumb.name === folder.name);
       if (existing >= 0) return path.slice(0, existing + 1);
       return [...path, folder];
     });
@@ -142,7 +141,7 @@ export function NotesReaderPage() {
       <header className="flex flex-wrap items-center gap-2 border-b border-[var(--st-line)] px-3 py-2.5 sm:px-4">
         <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto text-[14px]">
           {crumbs.map((crumb, index) => (
-            <span key={crumb.id} className="flex shrink-0 items-center gap-1">
+            <span key={`${crumb.name}-${index}`} className="flex shrink-0 items-center gap-1">
               {index > 0 && <ChevronRight className="size-3.5 text-[var(--st-outline)]" />}
               <button
                 type="button"
@@ -191,15 +190,15 @@ export function NotesReaderPage() {
             )}
             <ul className="space-y-0.5">
               {items.map((item) => {
-                const active = selected?.id === item.id;
+                const active = selected?.ref === item.ref;
                 return (
-                  <li key={item.id}>
+                  <li key={item.ref}>
                     <button
                       type="button"
                       title={item.name}
                       onClick={() => {
                         if (item.kind === 'folder') {
-                          void openFolder({ id: item.id, name: item.name, proof: item.proof });
+                          void openFolder({ ref: item.ref, name: item.name });
                           return;
                         }
                         setSelected(item);
@@ -269,17 +268,12 @@ export function NotesReaderPage() {
                 </button>
                 <p className="min-w-0 flex-1 truncate text-[14px] text-neutral-800">{selected.name}</p>
               </div>
-              <div className="relative min-h-0 flex-1 overflow-hidden bg-neutral-100">
-                <iframe
-                  key={selected.id}
-                  title={selected.name}
-                  src={`https://drive.google.com/file/d/${selected.id}/preview`}
-                  className="absolute inset-x-0 w-full border-0"
-                  style={{ top: -64, height: 'calc(100% + 64px)' }}
-                  sandbox="allow-scripts allow-same-origin"
-                  referrerPolicy="no-referrer"
-                />
-              </div>
+              <iframe
+                key={selected.ref}
+                title={selected.name}
+                src={`/api/notes?view=${encodeURIComponent(selected.ref)}`}
+                className="min-h-0 w-full flex-1 border-0 bg-white"
+              />
             </>
           ) : (
             <div className="grid flex-1 place-items-center px-6 text-center">
@@ -305,14 +299,14 @@ function fileMark(name: string): string {
   return ext;
 }
 
-async function loadFolder(folder: Crumb): Promise<{ title: string; items: NoteItem[]; error: string }> {
-  const params = new URLSearchParams({ folder: folder.id });
-  if (folder.proof) params.set('proof', folder.proof);
+async function loadFolder(semester: string, ref: string): Promise<{ title: string; items: NoteItem[]; error: string }> {
+  const params = new URLSearchParams({ semester });
+  if (ref) params.set('ref', ref);
   try {
     const response = await fetch(`/api/notes?${params.toString()}`, { credentials: 'include' });
     const data = (await response.json().catch(() => ({}))) as { title?: string; items?: NoteItem[]; error?: string };
     if (!response.ok) return { title: '', items: [], error: data.error || 'The notes could not be opened. Try again.' };
-    return { title: data.title || folder.name, items: Array.isArray(data.items) ? data.items : [], error: '' };
+    return { title: data.title || '', items: Array.isArray(data.items) ? data.items : [], error: '' };
   } catch {
     return { title: '', items: [], error: 'The notes could not be opened. Try again.' };
   }
