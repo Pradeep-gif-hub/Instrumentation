@@ -9,6 +9,7 @@ import { handleFeedbackHttp } from './feedbackHandler.ts';
 import { handleNotesHttp } from './notesHandler.ts';
 import { handleEngineerHttp } from './engineerHandler.ts';
 import { handleSuggestionHttp } from './suggestionHandler.ts';
+import { handlePresenceHttp } from './presenceHandler.ts';
 import type { AcademicSubject } from '../src/types/engineering.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -144,6 +145,10 @@ app.all('/api/suggestions', async (req, res) => {
 
 app.all('/api/auth', async (req, res) => {
   await handleAuthHttp(req, res);
+});
+
+app.all('/api/presence', async (req, res) => {
+  await handlePresenceHttp(req, res);
 });
 
 app.all('/api/feedback', async (req, res) => {

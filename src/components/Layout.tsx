@@ -31,6 +31,7 @@ import { DEVELOPERS } from '@/lib/siteConfig';
 import { BookmarksDrawer } from './BookmarksDrawer';
 import { GoogleSignIn } from './GoogleSignIn';
 import { UserCountButton } from './UserCountButton';
+import { LiveNowButton, LivePresencePing } from './LiveNow';
 import { PlantBackdrop } from './PlantBackdrop';
 import { CursorDotField } from './CursorDotField';
 import { EndSemCountdown } from './EndSemCountdown';
@@ -494,6 +495,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </nav>
           </div>
 
+          <LiveNowButton />
           <EndSemCountdown />
 
           <button
@@ -522,6 +524,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <span className="hidden sm:inline">Search</span>
           </button>
         </header>
+        <LivePresencePing />
 
         <main
           className={

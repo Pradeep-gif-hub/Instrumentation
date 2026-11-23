@@ -56,6 +56,17 @@ CREATE TABLE IF NOT EXISTS engineer_applications (
   contact TEXT NOT NULL DEFAULT '',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+CREATE TABLE IF NOT EXISTS live_tabs (
+  tab_id TEXT PRIMARY KEY,
+  client_id TEXT NOT NULL,
+  user_id TEXT NOT NULL DEFAULT '',
+  name TEXT NOT NULL DEFAULT '',
+  email TEXT NOT NULL DEFAULT '',
+  path TEXT NOT NULL DEFAULT '/',
+  last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  left_at TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS live_tabs_seen ON live_tabs (last_seen_at);
 `;
 
 let pool: pg.Pool | null = null;
@@ -267,6 +278,74 @@ export async function insertEngineerApplication(entry: {
 
 export function profileIsComplete(user: StoredUser): boolean {
   return Boolean(user.name && user.branch && user.year && user.college && user.mobile && user.gender);
+}
+
+export type LivePerson = {
+  id: string;
+  name: string;
+  email: string;
+  path: string;
+  lastSeenAt: string;
+};
+
+export async function beatPresence(entry: {
+  tabId: string;
+  clientId: string;
+  userId: string;
+  name: string;
+  email: string;
+  path: string;
+}): Promise<void> {
+  const current = await ready();
+  await current.query(
+    `INSERT INTO live_tabs (tab_id, client_id, user_id, name, email, path, last_seen_at, left_at)
+     VALUES ($1, $2, $3, $4, $5, $6, NOW(), NULL)
+     ON CONFLICT (tab_id) DO UPDATE
+     SET client_id = EXCLUDED.client_id,
+         user_id = EXCLUDED.user_id,
+         name = EXCLUDED.name,
+         email = EXCLUDED.email,
+         path = EXCLUDED.path,
+         last_seen_at = NOW(),
+         left_at = NULL`,
+    [entry.tabId, entry.clientId, entry.userId, entry.name, entry.email, entry.path],
+  );
+}
+
+export async function leavePresence(tabId: string): Promise<void> {
+  const current = await ready();
+  await current.query(`UPDATE live_tabs SET left_at = NOW() WHERE tab_id = $1`, [tabId]);
+}
+
+export async function listLivePeople(): Promise<LivePerson[]> {
+  const current = await ready();
+  await current.query(`DELETE FROM live_tabs WHERE last_seen_at < NOW() - INTERVAL '1 day'`);
+  const result = await current.query<{
+    id: string;
+    name: string;
+    email: string;
+    path: string;
+    last_seen_at: string;
+  }>(
+    `SELECT
+       CASE WHEN user_id <> '' THEN 'u:' || user_id ELSE 'c:' || client_id END AS id,
+       MAX(name) AS name,
+       MAX(email) AS email,
+       (ARRAY_AGG(path ORDER BY last_seen_at DESC))[1] AS path,
+       MAX(last_seen_at) AS last_seen_at
+     FROM live_tabs
+     WHERE left_at IS NULL
+       AND last_seen_at > NOW() - INTERVAL '40 seconds'
+     GROUP BY 1
+     ORDER BY MAX(last_seen_at) DESC`,
+  );
+  return result.rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    path: row.path,
+    lastSeenAt: row.last_seen_at,
+  }));
 }
 
 export async function listUsers(): Promise<StoredUser[]> {

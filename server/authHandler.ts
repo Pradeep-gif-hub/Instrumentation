@@ -52,6 +52,12 @@ function sign(payload: SessionPayload): string {
   return `${body}.${mac}`;
 }
 
+export function isAdminCookie(cookieHeader: string | undefined): boolean {
+  const session = readSession(cookieHeader);
+  if (!session) return false;
+  return adminEmails().has(session.email.toLowerCase());
+}
+
 export function readSession(cookieHeader: string | undefined): SessionPayload | null {
   if (!cookieHeader) return null;
   const pair = cookieHeader
