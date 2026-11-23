@@ -269,13 +269,17 @@ export function NotesReaderPage() {
                 </button>
                 <p className="min-w-0 flex-1 truncate text-[14px] text-neutral-800">{selected.name}</p>
               </div>
-              <iframe
-                key={selected.id}
-                title={selected.name}
-                src={`https://drive.google.com/file/d/${selected.id}/preview`}
-                className="min-h-0 w-full flex-1 border-0"
-                allow="fullscreen"
-              />
+              <div className="relative min-h-0 flex-1 overflow-hidden bg-neutral-100">
+                <iframe
+                  key={selected.id}
+                  title={selected.name}
+                  src={`https://drive.google.com/file/d/${selected.id}/preview`}
+                  className="absolute inset-x-0 w-full border-0"
+                  style={{ top: -64, height: 'calc(100% + 64px)' }}
+                  sandbox="allow-scripts allow-same-origin"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
             </>
           ) : (
             <div className="grid flex-1 place-items-center px-6 text-center">
