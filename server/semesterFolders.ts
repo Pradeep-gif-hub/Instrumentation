@@ -13,7 +13,7 @@ export type SemesterFolderKey = (typeof KEYS)[number] | 'additional';
 export function semesterFolderId(key: string | undefined): string | null {
   if (key === 'additional') return readId('sem1');
   if (!key || !KEYS.includes(key as (typeof KEYS)[number])) return null;
-  return readId(key);
+  return readId(key as (typeof KEYS)[number]);
 }
 
 function readId(key: (typeof KEYS)[number]): string | null {
